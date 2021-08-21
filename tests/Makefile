@@ -16,6 +16,6 @@ $(TGT): $(OBJ)
 	$(CC) $(CFLAGS) $(INCLUDE) -c -o $@ $^
 
 clean:
-	rm -r $TGT_PATH
+	rm -r $(TGT)
 	rm src/*.o
 

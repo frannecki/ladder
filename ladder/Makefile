@@ -1,5 +1,5 @@
 CC=g++
-CFLAGS=-std=c++11 -O0 -g -fPIC
+CFLAGS=-std=c++11 -O0 -g -fPIC -DDEBUG
 TGT_PATH=build
 TGT=$(TGT_PATH)/libladder.so
 
