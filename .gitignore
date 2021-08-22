@@ -1,6 +1,11 @@
 /.vscode
+*.log
+
+# building
 build/
 *.o
 *.out
-*.log
-tests/test
+
+# debugging
+core*
+profiling/

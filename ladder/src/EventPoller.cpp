@@ -1,5 +1,6 @@
 #include <sys/epoll.h>
 
+#include <utils.h>
 #include <Channel.h>
 #include <EventPoller.h>
 
@@ -25,7 +26,7 @@ void EventPoller::Poll(std::vector<ChannelPtr>& active_channels) {
     perror("[EventPoller] epoll_wait");
     exit(-1);
   }
-  for(size_t i = 0; i < ret; ++i) {
+  for(int i = 0; i < ret; ++i) {
     int fd = evts[i].data.fd;
     uint32_t evt = evts[i].events;
     auto iter = channels_.find(fd);
@@ -40,8 +41,7 @@ void EventPoller::AddChannel(const ChannelPtr& channel) {
   channels_.insert(std::pair<int, ChannelPtr>(channel->fd(), channel));
   int ret = epoll_ctl(epfd_, EPOLL_CTL_ADD, channel->fd(), NULL);
   if(ret < 0) {
-    perror("[EventPoller] epoll_ctl add");
-    exit(-1);
+    exit_fatal("[EventPoller] epoll_ctl add");
   }
 }
 
@@ -51,8 +51,7 @@ void EventPoller::RemoveChannel(int fd) {
     iter = channels_.erase(iter);
     int ret = epoll_ctl(epfd_, EPOLL_CTL_DEL, fd, NULL);
     if(ret < 0) {
-      perror("[EventPoller] epoll_ctl del");
-      exit(-1);
+      exit_fatal("[EventPoller] epoll_ctl del");
     }
   }
 }

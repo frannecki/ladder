@@ -7,15 +7,21 @@
 namespace ladder {
 
 class EventPoller;
+class Channel;
+
+using ChannelPtr = std::shared_ptr<Channel>;
 
 class EventLoop {
 public:
   EventLoop();
   void StartLoop();
+  void AddChannel(const ChannelPtr& channel);
+  void RemoveChannel(int fd);
 
 private:
-  std::mutex mutex_;
   std::unique_ptr<EventPoller> poller_;
+  bool running_;
+  std::mutex mutex_running_;
 };
 
 } // namespace ladder

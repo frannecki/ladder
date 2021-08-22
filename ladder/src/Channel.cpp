@@ -1,9 +1,13 @@
+#include <sys/epoll.h>
+
 #include <Channel.h>
+#include <EventLoop.h>
 
 namespace ladder {
 
-Channel::Channel(int fd) :
+Channel::Channel(EventLoop* loop, int fd) :
   fd_(fd),
+  loop_(loop),
   events_(0)
 {
   
@@ -21,12 +25,21 @@ void Channel::SetEvents(uint32_t events) {
   events_ = events;
 }
 
-void HandleEvents() {
-  ;
+void Channel::HandleEvents() {
+  if(events_ == EPOLLIN) {
+    ;
+  }
+  else if(events_ == EPOLLOUT) {
+    ;
+  }
 }
 
 int Channel::fd() const {
   return fd_;
+}
+
+void Channel::Remove() {
+  loop_->RemoveChannel(fd_);
 }
 
 } // namespace ladder

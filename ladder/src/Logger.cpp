@@ -15,14 +15,14 @@ std::string GetCurrentDateTime() {
     struct tm  *current = localtime(&(tv.tv_sec));
     char buf[40], minor_buf[10];
     strftime(buf, sizeof(buf), "%Y-%m-%d %X.", current);
-    snprintf(minor_buf, sizeof(minor_buf), "%06u", tv.tv_usec);
+    snprintf(minor_buf, sizeof(minor_buf), "%06ld", tv.tv_usec);
     strncat(buf, minor_buf, sizeof(buf));
 
     return std::string(buf);
 }
 
 Logger* Logger::instance() {
-  if(instance == nullptr) {
+  if(instance_ == nullptr) {
     fprintf(stderr, "[Logger] Logger instance not created!");
     exit(-1);
   }
