@@ -29,6 +29,9 @@ public:
 
   template <typename MessageType>
   void WriteLog(MessageType&& message, std::string&& severity) {
+    if(this == nullptr) {
+      return;
+    }
     std::string line = "[" + GetCurrentDateTime() + "][" + severity + "] " + std::forward<MessageType>(message) + "\n";
     // {
       // std::lock_guard<std::mutex> lock(mutex_);

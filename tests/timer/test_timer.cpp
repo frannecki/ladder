@@ -15,9 +15,9 @@ void PrintTick(int *tick) {
 int main(int argc, char** argv) {
   ladder::Logger::create();
   ladder::EventLoop loop;
-  ladder::Timer timer(&loop);
-  timer.SetTimerEventCallback(std::bind(PrintTick, &tick_));
-  timer.SetInterval(1000000);
+  ladder::Timer *timer = new ladder::Timer(ladder::EventLoopPtr(&loop));
+  timer->SetTimerEventCallback(std::bind(PrintTick, &tick_));
+  timer->SetInterval(1000000);
   loop.StartLoop();
   return 0;
 }

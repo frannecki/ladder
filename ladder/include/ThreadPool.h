@@ -21,8 +21,8 @@ public:
 
 private:
 	void Init();
-	bool stopped_;
 	size_t capacity_;	// total number of threads
+	bool stopped_;
 	std::queue<Callback> tasks_;
 	std::mutex mutex_;
 	std::vector<std::thread> threads_;

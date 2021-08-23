@@ -1,13 +1,19 @@
+#include <unistd.h>
+
 #include <Channel.h>
 #include <Connection.h>
 #include <EventLoop.h>
 
 namespace ladder {
 
-Connection::Connection(EventLoop* loop, int fd) : 
+Connection::Connection(const EventLoopPtr& loop, int fd) : 
   channel_(new Channel(loop, fd))
 {
+  channel_->AddToLoop();
+}
 
+Connection::~Connection() {
+  ::close(channel_->fd());
 }
 
 void Connection::SetReadCallback(const ReadEvtCallback& callback) {
@@ -18,7 +24,7 @@ void Connection::SetReadCallback(const ReadEvtCallback& callback) {
 
 void Connection::SetWriteCallback(const WriteEvtCallback& callback) {
   write_callback_ = callback;
-  channel_->SetWriteCallback(std::bind(write_callback_, this, write_buffer_));
+  channel_->SetWriteCallback(std::bind(write_callback_, write_buffer_));
 }
 
 Channel* Connection::channel() const {

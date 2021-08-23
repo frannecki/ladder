@@ -22,10 +22,6 @@ std::string GetCurrentDateTime() {
 }
 
 Logger* Logger::instance() {
-  if(instance_ == nullptr) {
-    fprintf(stderr, "[Logger] Logger instance not created!");
-    exit(-1);
-  }
   return instance_;
 }
 

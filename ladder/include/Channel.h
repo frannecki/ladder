@@ -10,9 +10,11 @@ namespace ladder {
 
 class EventLoop;
 
+using EventLoopPtr = std::shared_ptr<EventLoop>;
+
 class Channel : public std::enable_shared_from_this<Channel> {
 public:
-  Channel(EventLoop* loop, int fd);
+  Channel(EventLoopPtr loop, int fd);
   ~Channel();
   int fd() const;
   void SetReadCallback(const std::function<void()>& callback);
@@ -26,7 +28,7 @@ public:
 
 private:
   int fd_;
-  EventLoop* loop_;
+  EventLoopPtr loop_;
   uint32_t events_;
   std::function<void()> read_callback_;
   std::function<void()> write_callback_;

@@ -7,7 +7,7 @@
 
 namespace ladder {
 
-Channel::Channel(EventLoop* loop, int fd) :
+Channel::Channel(EventLoopPtr loop, int fd) :
   fd_(fd),
   loop_(loop),
   events_(EPOLLIN)

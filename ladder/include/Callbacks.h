@@ -9,7 +9,7 @@ class Connection;
 class Buffer;
 
 using ReadEvtCallback = std::function<void(Connection*, Buffer*)>;
-using WriteEvtCallback = std::function<void(Connection*, Buffer*)>;
+using WriteEvtCallback = std::function<void(Buffer*)>;
 
 } // namespace ladder
 

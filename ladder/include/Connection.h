@@ -10,13 +10,15 @@ namespace ladder
 
 class Buffer;
 class Channel;
-
 class EventLoop;
+
+using EventLoopPtr = std::shared_ptr<EventLoop>;
 
 class Connection {
 
 public:
-  Connection(EventLoop* loop, int fd);
+  Connection(const EventLoopPtr& loop, int fd);
+  ~Connection();
   void SetReadCallback(const ReadEvtCallback& callback);
   void SetWriteCallback(const WriteEvtCallback& callback);
   Channel* channel() const;

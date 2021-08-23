@@ -11,7 +11,7 @@
 
 namespace ladder {
 
-Timer::Timer(EventLoop* loop) :
+Timer::Timer(const EventLoopPtr& loop) :
   loop_(loop) 
 {
   timer_fd_ = ::timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
