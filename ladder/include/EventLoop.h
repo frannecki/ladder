@@ -4,9 +4,10 @@
 #include <mutex>
 #include <memory>
 
+#include <EventPoller.h>
+
 namespace ladder {
 
-class EventPoller;
 class Channel;
 
 using ChannelPtr = std::shared_ptr<Channel>;

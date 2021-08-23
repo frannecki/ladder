@@ -5,6 +5,7 @@
 namespace ladder {
 
 EventLoop::EventLoop() : 
+  poller_(new EventPoller),
   running_(false)
 {
   ;

@@ -4,6 +4,7 @@
 #include <map>
 #include <vector>
 #include <memory>
+#include <mutex>
 
 namespace ladder {
 
@@ -21,6 +22,7 @@ public:
 private:
   int epfd_;
   std::map<int, ChannelPtr> channels_;
+  std::mutex mutex_;
 };
 
 } // namespace ladder

@@ -1,11 +1,13 @@
 #include <unistd.h>
 #include <sys/timerfd.h>
+#include <sys/epoll.h>
 #include <string.h>
 
 #include <utils.h>
 #include <Timer.h>
 #include <Channel.h>
 #include <EventLoop.h>
+#include <Logger.h>
 
 namespace ladder {
 
@@ -14,19 +16,19 @@ Timer::Timer(EventLoop* loop) :
 {
   timer_fd_ = ::timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
   if(timer_fd_ < 0) {
-    exit_fatal("Timer::timerfd_create");
+    exit_fatal("[Timer] timerfd_create");
   }
   timer_channel_ = std::make_shared<Channel>(loop, timer_fd_);
+  timer_channel_->AddToLoop();
+  timer_channel_->SetReadCallback(std::bind(&Timer::OnTimer, this));
 }
 
 Timer::~Timer() {
-  timer_channel_->Remove();
   ::close(timer_fd_);
 }
 
 void Timer::SetTimerEventCallback(const TimerEventCallback& callback) {
   callback_ = callback;
-  timer_channel_->SetReadCallback(std::bind(&Timer::OnTimer, this));
 }
 
 void Timer::SetInterval(uint64_t interval) {
@@ -53,7 +55,9 @@ void Timer::OnTimer() {
   if(::read(timer_fd_, &exp, sizeof(exp)) < 0) {
     exit_fatal("[Timer] read");
   }
-  callback_();
+  if(callback_) {
+    callback_();
+  }
 }
 
 } // namespace ladder

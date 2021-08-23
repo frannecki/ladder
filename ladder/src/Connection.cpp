@@ -1,10 +1,11 @@
 #include <Channel.h>
 #include <Connection.h>
+#include <EventLoop.h>
 
 namespace ladder {
 
-Connection::Connection(int fd) : 
-  channel_(new Channel(fd))
+Connection::Connection(EventLoop* loop, int fd) : 
+  channel_(new Channel(loop, fd))
 {
 
 }

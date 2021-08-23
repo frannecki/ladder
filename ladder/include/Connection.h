@@ -11,12 +11,12 @@ namespace ladder
 class Buffer;
 class Channel;
 
+class EventLoop;
+
 class Connection {
 
 public:
-  
-  Connection(int fd);
-
+  Connection(EventLoop* loop, int fd);
   void SetReadCallback(const ReadEvtCallback& callback);
   void SetWriteCallback(const WriteEvtCallback& callback);
   Channel* channel() const;
