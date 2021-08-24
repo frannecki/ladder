@@ -1,6 +1,7 @@
 #include <unistd.h>
 #include <sys/epoll.h>
 
+#include <utils.h>
 #include <Logger.h>
 #include <Channel.h>
 #include <EventLoop.h>
@@ -40,21 +41,30 @@ uint32_t Channel::GetEvents() const {
 }
 
 void Channel::HandleEvents() {
-  if(events_ & (EPOLLIN | EPOLLPRI | EPOLLRDHUP)) {
+  if(events_ & (EPOLLIN | EPOLLPRI)) {
     if(read_callback_) {
       read_callback_();
     }
+    events_ &= (~(EPOLLIN | EPOLLPRI));
   }
-  else if(events_ & EPOLLOUT) {
+  if(events_ & EPOLLRDHUP) {
+    if(read_callback_) {
+      read_callback_();
+    }
+    events_ &= (~EPOLLRDHUP);
+  }
+  if(events_ & EPOLLOUT) {
     if(write_callback_) {
       write_callback_();
     }
+    events_ &= (~EPOLLOUT);
   }
-  else if((events_ & EPOLLHUP) && !(events_ & EPOLLIN)) {
+  if((events_ & EPOLLHUP) && !(events_ & EPOLLIN)) {
     if(close_callback_) {
       close_callback_();
       LOG_DEBUG("close_callback_()");
     }
+    events_ &= (~EPOLLHUP);
   }
 }
 
@@ -68,6 +78,26 @@ void Channel::AddToLoop() {
 
 void Channel::RemoveFromLoop() {
   loop_->RemoveChannel(fd_);
+}
+
+void Channel::ShutDownWrite() {
+  if(!Iswriting()) {
+    socket::shutdown_write(fd_);
+  }
+}
+
+void Channel::ShutDownRead() {
+  if(!IsReading()) {
+    socket::shutdown_read(fd_);
+  }
+}
+
+bool Channel::Iswriting() const {
+  return events_ & EPOLLOUT;
+}
+
+bool Channel::IsReading() const {
+  return events_ & (EPOLLIN | EPOLLPRI);
 }
 
 } // namespace ladder

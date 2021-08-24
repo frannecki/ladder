@@ -8,6 +8,8 @@
 
 namespace ladder {
 
+static const int kEpollWaitTimeout = 10000; // 10ms
+
 EventPoller::EventPoller() {
   epfd_ = epoll_create1(0);
   if(epfd_ < 0) {
@@ -26,7 +28,8 @@ void EventPoller::Poll(std::vector<ChannelPtr>& active_channels) {
 
   std::lock_guard<std::mutex> lock(mutex_);
 
-  int ret = epoll_wait(epfd_, evts, max_evt_num, -1);
+  int ret = epoll_wait(epfd_, evts, max_evt_num,
+                       kEpollWaitTimeout / 1000);
   if(ret == -1) {
     perror("[EventPoller] epoll_wait");
     exit(-1);
@@ -49,11 +52,14 @@ void EventPoller::AddChannel(const ChannelPtr& channel) {
   struct epoll_event event;
   bzero(&event, sizeof(event));
   event.data.fd = channel->fd();
-  event.events = channel->GetEvents();
+  // using edge trigger
+  event.events = channel->GetEvents() | EPOLLET;
   {
     std::lock_guard<std::mutex> lock(mutex_);
-    channels_.insert(std::pair<int, ChannelPtr>(channel->fd(), channel));
-    ret = epoll_ctl(epfd_, EPOLL_CTL_ADD, channel->fd(), &event);
+    channels_.insert(std::pair<int, ChannelPtr>(
+      channel->fd(), channel));
+    ret = epoll_ctl(epfd_, EPOLL_CTL_ADD,
+                    channel->fd(), &event);
   }
   if(ret < 0) {
     exit_fatal("[EventPoller] epoll_ctl add");

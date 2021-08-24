@@ -43,6 +43,8 @@ namespace socket {
 
 int socket(bool tcp = true, bool ipv6 = true);
 int accept(int fd, sockaddr_t* addr);
+int shutdown_write(int fd);
+int shutdown_read(int fd);
 
 } // namespace socket
 

@@ -99,6 +99,22 @@ int accept(int fd, sockaddr_t* addr) {
   return fd1;
 }
 
+int shutdown_write(int fd) {
+  int ret = ::shutdown(fd, SHUT_WR);
+  if(ret < 0) {
+    exit_fatal("shutdown SHUT_WR");
+  }
+  return ret;
+}
+
+int shutdown_read(int fd) {
+  int ret = ::shutdown(fd, SHUT_RD);
+  if(ret < 0) {
+    exit_fatal("shutdown SHUT_RD");
+  }
+  return ret;
+}
+
 } // socket
 
 } // namespace ladder

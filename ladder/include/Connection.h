@@ -14,11 +14,14 @@ class EventLoop;
 
 using EventLoopPtr = std::shared_ptr<EventLoop>;
 
-class Connection {
+class Connection : public std::enable_shared_from_this<Connection> {
 
 public:
   Connection(const EventLoopPtr& loop, int fd);
   ~Connection();
+  void OnReadCallback();
+  void OnWriteCallback();
+  void OnCloseCallback();
   void SetReadCallback(const ReadEvtCallback& callback);
   void SetWriteCallback(const WriteEvtCallback& callback);
   Channel* channel() const;

@@ -26,7 +26,13 @@ public:
   void AddToLoop();
   void RemoveFromLoop();
 
+  void ShutDownWrite();
+  void ShutDownRead();
+
 private:
+  bool Iswriting() const;
+  bool IsReading() const;
+
   int fd_;
   EventLoopPtr loop_;
   uint32_t events_;

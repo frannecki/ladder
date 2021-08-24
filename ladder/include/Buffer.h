@@ -7,10 +7,9 @@
 
 #include <vector>
 #include <string>
+#include <mutex>
 
 namespace ladder {
-
-const int kPrependLength = 8;
 
 class Buffer {
 public:
@@ -23,10 +22,17 @@ public:
   uint32_t ReadableBytes() const;
   void Prepend(uint32_t number);
 
+  int ReadBufferFromFd(int fd);
+  void WriteBufferToFd(int fd);
+
 private:
   uint32_t read_index_, write_index_;
   std::vector<char> buffer_;
   void Prepend(const char* data, size_t len);
+  uint32_t Peek(size_t n, std::string& result);
+  void HaveRead(size_t n);
+  
+  std::mutex mutex_;
 };
 
 } // namespace ladder
