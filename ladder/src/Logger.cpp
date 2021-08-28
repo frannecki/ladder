@@ -6,6 +6,7 @@
 #include <string.h>
 
 #include <Logger.h>
+#include <utils.h>
 
 namespace ladder {
 
@@ -44,8 +45,7 @@ Logger::Logger(const char* filename) : running_(true) {
     fd_ = ::open(filename,
                  O_CREAT | O_WRONLY | O_APPEND | O_NONBLOCK);
     if(fd_ < 0) {
-      perror("[Logger] open");
-      exit(-1);
+      EXIT("[Logger] open");
     }
   }
   logging_thread_ = std::thread(&Logger::ThreadFunc, this);

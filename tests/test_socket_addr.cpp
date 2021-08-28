@@ -1,7 +1,7 @@
 #include <string>
 
 #include <gtest/gtest.h>
-#include <utils.h>
+#include <Socket.h>
 
 class SocketAddrTest : public testing::Test {
 public:

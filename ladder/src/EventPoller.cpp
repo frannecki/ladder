@@ -13,8 +13,7 @@ static const int kEpollWaitTimeout = 10000; // 10ms
 EventPoller::EventPoller() {
   epfd_ = epoll_create1(0);
   if(epfd_ < 0) {
-    perror("[EventPoller] epoll_create1");
-    exit(-1);
+    EXIT("[EventPoller] epoll_create1");
   }
 }
 
@@ -23,6 +22,11 @@ EventPoller::~EventPoller() {
 }
 
 void EventPoller::Poll(std::vector<ChannelPtr>& active_channels) {
+
+  if(channels_.empty()) {
+    return;
+  }
+
   int max_evt_num = channels_.size();
   struct epoll_event* evts = new struct epoll_event[max_evt_num];
 
@@ -31,8 +35,7 @@ void EventPoller::Poll(std::vector<ChannelPtr>& active_channels) {
   int ret = epoll_wait(epfd_, evts, max_evt_num,
                        kEpollWaitTimeout / 1000);
   if(ret == -1) {
-    perror("[EventPoller] epoll_wait");
-    exit(-1);
+    EXIT("[EventPoller] epoll_wait");
   }
   for(int i = 0; i < ret; ++i) {
     int fd = evts[i].data.fd;
@@ -62,7 +65,7 @@ void EventPoller::AddChannel(const ChannelPtr& channel) {
                     channel->fd(), &event);
   }
   if(ret < 0) {
-    exit_fatal("[EventPoller] epoll_ctl add");
+    EXIT("[EventPoller] epoll_ctl add");
   }
 }
 
@@ -73,7 +76,7 @@ void EventPoller::RemoveChannel(int fd) {
     iter = channels_.erase(iter);
     int ret = epoll_ctl(epfd_, EPOLL_CTL_DEL, fd, NULL);
     if(ret < 0) {
-      exit_fatal("[EventPoller] epoll_ctl del");
+      EXIT("[EventPoller] epoll_ctl del");
     }
   }
 }

@@ -16,7 +16,7 @@ Timer::Timer(const EventLoopPtr& loop) :
 {
   timer_fd_ = ::timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
   if(timer_fd_ < 0) {
-    exit_fatal("[Timer] timerfd_create");
+    EXIT("[Timer] timerfd_create");
   }
   timer_channel_ = std::make_shared<Channel>(loop, timer_fd_);
   timer_channel_->AddToLoop();
@@ -42,7 +42,7 @@ void Timer::SetInterval(uint64_t interval) {
   value.it_value.tv_nsec = nanoseconds;
   value.it_interval.tv_nsec = nanoseconds;
   if(::timerfd_settime(timer_fd_, 0, &value, NULL) < 0) {
-    exit_fatal("[Timer] timerfd_settime");
+    EXIT("[Timer] timerfd_settime");
   }
 }
 
@@ -53,7 +53,7 @@ uint64_t Timer::GetInterval() const {
 void Timer::OnTimer() {
   uint64_t exp;
   if(::read(timer_fd_, &exp, sizeof(exp)) < 0) {
-    exit_fatal("[Timer] read");
+    EXIT("[Timer] read");
   }
   if(callback_) {
     callback_();

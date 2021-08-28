@@ -6,6 +6,7 @@
 namespace ladder {
 
 class Connection;
+class SocketAddr;
 
 class TcpClient {
 public:

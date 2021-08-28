@@ -3,17 +3,18 @@
 
 #include <memory>
 #include <functional>
+#include <utils.h>
 
 namespace ladder {
 
-using NewConnectionCallback = std::function<void(int)>;
-
 class Channel;
+class SocketAddr;
 using ChannelPtr = std::shared_ptr<Channel>;
+using NewConnectionCallback = std::function<void(int, const SocketAddr&)>;
 
 class Acceptor {
 public:
-  Acceptor(const ChannelPtr&);
+  Acceptor(const ChannelPtr&, bool ipv6);
   void SetNewConnectionCallback(const NewConnectionCallback& callback);
 
 private:
@@ -21,6 +22,7 @@ private:
 
   ChannelPtr channel_;
   NewConnectionCallback new_connection_callback_;
+  bool ipv6_;
 };
 
 } // namespace ladder

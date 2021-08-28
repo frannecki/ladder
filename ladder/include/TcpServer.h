@@ -5,45 +5,39 @@
 #include <map>
 
 #include <utils.h>
-#include <Callbacks.h>
+#include <Aliases.h>
+#include <Socket.h>
 
 namespace ladder {
 
 class Channel;
-class EventLoop;
-class EventLoopThreadPool;
-class Acceptor;
-class Connection;
-class Buffer;
-
-using ChannelPtr = std::shared_ptr<Channel>;
-using EventLoopPtr = std::shared_ptr<EventLoop>;
-using EventLoopThreadPoolPtr = std::shared_ptr<EventLoopThreadPool>;
-using AcceptorPtr = std::unique_ptr<Acceptor>;
-using ConnectionPtr = std::shared_ptr<Connection>;
+class SocketAddr;
 
 class TcpServer {
 public:
-  TcpServer(const SocketAddr& addr, bool ipv6 = true);
+  TcpServer(const SocketAddr& addr);
   ~TcpServer();
   void Start();
   const Channel* channel() const;
   void SetReadCallback(const ReadEvtCallback& callback);
   void SetWriteCallback(const WriteEvtCallback& callback);
+  void SetConnectionCallback(const ConnectionEvtCallback& callback);
   EventLoopPtr loop() const;
 
 private:
-  void OnNewConnectionCallback(int fd);
+  void OnNewConnectionCallback(int fd, const SocketAddr&);
+  void OnCloseConnectionCallback(int fd);
 
   ChannelPtr channel_;
   EventLoopPtr loop_;
-  EventLoopThreadPoolPtr pool_;
+  EventLoopThreadPoolPtr thread_pool_;
   AcceptorPtr acceptor_;
   std::map<int, ConnectionPtr> connections_;
-  bool ipv6_;
+  SocketAddr addr_;
 
   ReadEvtCallback read_callback_;
   WriteEvtCallback write_callback_;
+  ConnectionEvtCallback connection_callback_;
 
 };
 

@@ -4,6 +4,8 @@
 
 #include <TcpServer.h>
 #include <Buffer.h>
+#include <Socket.h>
+#include <Logger.h>
 
 using namespace ladder;
 using namespace std::placeholders;
@@ -14,9 +16,15 @@ void OnMessage(const ConnectionPtr& conn, Buffer* buffer) {
   buffer->Write("Hello~ " + message);
 }
 
+void OnConnection(const ConnectionPtr& conn) {
+  ;
+}
+
 int main(int argc, char** argv) {
-  SocketAddr addr("127.0.0.1", 8070);
-  TcpServer server(addr, false);
+  Logger::create();
+  SocketAddr addr("127.0.0.1", 8070, false);
+  TcpServer server(addr);
+  server.SetConnectionCallback(std::bind(OnConnection, _1));
   server.SetReadCallback(std::bind(OnMessage, _1, _2));
   server.Start();
   return 0;

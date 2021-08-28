@@ -93,7 +93,7 @@ int Buffer::ReadBufferFromFd(int fd) {
 #endif
           break;
         default:
-          exit_fatal("[Buffer] read");
+          EXIT("[Buffer] read");
       }
     }
     else {
@@ -116,7 +116,7 @@ void Buffer::WriteBufferToFd(int fd) {
 #endif
           break;
         default:
-          exit_fatal("[Buffer] write");
+          EXIT("[Buffer] write");
       }
     }
     else {
