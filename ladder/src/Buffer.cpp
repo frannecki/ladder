@@ -13,7 +13,7 @@ Buffer::Buffer() :
   read_index_(kPrependLength),
   write_index_(kPrependLength)
 {
-  ;
+  buffer_.assign(kPrependLength, 0);
 }
 
 std::string Buffer::Read(size_t n) {
@@ -55,7 +55,8 @@ uint32_t Buffer::ReadUInt32() {
 
 void Buffer::Write(const std::string& content) {
   uint32_t len = content.size();
-  std::copy(content.begin(), content.end(), std::back_inserter(buffer_));
+  std::copy(content.begin(), content.end(),
+            std::inserter(buffer_, buffer_.begin() + write_index_));
   {
     std::lock_guard<std::mutex> lock(mutex_);
     write_index_ += len;
@@ -91,6 +92,7 @@ int Buffer::ReadBufferFromFd(int fd) {
 #if EWOULDBLOCK != EAGAIN
         case EWOULDBLOCK:
 #endif
+        case ECONNRESET:
           break;
         default:
           EXIT("[Buffer] read");
@@ -98,6 +100,9 @@ int Buffer::ReadBufferFromFd(int fd) {
     }
     else {
       Write(std::string(buf, buf+ret));
+    }
+    if(ret <= 0) {
+      break;
     }
   }
   return ret;
@@ -121,6 +126,9 @@ void Buffer::WriteBufferToFd(int fd) {
     }
     else {
       HaveRead(static_cast<size_t>(read_len));
+    }
+    if(ret == -1) {
+      break;
     }
   }
 }

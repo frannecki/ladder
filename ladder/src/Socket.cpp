@@ -1,3 +1,5 @@
+#include <mutex>
+
 #include <Socket.h>
 #include <utils.h>
 
@@ -80,13 +82,21 @@ const sockaddr_t* SocketAddr::addr() {
 
 namespace socket {
 
+std::mutex mutex_socket;
+
 int socket(bool tcp, bool ipv6) {
-  int fd = ::socket(ipv6 ? AF_INET6 : AF_INET,
-                    tcp ? SOCK_STREAM : SOCK_DGRAM, 0);
+  int fd;
+  {
+    std::lock_guard<std::mutex> lock(mutex_socket);
+    fd = ::socket(ipv6 ? AF_INET6 : AF_INET,
+                      tcp ? SOCK_STREAM : SOCK_DGRAM, 0);
+  }
   if(fd < 0) {
     EXIT("socket");
   }
-  fcntl(fd, F_SETFL, fcntl(fd, F_GETFL, 0) & O_NONBLOCK);
+  if(fcntl(fd, F_SETFL, fcntl(fd, F_GETFL, 0) & O_NONBLOCK) < 0) {
+    EXIT("fcntl");
+  }
   int enable = kEnableOption;
   if(setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable))) {
     EXIT("setsockopt");
@@ -104,17 +114,30 @@ int listen(int fd) {
 
 int accept(int fd, sockaddr_t* addr) {
   socklen_t len = sizeof(sockaddr_t);
-  int fd1 = ::accept(fd, (struct sockaddr*)addr, &len) < 0;
-  if(fd1 < 0) {
+  int accepted;
+  {
+    std::lock_guard<std::mutex> lock(mutex_socket);
+    accepted = ::accept(fd, (struct sockaddr*)addr, &len);
+  }
+  if(accepted < 0) {
     EXIT("accept");
   }
-  return fd1;
+  if(fcntl(accepted, F_SETFL, fcntl(accepted, F_GETFL, 0) | O_NONBLOCK) < 0) {
+    EXIT("fcntl");
+  }
+  return accepted;
 }
 
 int shutdown_write(int fd) {
   int ret = ::shutdown(fd, SHUT_WR);
   if(ret < 0) {
-    EXIT("shutdown SHUT_WR");
+    switch(errno) {
+      case ENOTCONN:
+        break;
+      default:
+        // EXIT("shutdown SHUT_WR");
+        break;
+    }
   }
   return ret;
 }

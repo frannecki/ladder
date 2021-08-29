@@ -8,6 +8,7 @@
 const int kBufferLen = 1024;
 
 int main(int argc, char** argv) {
+  for(int idx = 0; idx < 100; ++idx) {
   char buffer[kBufferLen];
   int sockfd;
   struct sockaddr_in addr;
@@ -18,6 +19,7 @@ int main(int argc, char** argv) {
     perror("socket");
     return -1;
   }
+  fprintf(stdout, "Created socket: %d\n", sockfd);
   if(inet_pton(AF_INET, "127.0.0.1", &addr.sin_addr) < 0) {
     perror("inet_pton");
     return -1;
@@ -29,6 +31,7 @@ int main(int argc, char** argv) {
     perror("connect");
     return -1;
   }
+  fprintf(stdout, "Connected to server\n");
 
   while(count < 5) {
     ret = read(sockfd, buffer, sizeof(buffer));
@@ -47,12 +50,17 @@ int main(int argc, char** argv) {
         perror("write");
         break;
       }
+      else {
+        fprintf(stdout, "%d bytes written.\n", ret);
+      }
     }
+    count += 1;
   }
 
   if(close(sockfd) < 0) {
     perror("close");
     return -1;
+  }
   }
 
   return 0;

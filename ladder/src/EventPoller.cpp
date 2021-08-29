@@ -30,13 +30,19 @@ void EventPoller::Poll(std::vector<ChannelPtr>& active_channels) {
   int max_evt_num = channels_.size();
   struct epoll_event* evts = new struct epoll_event[max_evt_num];
 
-  std::lock_guard<std::mutex> lock(mutex_);
 
   int ret = epoll_wait(epfd_, evts, max_evt_num,
                        kEpollWaitTimeout / 1000);
   if(ret == -1) {
-    EXIT("[EventPoller] epoll_wait");
+    switch(errno) {
+      case EINTR:
+        return;
+      default:
+        EXIT("[EventPoller] epoll_wait");
+    }
   }
+
+  std::lock_guard<std::mutex> lock(mutex_);
   for(int i = 0; i < ret; ++i) {
     int fd = evts[i].data.fd;
     uint32_t evt = evts[i].events;
@@ -56,7 +62,7 @@ void EventPoller::AddChannel(const ChannelPtr& channel) {
   bzero(&event, sizeof(event));
   event.data.fd = channel->fd();
   // using edge trigger
-  event.events = channel->GetEvents() | EPOLLET;
+  event.events = channel->GetEvents();
   {
     std::lock_guard<std::mutex> lock(mutex_);
     channels_.insert(std::pair<int, ChannelPtr>(
@@ -67,6 +73,7 @@ void EventPoller::AddChannel(const ChannelPtr& channel) {
   if(ret < 0) {
     EXIT("[EventPoller] epoll_ctl add");
   }
+  LOG_DEBUG("Polling on " + std::to_string(channels_.size()) + " sockets now.");
 }
 
 void EventPoller::RemoveChannel(int fd) {

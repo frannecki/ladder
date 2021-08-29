@@ -21,6 +21,7 @@ public:
   void SetWriteCallback(const std::function<void()>& callback);
   void SetCloseCallback(const std::function<void()>& callback);
   void SetEvents(uint32_t events);
+  void SetEpollEdgeTriggered(bool edge_triggered=true);
   uint32_t GetEvents() const;
   void HandleEvents();
   void AddToLoop();

@@ -15,7 +15,7 @@ using EventLoopPtr = std::shared_ptr<EventLoop>;
 
 class EventLoopThreadPool {
 public:
-  EventLoopThreadPool(size_t capacity = 10);
+  EventLoopThreadPool(size_t capacity);
   ~EventLoopThreadPool();
   EventLoopPtr GetNextLoop();
 

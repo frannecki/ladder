@@ -10,10 +10,11 @@ namespace ladder {
 EventLoopThreadPool::EventLoopThreadPool(size_t capacity) : 
   capacity_(std::max(capacity, kMinEventLoopThreadNum)),
   pool_(new ThreadPool(std::max(capacity, kMinEventLoopThreadNum))),
-  loops_(std::vector<EventLoopPtr>(std::max(capacity, kMinEventLoopThreadNum),
-          std::make_shared<EventLoop>())),
   cur_idx_(0)
 {
+  for(size_t i = 0; i < capacity; ++i) {
+    loops_.emplace_back(std::make_shared<EventLoop>());
+  }
   Init();
 }
 
@@ -32,7 +33,7 @@ EventLoopPtr EventLoopThreadPool::GetNextLoop() {
   if(cur_idx_ == capacity_) {
     cur_idx_ = 0;
   }
-  return loops_[(cur_idx_++)];
+  return loops_[cur_idx_++];
 }
 
 } // namespace ladder

@@ -10,13 +10,17 @@
 namespace ladder {
 
 Connection::Connection(const EventLoopPtr& loop, int fd) : 
-  channel_(new Channel(loop, fd))
+  channel_(new Channel(loop, fd)),
+  read_buffer_(new Buffer),
+  write_buffer_(new Buffer)
 {
-  channel_->AddToLoop();
+
 }
 
 void Connection::Init() {
   // do not call shared_from_this() in constructor
+  channel_->SetEpollEdgeTriggered();
+  channel_->AddToLoop();
   channel_->SetReadCallback(std::bind(&Connection::OnReadCallback, this));
   channel_->SetWriteCallback(std::bind(&Connection::OnWriteCallback, this));
   channel_->SetCloseCallback(std::bind(&Connection::OnCloseCallback, this));
@@ -30,17 +34,29 @@ Connection::~Connection() {
 
 void Connection::Send(const std::string& buf) {
   write_buffer_->Write(buf);
+  write_buffer_->WriteBufferToFd(channel_->fd());
 }
 
 void Connection::OnReadCallback() {
-  if(read_buffer_->ReadBufferFromFd(channel_->fd()) == 0) {
+  int ret = read_buffer_->ReadBufferFromFd(channel_->fd());
+  if(ret == 0) {
     // FIN accepted
     // channel_->ShutDownWrite();
+    OnCloseCallback();
+    return;
   }
-  else {
-    if(read_callback_) {
-      read_callback_(shared_from_this(), read_buffer_);
+  else if(ret == -1) {
+    switch(errno) {
+      case ECONNRESET:
+        // OnCloseCallback();
+        return;
+      default:
+        break;
     }
+  }
+
+  if(read_callback_) {
+    read_callback_(shared_from_this(), read_buffer_);
   }
 }
 
@@ -54,7 +70,9 @@ void Connection::OnWriteCallback() {
 void Connection::OnCloseCallback() {
   channel_->ShutDownWrite();
   channel_->RemoveFromLoop();
-  close_callback_();
+  if(close_callback_) {
+    close_callback_();
+  }
 }
 
 void Connection::SetReadCallback(const ReadEvtCallback& callback) {
@@ -71,7 +89,7 @@ void Connection::SetCloseCallback(const ConnectCloseCallback& callback) {
   close_callback_ = callback;
 }
 
-Channel* Connection::channel() const {
+ChannelPtr Connection::channel() const {
   return channel_;
 }
 

@@ -41,6 +41,16 @@ uint32_t Channel::GetEvents() const {
   return events_;
 }
 
+void Channel::SetEpollEdgeTriggered(bool edge_triggered) {
+  if(edge_triggered) {
+    events_ |= EPOLLET;
+  }
+  else {
+    events_ &= (~EPOLLET);
+  }
+}
+
+
 void Channel::HandleEvents() {
   if(events_ & (EPOLLIN | EPOLLPRI)) {
     if(read_callback_) {
@@ -67,6 +77,7 @@ void Channel::HandleEvents() {
     }
     events_ &= (~EPOLLHUP);
   }
+  SetEvents(0);
 }
 
 int Channel::fd() const {

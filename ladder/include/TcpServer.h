@@ -15,7 +15,7 @@ class SocketAddr;
 
 class TcpServer {
 public:
-  TcpServer(const SocketAddr& addr);
+  TcpServer(const SocketAddr& addr, size_t thread_num=10);
   ~TcpServer();
   void Start();
   const Channel* channel() const;
@@ -34,6 +34,7 @@ private:
   AcceptorPtr acceptor_;
   std::map<int, ConnectionPtr> connections_;
   SocketAddr addr_;
+  size_t thread_num_;
 
   ReadEvtCallback read_callback_;
   WriteEvtCallback write_callback_;

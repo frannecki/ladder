@@ -22,11 +22,12 @@ public:
   void SetReadCallback(const ReadEvtCallback& callback);
   void SetWriteCallback(const WriteEvtCallback& callback);
   void SetCloseCallback(const ConnectCloseCallback& callback);
-  Channel* channel() const;
+  ChannelPtr channel() const;
 
 private:
   std::mutex mutex_;
-  Channel* channel_;
+  // cannot use raw pointer here, because Channel would call shared_from_this()
+  ChannelPtr channel_;
   ReadEvtCallback read_callback_;
   WriteEvtCallback write_callback_;
   ConnectCloseCallback close_callback_;
