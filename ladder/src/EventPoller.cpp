@@ -35,8 +35,8 @@ void EventPoller::Poll(std::vector<ChannelPtr>& active_channels) {
                        kEpollWaitTimeout / 1000);
   if(ret == -1) {
     switch(errno) {
-      case EINTR:
-        return;
+      // case EINTR:
+      //   return;
       default:
         EXIT("[EventPoller] epoll_wait");
     }

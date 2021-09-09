@@ -67,10 +67,13 @@ void TcpServer::OnNewConnectionCallback(int fd, const SocketAddr& addr) {
     this,
     fd));
   connection->Init();
-  connections_.insert(std::pair<int, ConnectionPtr>(fd, connection));
-  LOG_INFO("New connection from client " + addr.ip() + ":" \
-           + std::to_string(addr.port()) + " fd = " + std::to_string(fd) \
-           + " Current client number: " + std::to_string(connections_.size()));
+  {
+    std::lock_guard<std::mutex> lock(mutex_connections_);
+    connections_.insert(std::pair<int, ConnectionPtr>(fd, connection));
+    LOG_INFO("New connection from client " + addr.ip() + ":" \
+             + std::to_string(addr.port()) + " fd = " + std::to_string(fd) \
+             + " Current client number: " + std::to_string(connections_.size()));
+  }
   // action on connection
   if(connection_callback_) {
     connection_callback_(connection);
@@ -79,9 +82,12 @@ void TcpServer::OnNewConnectionCallback(int fd, const SocketAddr& addr) {
 
 void TcpServer::OnCloseConnectionCallback(int fd) {
   LOG_INFO("Client end has closed write: " + std::to_string(fd));
-  auto iter = connections_.find(fd);
-  if(iter != connections_.end()) {
-    connections_.erase(iter);
+  {
+    std::lock_guard<std::mutex> lock(mutex_connections_);
+    auto iter = connections_.find(fd);
+    if(iter != connections_.end()) {
+      connections_.erase(iter);
+    }
   }
 }
 

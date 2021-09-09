@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <map>
+#include <mutex>
 
 #include <utils.h>
 #include <Aliases.h>
@@ -35,6 +36,7 @@ private:
   std::map<int, ConnectionPtr> connections_;
   SocketAddr addr_;
   size_t thread_num_;
+  std::mutex mutex_connections_;
 
   ReadEvtCallback read_callback_;
   WriteEvtCallback write_callback_;
