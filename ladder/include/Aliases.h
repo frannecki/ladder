@@ -22,6 +22,7 @@ using ConnectionPtr = std::shared_ptr<Connection>;
 using ReadEvtCallback = std::function<void(const ConnectionPtr&, Buffer*)>;
 using WriteEvtCallback = std::function<void(Buffer*)>;
 using ConnectCloseCallback = std::function<void()>;
+using ConnectionCloseCallbackPtr = std::unique_ptr<ConnectCloseCallback>;
 using ConnectionEvtCallback = std::function<void(const ConnectionPtr&)>;
 
 } // namespace ladder

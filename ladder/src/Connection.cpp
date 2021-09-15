@@ -71,7 +71,7 @@ void Connection::OnCloseCallback() {
   channel_->ShutDownWrite();
   channel_->RemoveFromLoop();
   if(close_callback_) {
-    close_callback_();
+    (*close_callback_)();
   }
 }
 
@@ -85,8 +85,8 @@ void Connection::SetWriteCallback(const WriteEvtCallback& callback) {
   channel_->SetWriteCallback(std::bind(write_callback_, write_buffer_));
 }
 
-void Connection::SetCloseCallback(const ConnectCloseCallback& callback) {
-  close_callback_ = callback;
+void Connection::SetCloseCallback(ConnectionCloseCallbackPtr&& callback) {
+  close_callback_ = std::move(callback);
 }
 
 ChannelPtr Connection::channel() const {

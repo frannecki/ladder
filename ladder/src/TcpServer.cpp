@@ -9,11 +9,14 @@
 #include <Acceptor.h>
 #include <Connection.h>
 
+#include <Aliases.h>
 #include <Logger.h>
 
 using namespace std::placeholders;
 
 namespace ladder {
+
+using TcpConnectionCloseCallback = std::unique_ptr<std::function<void(TcpServer*, int)>>;
 
 TcpServer::TcpServer(const SocketAddr& addr, size_t thread_num) : 
   addr_(addr),
@@ -62,10 +65,17 @@ void TcpServer::OnNewConnectionCallback(int fd, const SocketAddr& addr) {
   ConnectionPtr connection = std::make_shared<Connection>(loop, fd);
   connection->SetReadCallback(read_callback_);
   connection->SetWriteCallback(write_callback_);
-  connection->SetCloseCallback(std::bind(
-    &TcpServer::OnCloseConnectionCallback,
-    this,
-    fd));
+  connection->SetCloseCallback(ConnectionCloseCallbackPtr(
+    new std::function<void()>(std::bind(&TcpServer::OnCloseConnectionCallback,
+                                        this, fd))));
+  
+  // std::function constructed from std::bind
+  // would get destroyed once out of scope
+  
+  // connection->SetCloseCallback(std::bind(
+  //   &TcpServer::OnCloseConnectionCallback,
+  //   this,
+  //   fd));
   connection->Init();
   {
     std::lock_guard<std::mutex> lock(mutex_connections_);

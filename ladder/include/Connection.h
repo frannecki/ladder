@@ -21,7 +21,7 @@ public:
   void OnCloseCallback();
   void SetReadCallback(const ReadEvtCallback& callback);
   void SetWriteCallback(const WriteEvtCallback& callback);
-  void SetCloseCallback(const ConnectCloseCallback& callback);
+  void SetCloseCallback(ConnectionCloseCallbackPtr&& callback);
   ChannelPtr channel() const;
 
 private:
@@ -30,7 +30,7 @@ private:
   ChannelPtr channel_;
   ReadEvtCallback read_callback_;
   WriteEvtCallback write_callback_;
-  ConnectCloseCallback close_callback_;
+  ConnectionCloseCallbackPtr close_callback_;
   Buffer* read_buffer_;
   Buffer* write_buffer_;
 };

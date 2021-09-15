@@ -28,7 +28,8 @@ void OnConnection(const ConnectionPtr& conn) {
 int main(int argc, char** argv) {
   Logger::create();
   SocketAddr addr("127.0.0.1", 8070, false);
-  TcpServer server(addr, 100);
+  // TcpServer server(addr, 100);
+  TcpServer server(addr, 10);
   server.SetConnectionCallback(std::bind(OnConnection, _1));
   server.SetReadCallback(std::bind(OnMessage, _1, _2));
   server.Start();
