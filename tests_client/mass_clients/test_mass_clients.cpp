@@ -4,13 +4,15 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <fcntl.h>
 
 #include <thread>
 #include <mutex>
 #include <vector>
 
 const int kBufferLen = 1024;
-const int kClientNumber = 100;
+// const int kClientNumber = 120;
+const int kClientNumber = 20;
 static std::mutex mutex;
 static int cnt = 0;
 
@@ -26,14 +28,15 @@ public:
     Stop();
   }
 
+private:
+  
   void Stop() {
     running_ = false;
     thread_.join();
   }
-
-private:
+  
   int ThreadFunc() {
-    char buffer[kBufferLen];
+    char buffer[kBufferLen] = "areyouok";
     int sockfd;
     struct sockaddr_in addr;
     socklen_t addr_len;
@@ -48,6 +51,7 @@ private:
       perror("socket");
       return -1;
     }
+    
     if(inet_pton(AF_INET, "127.0.0.1", &addr.sin_addr) < 0) {
       perror("inet_pton");
       return -1;
@@ -66,6 +70,7 @@ private:
     while(count < 5) {
       ret = read(sockfd, buffer, sizeof(buffer));
       if(ret < 0) {
+        if(errno != EWOULDBLOCK && errno != EAGAIN)
         perror("read");
         break;
       }
@@ -84,10 +89,13 @@ private:
           // fprintf(stdout, "%d bytes written.\n", ret);
         }
       }
+
       count += 1;
     }
+    
+    while(running_);
 
-    // while(running_);
+    fprintf(stdout, "Stopping.\n");
 
     if(close(sockfd) < 0) {
       perror("close");
@@ -110,7 +118,6 @@ int main(int argc, char** argv) {
     clients[i] = new EchoClient;
   }
   for(int i = 0; i < kClientNumber; ++i) {
-    clients[i]->Stop();
     delete clients[i];
     clients[i] = nullptr;
   }

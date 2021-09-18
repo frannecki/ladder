@@ -5,6 +5,7 @@
 #include <TcpServer.h>
 #include <Channel.h>
 #include <EventLoop.h>
+#include <ThreadPool.h>
 #include <EventLoopThreadPool.h>
 #include <Acceptor.h>
 #include <Connection.h>
@@ -31,12 +32,13 @@ TcpServer::~TcpServer() {
 
 void TcpServer::Start() {
   loop_ = std::make_shared<EventLoop>();
+  working_threads_.reset(new ThreadPool);
   int fd = socket::socket(true, addr_.ipv6());
   addr_.Bind(fd);
   socket::listen(fd);
   channel_.reset(new Channel(loop_, fd));
   channel_->AddToLoop();
-  acceptor_.reset(new Acceptor(channel_, addr_.ipv6()));
+  acceptor_.reset(new Acceptor(channel_, working_threads_, addr_.ipv6()));
   acceptor_->SetNewConnectionCallback(
     std::bind(&TcpServer::OnNewConnectionCallback, 
               this,
@@ -44,7 +46,7 @@ void TcpServer::Start() {
               std::placeholders::_2));
   LOG_INFO("Listening on fd = " + std::to_string(fd) + " " + \
            addr_.ip() + ":" + std::to_string(addr_.port()));
-  thread_pool_.reset(new EventLoopThreadPool(thread_num_));
+  loop_threads_.reset(new EventLoopThreadPool(thread_num_));
   loop_->StartLoop();
 }
 
@@ -61,21 +63,14 @@ void TcpServer::SetConnectionCallback(const ConnectionEvtCallback& callback) {
 }
 
 void TcpServer::OnNewConnectionCallback(int fd, const SocketAddr& addr) {
-  EventLoopPtr loop = thread_pool_->GetNextLoop();
+  EventLoopPtr loop = loop_threads_->GetNextLoop();
   ConnectionPtr connection = std::make_shared<Connection>(loop, fd);
   connection->SetReadCallback(read_callback_);
   connection->SetWriteCallback(write_callback_);
-  connection->SetCloseCallback(ConnectionCloseCallbackPtr(
-    new std::function<void()>(std::bind(&TcpServer::OnCloseConnectionCallback,
-                                        this, fd))));
-  
-  // std::function constructed from std::bind
-  // would get destroyed once out of scope
-  
-  // connection->SetCloseCallback(std::bind(
-  //   &TcpServer::OnCloseConnectionCallback,
-  //   this,
-  //   fd));
+  connection->SetCloseCallback(std::bind(
+    &TcpServer::OnCloseConnectionCallback,
+    this,
+    fd));
   connection->Init();
   {
     std::lock_guard<std::mutex> lock(mutex_connections_);
@@ -103,6 +98,10 @@ void TcpServer::OnCloseConnectionCallback(int fd) {
 
 EventLoopPtr TcpServer::loop() const {
   return loop_;
+}
+
+EventLoopThreadPoolPtr TcpServer::loop_threads() const {
+  return loop_threads_;
 }
 
 } // namespace ladder

@@ -41,8 +41,10 @@ void Connection::OnReadCallback() {
   int ret = read_buffer_->ReadBufferFromFd(channel_->fd());
   if(ret == 0) {
     // FIN accepted
-    // channel_->ShutDownWrite();
-    OnCloseCallback();
+    channel_->ShutDownWrite();
+    // IMPORTANT: OnCloseCallback can only be called
+    // once since the current connection would be destructed after the call
+    // OnCloseCallback();
     return;
   }
   else if(ret == -1) {
@@ -71,7 +73,7 @@ void Connection::OnCloseCallback() {
   channel_->ShutDownWrite();
   channel_->RemoveFromLoop();
   if(close_callback_) {
-    (*close_callback_)();
+    close_callback_();
   }
 }
 
@@ -85,8 +87,8 @@ void Connection::SetWriteCallback(const WriteEvtCallback& callback) {
   channel_->SetWriteCallback(std::bind(write_callback_, write_buffer_));
 }
 
-void Connection::SetCloseCallback(ConnectionCloseCallbackPtr&& callback) {
-  close_callback_ = std::move(callback);
+void Connection::SetCloseCallback(const ConnectCloseCallback& callback) {
+  close_callback_ = callback;
 }
 
 ChannelPtr Connection::channel() const {

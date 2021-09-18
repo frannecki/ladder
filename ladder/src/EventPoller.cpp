@@ -8,8 +8,6 @@
 
 namespace ladder {
 
-static const int kEpollWaitTimeout = 10000; // 10ms
-
 EventPoller::EventPoller() {
   epfd_ = epoll_create1(0);
   if(epfd_ < 0) {
@@ -30,9 +28,7 @@ void EventPoller::Poll(std::vector<ChannelPtr>& active_channels) {
   int max_evt_num = channels_.size();
   struct epoll_event* evts = new struct epoll_event[max_evt_num];
 
-
-  int ret = epoll_wait(epfd_, evts, max_evt_num,
-                       kEpollWaitTimeout / 1000);
+  int ret = epoll_wait(epfd_, evts, max_evt_num, -1);
   if(ret == -1) {
     switch(errno) {
       // case EINTR:
@@ -42,15 +38,22 @@ void EventPoller::Poll(std::vector<ChannelPtr>& active_channels) {
     }
   }
 
-  std::lock_guard<std::mutex> lock(mutex_);
   for(int i = 0; i < ret; ++i) {
     int fd = evts[i].data.fd;
     uint32_t evt = evts[i].events;
-    auto iter = channels_.find(fd);
-    if(iter != channels_.end()) {
-      iter->second->SetEvents(evt);
-      active_channels.push_back(iter->second);
+    
+    ChannelPtr channel;
+    {
+      std::lock_guard<std::mutex> lock(mutex_);
+      auto iter = channels_.find(fd);
+      if(iter == channels_.end() || iter->second == nullptr) {
+        continue;
+      }
+      channel = iter->second;
     }
+    channel->SetEvents(evt);
+    
+    active_channels.emplace_back(std::move(channel));
   }
 
   delete []evts;
@@ -61,7 +64,6 @@ void EventPoller::AddChannel(const ChannelPtr& channel) {
   struct epoll_event event;
   bzero(&event, sizeof(event));
   event.data.fd = channel->fd();
-  // using edge trigger
   event.events = channel->GetEvents();
   {
     std::lock_guard<std::mutex> lock(mutex_);
@@ -73,7 +75,6 @@ void EventPoller::AddChannel(const ChannelPtr& channel) {
   if(ret < 0) {
     EXIT("[EventPoller] epoll_ctl add");
   }
-  LOG_DEBUG("Polling on " + std::to_string(channels_.size()) + " sockets now.");
 }
 
 void EventPoller::RemoveChannel(int fd) {

@@ -24,6 +24,7 @@ public:
   void SetWriteCallback(const WriteEvtCallback& callback);
   void SetConnectionCallback(const ConnectionEvtCallback& callback);
   EventLoopPtr loop() const;
+  EventLoopThreadPoolPtr loop_threads() const;
 
 private:
   void OnNewConnectionCallback(int fd, const SocketAddr&);
@@ -31,7 +32,8 @@ private:
 
   ChannelPtr channel_;
   EventLoopPtr loop_;
-  EventLoopThreadPoolPtr thread_pool_;
+  EventLoopThreadPoolPtr loop_threads_;
+  ThreadPoolPtr working_threads_;
   AcceptorPtr acceptor_;
   std::map<int, ConnectionPtr> connections_;
   SocketAddr addr_;

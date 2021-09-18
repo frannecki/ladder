@@ -6,12 +6,13 @@
 #include <queue>
 #include <thread>
 
+#include <iostream>
+
 namespace ladder {
 
 #define LOG_FATAL(message) LOG_SEVERITY(message, FATAL)
 #define LOG_WARNING(message) LOG_SEVERITY(message, WARNING)
 #ifdef DEBUG
-  // #define LOG_DEBUG(message) fprintf(stderr, "[%s:%u %s] ", __FILE__, __LINE__, __FUNCTION__); LOG_SEVERITY(message, DEBUG)
   #define LOG_DEBUG(message) LOG_SEVERITY(message, DEBUG)
 #else
   #define LOG_DEBUG(message)

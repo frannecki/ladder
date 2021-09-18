@@ -12,7 +12,7 @@ EventLoopThreadPool::EventLoopThreadPool(size_t capacity) :
   pool_(new ThreadPool(std::max(capacity, kMinEventLoopThreadNum))),
   cur_idx_(0)
 {
-  for(size_t i = 0; i < capacity; ++i) {
+  for(size_t i = 0; i < capacity_; ++i) {
     loops_.emplace_back(std::make_shared<EventLoop>());
   }
   Init();

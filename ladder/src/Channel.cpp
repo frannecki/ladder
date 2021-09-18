@@ -56,26 +56,21 @@ void Channel::HandleEvents() {
     if(read_callback_) {
       read_callback_();
     }
-    events_ &= (~(EPOLLIN | EPOLLPRI));
   }
   if(events_ & EPOLLRDHUP) {
     if(read_callback_) {
       read_callback_();
     }
-    events_ &= (~EPOLLRDHUP);
   }
   if(events_ & EPOLLOUT) {
     if(write_callback_) {
       write_callback_();
     }
-    events_ &= (~EPOLLOUT);
   }
-  if((events_ & EPOLLHUP) && !(events_ & EPOLLIN)) {
+  if((events_ & EPOLLHUP)) {
     if(close_callback_) {
       close_callback_();
-      LOG_DEBUG("close_callback_()");
     }
-    events_ &= (~EPOLLHUP);
   }
   SetEvents(0);
 }
