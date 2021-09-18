@@ -19,9 +19,12 @@ namespace ladder {
 
 using TcpConnectionCloseCallback = std::unique_ptr<std::function<void(TcpServer*, int)>>;
 
-TcpServer::TcpServer(const SocketAddr& addr, size_t thread_num) : 
+TcpServer::TcpServer(const SocketAddr& addr,
+                     size_t loop_thread_num,
+                     size_t working_thread_num) : 
   addr_(addr),
-  thread_num_(thread_num)
+  loop_thread_num_(loop_thread_num),
+  working_thread_num_(working_thread_num)
 {
 
 }
@@ -32,7 +35,7 @@ TcpServer::~TcpServer() {
 
 void TcpServer::Start() {
   loop_ = std::make_shared<EventLoop>();
-  working_threads_.reset(new ThreadPool);
+  working_threads_ = std::make_shared<ThreadPool>(working_thread_num_);
   int fd = socket::socket(true, addr_.ipv6());
   addr_.Bind(fd);
   socket::listen(fd);
@@ -46,7 +49,7 @@ void TcpServer::Start() {
               std::placeholders::_2));
   LOG_INFO("Listening on fd = " + std::to_string(fd) + " " + \
            addr_.ip() + ":" + std::to_string(addr_.port()));
-  loop_threads_.reset(new EventLoopThreadPool(thread_num_));
+  loop_threads_.reset(new EventLoopThreadPool(loop_thread_num_));
   loop_->StartLoop();
 }
 

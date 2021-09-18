@@ -17,5 +17,5 @@ $(TGT): $(OBJ)
 	$(CC) $(CFLAGS) $(INCLUDE) $(LIB) -c -o $@ $^
 
 clean:
-	rm -r $(TGT_PATH)
 	rm $(OBJ)
+	rm -r $(TGT_PATH)

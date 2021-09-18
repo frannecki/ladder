@@ -1,4 +1,4 @@
-# Ladder: A Reactor based Network Server
+# Ladder: A Light-weight Reactor Based Web Server
 
 ## Prerequisites
 * Protobuf 3.x

@@ -5,13 +5,14 @@
 
 namespace ladder {
 
-const uint32_t kPrependLength = 8;
+const uint32_t kPrependLength = 8;  // 8-byte initial offset
 const uint32_t kReadBufferSize = 1024;
 const uint32_t kWriteBufferSize = 1024;
 
 Buffer::Buffer() : 
   read_index_(kPrependLength),
-  write_index_(kPrependLength)
+  write_index_(kPrependLength),
+  prepended_(0)
 {
   buffer_.assign(kPrependLength, 0);
 }
@@ -42,6 +43,13 @@ std::string Buffer::ReadAll() {
   return Read(write_index_ - read_index_);
 }
 
+std::string Buffer::RetrieveAll() {
+  std::string result;
+  result.assign(buffer_.begin() + read_index_ - prepended_,
+                buffer_.begin() + write_index_);
+  return result;
+}
+
 uint32_t Buffer::ReadableBytes() const {
   return write_index_ - read_index_;
 }
@@ -49,6 +57,14 @@ uint32_t Buffer::ReadableBytes() const {
 uint32_t Buffer::ReadUInt32() {
   uint32_t result;
   std::string buf = Read(sizeof(result));
+  memcpy(&result, buf.c_str(), sizeof(result));
+  return result;
+}
+
+uint32_t Buffer::PeekUInt32() {
+  uint32_t result;
+  std::string buf;
+  Peek(sizeof(result), buf);
   memcpy(&result, buf.c_str(), sizeof(result));
   return result;
 }
@@ -79,6 +95,7 @@ void Buffer::Prepend(uint32_t number) {
 void Buffer::Prepend(const char* data, size_t len) {
   assert(len <= kPrependLength);
   memcpy(buffer_.data() + read_index_ - len, data, len);
+  prepended_ = len;
 }
 
 int Buffer::ReadBufferFromFd(int fd) {

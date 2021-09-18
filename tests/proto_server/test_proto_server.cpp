@@ -5,6 +5,7 @@
 #include <Buffer.h>
 #include <Socket.h>
 #include <Connection.h>
+#include <ProtobufCodec.h>
 #include <Logger.h>
 
 using namespace ladder;
@@ -27,6 +28,7 @@ int main(int argc, char** argv) {
   Logger::create();
   SocketAddr addr("127.0.0.1", 8070, false);
   TcpServer server(addr, 1);
+  
   server.SetConnectionCallback(std::bind(OnConnection, _1));
   server.SetReadCallback(std::bind(OnMessage, _1, _2));
   server.Start();

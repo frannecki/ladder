@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package ladder;
+
+message TestMessage1
+{
+    string key = 1;
+    string value = 2;
+    bool success = 3;
+    uint32 id = 4;
+    bool validate = 5;
+}

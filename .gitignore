@@ -5,6 +5,8 @@
 build/
 *.o
 *.out
+*.pb.h
+*.pb.cc
 
 # debugging
 core*
