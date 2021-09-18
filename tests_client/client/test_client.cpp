@@ -8,7 +8,6 @@
 const int kBufferLen = 1024;
 
 int main(int argc, char** argv) {
-  for(int idx = 0; idx < 100; ++idx) {
   char buffer[kBufferLen];
   int sockfd;
   struct sockaddr_in addr;
@@ -51,16 +50,35 @@ int main(int argc, char** argv) {
         break;
       }
       else {
+        buffer[ret] = 0;
         fprintf(stdout, "%d bytes written.\n", ret);
       }
     }
     count += 1;
   }
 
+  if(shutdown(sockfd, SHUT_WR) < 0) {
+    perror("shutdown write");
+    return -1;
+  }
+
+  while((ret = read(sockfd, buffer, sizeof(buffer))) != 0) {
+    if(ret < 0) {
+      perror("read");
+    }
+    else {
+      buffer[ret] = 0;
+      fprintf(stdout, "Received buffer of %d bytes from server: %s\n",
+              ret, buffer);
+    }
+  }
+
+  fprintf(stdout, "connection closed");
+
+
   if(close(sockfd) < 0) {
     perror("close");
     return -1;
-  }
   }
 
   return 0;

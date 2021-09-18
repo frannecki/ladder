@@ -21,14 +21,17 @@ public:
 template <typename MessageType>
 class CallbackT : public Callback {
 
-using ProtobufMessageCallbackT = std::function<void(const ConnectionPtr&,
-                                                    const std::shared_ptr<MessageType>&)>;
 public:
+  using ProtobufMessageCallbackT = std::function<void(const ConnectionPtr&,
+                                                    MessageType*)>;
+
+  CallbackT(const ProtobufMessageCallbackT& callback) : callback_(callback) {};
+
   void OnMessage(const ConnectionPtr& conn,
                  google::protobuf::Message* message) override
   {
-    if(callback_) {
-      callback_(conn, std::static_pointer_cast<MessageType>(message));
+    if(message && callback_) {
+      callback_(conn, static_cast<MessageType*>(message));
     }
   }
 
@@ -37,10 +40,13 @@ public:
 };
 
 class ProtobufCodec {
+
+using CallbackPtr = std::shared_ptr<Callback>;
+
 public:
   ProtobufCodec();
 
-  void Send(const ConnectionPtr& conn, google::protobuf::Message* message);
+  void Send(const ConnectionPtr& conn, google::protobuf::Message* message) const;
 
   void OnMessage(const ConnectionPtr& conn, Buffer* buffer);
 
@@ -50,16 +56,16 @@ public:
   template <typename MessageType>
   void RegisterMessageCallback(const typename CallbackT<MessageType>::ProtobufMessageCallbackT& callback)
   {
-    callbacks_[MessageType::descriptor()] = std::make_shared<CallbackT<MessageType>>();
+    callbacks_[MessageType::descriptor()] = std::make_shared<CallbackT<MessageType>>(callback);
   }
 
   static uint32_t kMinMessageLength;
 
 private:
-  void ComposeMessage(google::protobuf::Message* message, std::string& buf);
+  void ComposeMessage(google::protobuf::Message* message, std::string& buf) const;
   int ParseMessage(google::protobuf::Message*& message, Buffer* buffer);
   
-  std::map<google::protobuf::Descriptor*, std::shared_ptr<Callback>> callbacks_;
+  std::map<const google::protobuf::Descriptor*, CallbackPtr> callbacks_;
   std::function<void(const ConnectionPtr&, google::protobuf::Message*)> default_callback_;
 };
 

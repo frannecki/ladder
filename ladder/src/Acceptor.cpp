@@ -8,14 +8,12 @@
 #include <Socket.h>
 #include <ThreadPool.h>
 
-#include <Logger.h>
-
 namespace ladder {
 
-Acceptor::Acceptor(const ChannelPtr& channel, const ThreadPoolPtr& working_threads, bool ipv6) :
-  channel_(channel), working_threads_(working_threads), ipv6_(ipv6)
+Acceptor::Acceptor(const ChannelPtr& channel, bool ipv6) :
+  channel_(channel), ipv6_(ipv6)
 {
-  channel->SetReadCallback(std::bind(&Acceptor::HandleAccept, this));
+  channel->SetReadCallback(std::bind(&Acceptor::HandleAcceptCallback, this));
 }
 
 void Acceptor::SetNewConnectionCallback(const NewConnectionCallback& callback) {
@@ -34,7 +32,7 @@ void Acceptor::HandleAcceptCallback() {
 
   SocketAddr sock_addr(&addr, ipv6_);
   if(new_connection_callback_) {
-    new_connection_callback_(fd, sock_addr);
+    new_connection_callback_(fd, std::move(sock_addr));
   }
 }
 

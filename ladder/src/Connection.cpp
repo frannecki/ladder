@@ -12,7 +12,8 @@ namespace ladder {
 Connection::Connection(const EventLoopPtr& loop, int fd) : 
   channel_(new Channel(loop, fd)),
   read_buffer_(new Buffer),
-  write_buffer_(new Buffer)
+  write_buffer_(new Buffer),
+  shut_down_(false)
 {
 
 }
@@ -33,6 +34,9 @@ Connection::~Connection() {
 }
 
 void Connection::Send(const std::string& buf) {
+  if(shut_down_) {
+    return;
+  }
   write_buffer_->Write(buf);
   write_buffer_->WriteBufferToFd(channel_->fd());
 }
@@ -41,11 +45,19 @@ void Connection::OnReadCallback() {
   int ret = read_buffer_->ReadBufferFromFd(channel_->fd());
   if(ret == 0) {
     // FIN accepted
-    channel_->ShutDownWrite();
-    // IMPORTANT: OnCloseCallback can only be called
-    // once since the current connection would be destructed after the call
+    // channel_->ShutDownWrite();
+    shut_down_ = true;
+    if(write_buffer_->Empty()) {
+      channel_->ShutDownWrite();
+    }
+
+    // IMPORTANT: OnCloseCallback can only be called once
+    // since the current connection would be destructed after the call
     // OnCloseCallback();
-    return;
+    
+    // IMPORTANT: Cannot return here.
+    // Even if ret == 0 there might be data read into buffer
+    // return;
   }
   else if(ret == -1) {
     switch(errno) {
@@ -57,7 +69,7 @@ void Connection::OnReadCallback() {
     }
   }
 
-  if(read_callback_) {
+  if(read_callback_ && !read_buffer_->Empty()) {
     read_callback_(shared_from_this(), read_buffer_);
   }
 }
@@ -66,6 +78,9 @@ void Connection::OnWriteCallback() {
   write_buffer_->WriteBufferToFd(channel_->fd());
   if(write_callback_) {
     write_callback_(write_buffer_);
+  }
+  if(shut_down_ && write_buffer_->Empty()) {
+    channel_->ShutDownWrite();
   }
 }
 

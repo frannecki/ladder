@@ -29,7 +29,8 @@ public:
   EventLoopThreadPoolPtr loop_threads() const;
 
 private:
-  void OnNewConnectionCallback(int fd, const SocketAddr&);
+  void OnNewConnectionCallback(int fd, SocketAddr&&);
+  void OnNewConnection(int fd, const SocketAddr&);
   void OnCloseConnectionCallback(int fd);
 
   ChannelPtr channel_;

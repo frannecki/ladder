@@ -12,7 +12,7 @@
 
 const int kBufferLen = 1024;
 // const int kClientNumber = 120;
-const int kClientNumber = 20;
+const int kClientNumber = 120;
 static std::mutex mutex;
 static int cnt = 0;
 

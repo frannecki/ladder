@@ -11,11 +11,11 @@ namespace ladder {
 
 class Channel;
 class SocketAddr;
-using NewConnectionCallback = std::function<void(int, const SocketAddr&)>;
+using NewConnectionCallback = std::function<void(int, SocketAddr&&)>;
 
 class Acceptor {
 public:
-  Acceptor(const ChannelPtr&, const ThreadPoolPtr&, bool ipv6);
+  Acceptor(const ChannelPtr&, bool ipv6);
   void SetNewConnectionCallback(const NewConnectionCallback& callback);
 
 private:

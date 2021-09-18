@@ -33,6 +33,7 @@ private:
   ConnectCloseCallback close_callback_;
   Buffer* read_buffer_;
   Buffer* write_buffer_;
+  bool shut_down_;
 };
 
 } // namespace ladder

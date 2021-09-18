@@ -41,7 +41,7 @@ void TcpServer::Start() {
   socket::listen(fd);
   channel_.reset(new Channel(loop_, fd));
   channel_->AddToLoop();
-  acceptor_.reset(new Acceptor(channel_, working_threads_, addr_.ipv6()));
+  acceptor_.reset(new Acceptor(channel_, addr_.ipv6()));
   acceptor_->SetNewConnectionCallback(
     std::bind(&TcpServer::OnNewConnectionCallback, 
               this,
@@ -65,7 +65,11 @@ void TcpServer::SetConnectionCallback(const ConnectionEvtCallback& callback) {
   connection_callback_ = callback;
 }
 
-void TcpServer::OnNewConnectionCallback(int fd, const SocketAddr& addr) {
+void TcpServer::OnNewConnectionCallback(int fd, SocketAddr&& addr) {
+  working_threads_->emplace(std::bind(&TcpServer::OnNewConnection, this, fd, addr));
+}
+
+void TcpServer::OnNewConnection(int fd, const SocketAddr& addr) {
   EventLoopPtr loop = loop_threads_->GetNextLoop();
   ConnectionPtr connection = std::make_shared<Connection>(loop, fd);
   connection->SetReadCallback(read_callback_);

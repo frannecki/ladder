@@ -26,6 +26,7 @@ public:
 
   int ReadBufferFromFd(int fd);
   void WriteBufferToFd(int fd);
+  bool Empty() const;
 
   uint32_t Peek(size_t n, std::string& result);
   void HaveRead(size_t n);

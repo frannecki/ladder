@@ -32,7 +32,7 @@ uint32_t ProtobufCodec::kMinMessageLength = \
   sizeof(uint32_t) + sizeof(uint32_t) + sizeof(uint32_t);
 
 void ProtobufCodec::Send(const ConnectionPtr& conn,
-                         google::protobuf::Message* message)
+                         google::protobuf::Message* message) const
 {
   std::string buf;
   ComposeMessage(message, buf);
@@ -46,13 +46,14 @@ void ProtobufCodec::OnMessage(const ConnectionPtr& conn,
   
   int length = ParseMessage(message, buffer);
   
-  if(length >= static_cast<int>(kMinMessageLength)) {
-    auto iter = callbacks_.find(
-      const_cast<google::protobuf::Descriptor*>(message->GetDescriptor()));
+  if(length >= static_cast<int>(kMinMessageLength) && message) {
+    auto iter = callbacks_.find(message->GetDescriptor());
     if(iter != callbacks_.end()) {
       iter->second->OnMessage(conn, message);
     }
-
+    else {
+      default_callback_(conn, message);
+    }
     buffer->HaveRead(length);
   }
 
@@ -62,7 +63,8 @@ void ProtobufCodec::OnMessage(const ConnectionPtr& conn,
   }
 }
 
-void ProtobufCodec::ComposeMessage(google::protobuf::Message* message, std::string& buf) {
+void ProtobufCodec::ComposeMessage(google::protobuf::Message* message,
+                                   std::string& buf) const {
   Buffer buffer;
   std::string message_type_name = message->GetTypeName();
   buffer.WriteUInt32(htobe32(static_cast<uint32_t>(message_type_name.size())));
@@ -128,7 +130,7 @@ int ProtobufCodec::ParseMessage(google::protobuf::Message*& message, Buffer* buf
     message_type_name_length);
   message = CreateMessage(message_type_name);
   if(message == nullptr) {
-    return -1;
+    return length;
   }
 
   uint32_t message_buffer_len = length - \

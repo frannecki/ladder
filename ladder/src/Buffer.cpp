@@ -69,6 +69,10 @@ uint32_t Buffer::PeekUInt32() {
   return result;
 }
 
+bool Buffer::Empty() const {
+  return read_index_ == write_index_;
+}
+
 void Buffer::Write(const std::string& content) {
   uint32_t len = content.size();
   std::copy(content.begin(), content.end(),

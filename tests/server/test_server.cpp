@@ -14,7 +14,7 @@ static int count = 0;
 
 void OnMessage(const ConnectionPtr& conn, Buffer* buffer) {
   std::string message = buffer->ReadAll();
-  LOG_INFO("Recv: " + message);
+  // LOG_INFO("Recv: " + message);
   conn->Send("Hello~ " + message);
 }
 

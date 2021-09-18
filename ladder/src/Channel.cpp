@@ -14,7 +14,7 @@ Channel::Channel(EventLoopPtr loop, int fd) :
   loop_(loop),
   events_(EPOLLIN)
 {
-  ;
+
 }
 
 Channel::~Channel() {
@@ -52,19 +52,14 @@ void Channel::SetEpollEdgeTriggered(bool edge_triggered) {
 
 
 void Channel::HandleEvents() {
-  if(events_ & (EPOLLIN | EPOLLPRI)) {
-    if(read_callback_) {
-      read_callback_();
-    }
-  }
-  if(events_ & EPOLLRDHUP) {
-    if(read_callback_) {
-      read_callback_();
-    }
-  }
   if(events_ & EPOLLOUT) {
     if(write_callback_) {
       write_callback_();
+    }
+  }
+  if(events_ & (EPOLLIN | EPOLLPRI | EPOLLRDHUP)) {
+    if(read_callback_) {
+      read_callback_();
     }
   }
   if((events_ & EPOLLHUP)) {

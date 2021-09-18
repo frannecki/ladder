@@ -4,7 +4,6 @@
 #include <utils.h>
 #include <Channel.h>
 #include <EventPoller.h>
-#include <Logger.h>
 
 namespace ladder {
 
@@ -31,8 +30,8 @@ void EventPoller::Poll(std::vector<ChannelPtr>& active_channels) {
   int ret = epoll_wait(epfd_, evts, max_evt_num, -1);
   if(ret == -1) {
     switch(errno) {
-      // case EINTR:
-      //   return;
+      case EINTR:
+        return;
       default:
         EXIT("[EventPoller] epoll_wait");
     }
@@ -41,7 +40,7 @@ void EventPoller::Poll(std::vector<ChannelPtr>& active_channels) {
   for(int i = 0; i < ret; ++i) {
     int fd = evts[i].data.fd;
     uint32_t evt = evts[i].events;
-    
+
     ChannelPtr channel;
     {
       std::lock_guard<std::mutex> lock(mutex_);
