@@ -76,7 +76,7 @@ bool SocketAddr::ipv6() const {
   return ipv6_;
 }
 
-const sockaddr_t* SocketAddr::addr() {
+const sockaddr_t* SocketAddr::addr() const {
   return &sa_;
 }
 
@@ -117,6 +117,11 @@ int accept(int fd, sockaddr_t* addr, socklen_t* addr_len) {
   return accepted;
 }
 
+int connect(int fd, const sockaddr_t* addr, socklen_t addr_len) {
+  int ret = ::connect(fd, (struct sockaddr*)addr, addr_len);
+  return ret;
+}
+
 int shutdown_write(int fd) {
   int ret = ::shutdown(fd, SHUT_WR);
   if(ret < 0) {
@@ -138,6 +143,15 @@ int shutdown_read(int fd) {
   }
   return ret;
 }
+
+int getsockname(int fd, sockaddr_t* addr, socklen_t* addr_len) {
+  int ret = ::getsockname(fd, (struct sockaddr*)addr, addr_len);
+  if(ret < 0) {
+    EXIT("getsockname");
+  }
+  return ret;
+}
+
 
 } // socket
 

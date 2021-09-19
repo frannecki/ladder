@@ -25,7 +25,7 @@ public:
   void Prepend(uint32_t number);
 
   int ReadBufferFromFd(int fd);
-  void WriteBufferToFd(int fd);
+  int WriteBufferToFd(int fd);
   bool Empty() const;
 
   uint32_t Peek(size_t n, std::string& result);

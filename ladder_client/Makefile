@@ -3,7 +3,7 @@ CFLAGS=-Wall -std=c++11 -O0 -g -fPIC -DDEBUG
 TGT_PATH=build
 TGT=$(TGT_PATH)/libladder_client.so
 
-INCLUDE += -Iinclude/
+INCLUDE += -Iinclude/ -I../ladder/include
 OBJ += $(patsubst %.cpp,%.o,$(shell find src -maxdepth 1 -name '*.cpp' -type f))
 LIB += -L/usr/local/lib -lpthread -L`pwd`/../ladder/build -lladder
 

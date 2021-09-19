@@ -129,7 +129,7 @@ int Buffer::ReadBufferFromFd(int fd) {
   return ret;
 }
 
-void Buffer::WriteBufferToFd(int fd) {
+int Buffer::WriteBufferToFd(int fd) {
   std::string buf;
   while(ReadableBytes() > 0) {
     uint32_t read_len = Peek(kWriteBufferSize, buf);
@@ -149,9 +149,10 @@ void Buffer::WriteBufferToFd(int fd) {
       HaveRead(static_cast<size_t>(read_len));
     }
     if(ret == -1) {
-      break;
+      return ret;
     }
   }
+  return 0;
 }
 
 

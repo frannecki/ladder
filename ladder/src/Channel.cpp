@@ -43,10 +43,10 @@ uint32_t Channel::GetEvents() const {
 
 void Channel::SetEpollEdgeTriggered(bool edge_triggered) {
   if(edge_triggered) {
-    events_ |= EPOLLET;
+    events_ |= (EPOLLET | EPOLLOUT);
   }
   else {
-    events_ &= (~EPOLLET);
+    events_ &= (~(EPOLLET | EPOLLOUT));
   }
 }
 
