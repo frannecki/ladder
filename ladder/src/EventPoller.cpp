@@ -7,6 +7,8 @@
 
 namespace ladder {
 
+const int kEpollTimeoutMs = 10000;
+
 EventPoller::EventPoller() {
   epfd_ = epoll_create1(0);
   if(epfd_ < 0) {
@@ -27,7 +29,7 @@ void EventPoller::Poll(std::vector<ChannelPtr>& active_channels) {
   int max_evt_num = channels_.size();
   struct epoll_event* evts = new struct epoll_event[max_evt_num];
 
-  int ret = epoll_wait(epfd_, evts, max_evt_num, -1);
+  int ret = epoll_wait(epfd_, evts, max_evt_num, kEpollTimeoutMs / 10);
   if(ret == -1) {
     switch(errno) {
       case EINTR:

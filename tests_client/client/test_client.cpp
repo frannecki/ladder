@@ -42,6 +42,7 @@ int main(int argc, char** argv) {
       break;
     }
     else {
+      buffer[ret] = 0;
       fprintf(stdout, "Received buffer of %d bytes from server: %s\n",
               ret, buffer);
       ret = write(sockfd, buffer, ret);
@@ -74,7 +75,6 @@ int main(int argc, char** argv) {
   }
 
   fprintf(stdout, "connection closed");
-
 
   if(close(sockfd) < 0) {
     perror("close");

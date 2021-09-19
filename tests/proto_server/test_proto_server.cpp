@@ -47,7 +47,7 @@ void OnConnection(const ConnectionPtr& conn, const ProtobufCodec& codec) {
 
 int main(int argc, char** argv) {
   Logger::create();
-  SocketAddr addr("127.0.0.1", 8070, false);
+  SocketAddr addr("0.0.0.0", 8070, false);
   TcpServer server(addr, 1);
   ProtobufCodec codec;
   codec.RegisterMessageCallback<ladder::TestMessage1>(std::bind(OnMessage, _1, _2, codec));

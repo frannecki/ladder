@@ -19,11 +19,9 @@ public:
   void SetNewConnectionCallback(const NewConnectionCallback& callback);
 
 private:
-  void HandleAccept();
   void HandleAcceptCallback();
 
   ChannelPtr channel_;
-  ThreadPoolPtr working_threads_;
   NewConnectionCallback new_connection_callback_;
   bool ipv6_;
 };

@@ -104,7 +104,7 @@ private:
     else {
       fprintf(stdout, "Closed socket. fd = %d\n", sockfd);
     }
-
+    return 0;
   }
 
 private:

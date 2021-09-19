@@ -2,7 +2,7 @@
 rm ./*/*.out
 
 export INCLUDE_DIR="-I`pwd`/../ladder/include -I/usr/local/include"
-export LIB_DIR="-L`pwd`/../ladder/build -L/usr/local/lib -lpthread -L/usr/local/lib64 -lladder -lprotobuf"
+export LIB_DIR="-L`pwd`/../ladder/build -L/usr/local/lib -lpthread -L/usr/local/lib64"
 
 for sub in client mass_clients
 do

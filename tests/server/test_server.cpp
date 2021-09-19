@@ -14,7 +14,7 @@ static int count = 0;
 
 void OnMessage(const ConnectionPtr& conn, Buffer* buffer) {
   std::string message = buffer->ReadAll();
-  // LOG_INFO("Recv: " + message);
+  LOG_INFO("Recv: " + message);
   conn->Send("Hello~ " + message);
 }
 
@@ -25,7 +25,7 @@ void OnConnection(const ConnectionPtr& conn) {
 
 int main(int argc, char** argv) {
   Logger::create();
-  SocketAddr addr("127.0.0.1", 8070, false);
+  SocketAddr addr("0.0.0.0", 8070, false);
   TcpServer server(addr, 1);
   server.SetConnectionCallback(std::bind(OnConnection, _1));
   server.SetReadCallback(std::bind(OnMessage, _1, _2));

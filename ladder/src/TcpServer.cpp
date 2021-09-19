@@ -93,7 +93,7 @@ void TcpServer::OnNewConnection(int fd, const SocketAddr& addr) {
 }
 
 void TcpServer::OnCloseConnectionCallback(int fd) {
-  LOG_INFO("Client end has closed write: " + std::to_string(fd));
+  LOG_INFO("Socket closed: " + std::to_string(fd));
   {
     std::lock_guard<std::mutex> lock(mutex_connections_);
     auto iter = connections_.find(fd);
