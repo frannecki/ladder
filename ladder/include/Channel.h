@@ -29,6 +29,7 @@ public:
 
   void ShutDownWrite();
   void ShutDownRead();
+  EventLoopPtr loop() const;
 
 private:
   bool Iswriting() const;

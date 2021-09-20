@@ -1,6 +1,7 @@
 #include <EventLoop.h>
 #include <Channel.h>
-#include <EventPoller.h>
+
+#include <utils.h>
 
 namespace ladder {
 
@@ -8,7 +9,7 @@ EventLoop::EventLoop() :
   poller_(new EventPoller),
   running_(false)
 {
-  ;
+
 }
 
 void EventLoop::StartLoop() {
@@ -23,6 +24,11 @@ void EventLoop::StartLoop() {
       channel->HandleEvents();
     }
   }
+  std::vector<std::function<void()>> tasks;
+  tasks.swap(pending_tasks_);
+  for(auto task : tasks) {
+    task();
+  }
 }
 
 void EventLoop::AddChannel(const ChannelPtr& channel) {
@@ -31,6 +37,14 @@ void EventLoop::AddChannel(const ChannelPtr& channel) {
 
 void EventLoop::RemoveChannel(int fd) {
   poller_->RemoveChannel(fd);
+}
+
+void EventLoop::QueueInLoop(std::function<void()>&& task) {
+  pending_tasks_.emplace_back(task);
+}
+
+void EventLoop::SetWakeupCallback(const std::function<void()>& callback) {
+  poller_->SetWakeupCallback(callback);
 }
 
 } // namespace ladder

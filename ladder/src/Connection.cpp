@@ -75,7 +75,7 @@ void Connection::OnReadCallback() {
 }
 
 void Connection::OnWriteCallback() {
-  int ret = write_buffer_->WriteBufferToFd(channel_->fd());
+  write_buffer_->WriteBufferToFd(channel_->fd());
   if(write_callback_) {
     write_callback_(write_buffer_);
   }

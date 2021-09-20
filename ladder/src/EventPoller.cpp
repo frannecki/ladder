@@ -1,3 +1,6 @@
+#include <unistd.h>
+#include <fcntl.h>
+
 #include <string.h>
 #include <sys/epoll.h>
 
@@ -14,6 +17,8 @@ EventPoller::EventPoller() {
   if(epfd_ < 0) {
     EXIT("[EventPoller] epoll_create1");
   }
+  pipe_.reset(new Pipe);
+  AddChannel(pipe_->channel());
 }
 
 EventPoller::~EventPoller() {
@@ -87,6 +92,48 @@ void EventPoller::RemoveChannel(int fd) {
     if(ret < 0) {
       EXIT("[EventPoller] epoll_ctl del");
     }
+  }
+}
+
+void EventPoller::Wakeup() {
+  pipe_->Wakeup();
+}
+
+void EventPoller::SetWakeupCallback(const std::function<void()>& callback) {
+  pipe_->SetWakeupCallback(callback);
+}
+
+Pipe::Pipe() {
+  if(::pipe2(fd_, O_NONBLOCK) < 0) {
+    EXIT("pipe2");
+  }
+  channel_ = std::make_shared<Channel>(nullptr, fd_[0]);
+  channel_->SetReadCallback(std::bind(&Pipe::ReadCallback, this));
+}
+
+Pipe::~Pipe() {
+  ::close(fd_[0]);
+  ::close(fd_[1]);
+}
+
+void Pipe::Wakeup() {
+  char ch;
+  ::write(fd_[1], &ch, sizeof(ch));
+}
+
+ChannelPtr Pipe::channel() const {
+  return channel_;
+}
+
+void Pipe::SetWakeupCallback(const std::function<void()>& callback) {
+  wakeup_callback_ = callback;
+}
+
+void Pipe::ReadCallback() {
+  char ch;
+  ::read(fd_[0], &ch, sizeof(ch));
+  if(wakeup_callback_) {
+    wakeup_callback_();
   }
 }
 

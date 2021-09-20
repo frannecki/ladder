@@ -12,7 +12,7 @@ class EventPollerTest : public testing::Test {
 };
 ladder::EventPoller* EventPollerTest::poller = nullptr;
 
-TEST(TestEventPoller, test1) {
+TEST(TestEventPoller, test_Wakeup) {
   ;
 }
 

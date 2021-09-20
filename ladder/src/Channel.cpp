@@ -102,4 +102,8 @@ bool Channel::IsReading() const {
   return events_ & (EPOLLIN | EPOLLPRI);
 }
 
+EventLoopPtr Channel::loop() const {
+  return loop_;
+}
+
 } // namespace ladder
