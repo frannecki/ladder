@@ -1,5 +1,4 @@
 #!/bin/bash
-# rm ./*/*.out -f
 
 export INCLUDE_DIR="-I`pwd`/../ladder_client/include -I`pwd`/../ladder/include -I/usr/local/include"
 export LIB_DIR="-L`pwd`/../ladder_client/build -lladder_client -L`pwd`/../ladder/build -lladder -L/usr/local/lib -lpthread -L/usr/local/lib64 -lprotobuf"
