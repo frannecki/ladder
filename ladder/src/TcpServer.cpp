@@ -31,6 +31,7 @@ TcpServer::TcpServer(const SocketAddr& addr,
 
 TcpServer::~TcpServer() {
   ::close(channel_->fd());
+  channel_->RemoveFromLoop();
 }
 
 void TcpServer::Start() {

@@ -23,6 +23,7 @@ class TcpClient {
 public:
   TcpClient(const SocketAddr& target_addr,
             const EventLoopPtr& loop,
+            uint16_t retry_initial_timeout,
             int max_retry=10);
   ~TcpClient();
 
@@ -46,8 +47,8 @@ private:
   SocketAddr target_addr_;
   ConnectionPtr conn_;
   ConnectorPtr connector_;
-
   EventLoopPtr loop_;
+  uint16_t retry_initial_timeout_;
 
   ReadEvtCallback read_callback_;
   WriteEvtCallback write_callback_;

@@ -3,6 +3,7 @@
 #include <Channel.h>
 #include <Connection.h>
 #include <Connector.h>
+#include <Timer.h>
 
 #include <Logger.h>
 
@@ -10,16 +11,19 @@ namespace ladder {
 
 TcpClient::TcpClient(const SocketAddr& target_addr,
                      const EventLoopPtr& loop,
+                     uint16_t retry_initial_timeout,
                      int max_retry) : 
   max_retry_(max_retry),
   status_(TcpConnectionStatus::kDisconnected),
-  target_addr_(target_addr), loop_(loop)
+  target_addr_(target_addr), loop_(loop),
+  retry_initial_timeout_(retry_initial_timeout)
 {
 
 }
 
 TcpClient::~TcpClient() {
   Disconnect();
+  LOG_DEBUG("Releasing tcp client...");
 }
 
 void TcpClient::Connect() {
@@ -40,7 +44,8 @@ void TcpClient::Connect() {
     fd));
   connector_.reset(new Connector(conn_->channel(),
                                  max_retry_,
-                                 target_addr_.ipv6()));
+                                 target_addr_,
+                                 retry_initial_timeout_));
   connector_->SetConnectionCallback(
     std::bind(&TcpClient::OnConnectionCallback, 
               this,
@@ -49,7 +54,7 @@ void TcpClient::Connect() {
   conn_->Init();
   
   // Try connecting
-  connector_->Start(target_addr_);
+  connector_->Start();
 }
 
 void TcpClient::Disconnect() {

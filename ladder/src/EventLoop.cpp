@@ -20,15 +20,20 @@ void EventLoop::StartLoop() {
   while(running_) {
     std::vector<ChannelPtr> active_channels;
     poller_->Poll(active_channels);
-    for(auto channel : active_channels) {
+    for(auto& channel : active_channels) {
       channel->HandleEvents();
     }
   }
-  std::vector<std::function<void()>> tasks;
-  tasks.swap(pending_tasks_);
-  for(auto task : tasks) {
-    task();
-  }
+  // std::vector<std::function<void()>> tasks;
+  // tasks.swap(pending_tasks_);
+  // for(auto& task : tasks) {
+  //   task();
+  // }
+}
+
+void EventLoop::StopLoop() {
+  std::lock_guard<std::mutex> lock(mutex_running_);
+  running_ = false;
 }
 
 void EventLoop::AddChannel(const ChannelPtr& channel) {

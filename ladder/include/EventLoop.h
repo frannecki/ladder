@@ -20,10 +20,12 @@ class EventLoop : public std::enable_shared_from_this<EventLoop> {
 public:
   EventLoop();
   void StartLoop();
+  void StopLoop();
   void AddChannel(const ChannelPtr& channel);
   void RemoveChannel(int fd);
   void QueueInLoop(std::function<void()>&& task);
   void SetWakeupCallback(const std::function<void()>& callback);
+  // TODO: wake up poller for urgent tasks
 
 private:
   EventPollerPtr poller_;

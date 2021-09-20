@@ -1,5 +1,5 @@
 #!/bin/bash
-rm ./*/*.out -f
+# rm ./*/*.out -f
 
 make
 

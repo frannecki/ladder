@@ -18,7 +18,9 @@ Channel::Channel(EventLoopPtr loop, int fd) :
 }
 
 Channel::~Channel() {
-  RemoveFromLoop();
+  if(loop_) {
+    RemoveFromLoop();
+  }
 }
 
 void Channel::SetReadCallback(const std::function<void()>& callback) {
@@ -42,6 +44,9 @@ uint32_t Channel::GetEvents() const {
 }
 
 void Channel::SetEpollEdgeTriggered(bool edge_triggered) {
+  // IMPORTANT: re-consider whether to add EPOLLOUT here.
+  // Since the socket is writable most of the time, almost
+  // every trigger will set this flag.
   if(edge_triggered) {
     events_ |= (EPOLLET | EPOLLOUT);
   }

@@ -74,12 +74,12 @@ bool Buffer::Empty() const {
 }
 
 void Buffer::Write(const std::string& content) {
-  uint32_t len = content.size();
   std::copy(content.begin(), content.end(),
+            //std::back_inserter(buffer_));
             std::inserter(buffer_, buffer_.begin() + write_index_));
   {
     std::lock_guard<std::mutex> lock(mutex_);
-    write_index_ += len;
+    write_index_ += content.size();
   }
 }
 
@@ -106,8 +106,8 @@ int Buffer::ReadBufferFromFd(int fd) {
   int ret = 0;
   char buf[kReadBufferSize];
   while(1) {
-    ret = ::read(fd, buf, sizeof(buf));
-    if(ret == -1) {
+    ret = ::read(fd, buf, kReadBufferSize);
+    if(ret < 0) {
       switch(errno) {
         case EAGAIN:
 #if EWOULDBLOCK != EAGAIN
@@ -122,7 +122,7 @@ int Buffer::ReadBufferFromFd(int fd) {
     else {
       Write(std::string(buf, buf+ret));
     }
-    if(ret <= 0) {
+    if(ret < 0) {
       break;
     }
   }
@@ -132,9 +132,9 @@ int Buffer::ReadBufferFromFd(int fd) {
 int Buffer::WriteBufferToFd(int fd) {
   std::string buf;
   while(ReadableBytes() > 0) {
-    uint32_t read_len = Peek(kWriteBufferSize, buf);
+    Peek(kWriteBufferSize, buf);
     int ret = ::write(fd, buf.c_str(), buf.size());
-    if(ret == -1) {
+    if(ret < 0) {
       switch(errno) {
         case EAGAIN:
 #if EWOULDBLOCK != EAGAIN
@@ -146,9 +146,9 @@ int Buffer::WriteBufferToFd(int fd) {
       }
     }
     else {
-      HaveRead(static_cast<size_t>(read_len));
+      HaveRead(static_cast<size_t>(ret));
     }
-    if(ret == -1) {
+    if(ret < 0) {
       return ret;
     }
   }

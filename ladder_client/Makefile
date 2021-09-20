@@ -5,7 +5,7 @@ TGT=$(TGT_PATH)/libladder_client.so
 
 INCLUDE += -Iinclude/ -I../ladder/include
 OBJ += $(patsubst %.cpp,%.o,$(shell find src -maxdepth 1 -name '*.cpp' -type f))
-LIB += -L/usr/local/lib -lpthread -L`pwd`/../ladder/build -lladder
+LIB += -L`pwd`/../ladder/build -lladder -L/usr/local/lib -lpthread
 
 ALL: $(TGT)
 

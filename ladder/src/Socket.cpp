@@ -84,12 +84,9 @@ namespace socket {
 
 int socket(bool tcp, bool ipv6) {
   int fd = ::socket(ipv6 ? AF_INET6 : AF_INET,
-                    tcp ? SOCK_STREAM : SOCK_DGRAM, 0);
+                    (tcp ? SOCK_STREAM : SOCK_DGRAM) | SOCK_NONBLOCK, 0);
   if(fd < 0) {
     EXIT("socket");
-  }
-  if(fcntl(fd, F_SETFL, fcntl(fd, F_GETFL, 0) & O_NONBLOCK) < 0) {
-    EXIT("fcntl");
   }
   int enable = kEnableOption;
   if(setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable))) {
@@ -107,18 +104,15 @@ int listen(int fd) {
 }
 
 int accept(int fd, sockaddr_t* addr, socklen_t* addr_len) {
-  int accepted = ::accept(fd, (struct sockaddr*)addr, addr_len);
+  int accepted = ::accept4(fd, (struct sockaddr*)addr, addr_len, SOCK_NONBLOCK);
   if(accepted < 0) {
     EXIT("accept");
-  }
-  if(fcntl(accepted, F_SETFL, fcntl(accepted, F_GETFL, 0) | O_NONBLOCK) < 0) {
-    EXIT("fcntl");
   }
   return accepted;
 }
 
 int connect(int fd, const sockaddr_t* addr, socklen_t addr_len) {
-  int ret = ::connect(fd, (struct sockaddr*)addr, addr_len);
+  int ret = ::connect(fd, (const struct sockaddr*)addr, addr_len);
   return ret;
 }
 

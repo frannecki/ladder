@@ -1,5 +1,7 @@
-#ifndef LADDER_TCP_CONNECTOR_H
-#define LADDER_TCP_CONNECTOR_H
+#ifndef LADDER_CONNECTOR_H
+#define LADDER_CONNECTOR_H
+
+#include <memory>
 
 #include <Aliases.h>
 #include <Socket.h>
@@ -9,24 +11,34 @@ namespace ladder {
 using ConnectionCallback = std::function<void(SocketAddr&&)>;
 using ConnectionFailureCallback = std::function<void()>;
 
+class Timer;
+using TimerPtr = std::unique_ptr<Timer>;
+
+const uint16_t kMinRetryInitialTimeout = 5;
+
 class Connector {
 
+
 public:
-  Connector(const ChannelPtr&, int max_retry, bool ipv6);
+  Connector(const ChannelPtr&, int max_retry,
+            const SocketAddr& addr, uint16_t retry_initial_timeout=kMinRetryInitialTimeout*2);
   void SetConnectionCallback(const ConnectionCallback& callback);
   void SetConnectionFailureCallback(const ConnectionFailureCallback& callback);
-  void Start(const SocketAddr& addr);
+  void Start();
 
 private:
   void HandleConnect();
   void Retry();
 
-  int max_retry_;
-  int retry_;
   ChannelPtr channel_;
+  int retry_;
+  int max_retry_;
+  uint16_t retry_timeout_;
+  TimerPtr timer_;
   ConnectionCallback connection_callback_;
   ConnectionFailureCallback connection_failure_callback_;
   bool ipv6_;
+  SocketAddr addr_;
 
 };
 
