@@ -6,9 +6,6 @@
 #include <Connection.h>
 
 #include <Logger.h>
-// #include <iostream>
-// #define LOG_INFO(msg) std::cout << msg << std::endl;
-
 
 using namespace ladder;
 using namespace std::placeholders;
@@ -17,10 +14,11 @@ static int count = 0;
 
 void OnMessage(const ConnectionPtr& conn, Buffer* buffer) {
   std::string buf = buffer->ReadAll();
-  // LOG_INFO("Recv: " + buf);
-  LOG_INFO("Current count value: " + std::to_string(count));
-  // conn->Send("Echoback" + std::to_string(++count) + ": " + buf);
-  conn->Send(buf);
+  LOG_INFO("Recv: " + buf);
+  LOG_INFO("Current count value: " + std::to_string(count) + " " + std::to_string(buf.size()));
+  std::string message_back = "Echoback" + std::to_string(++count) + ": " + buf;
+  LOG_INFO("Length of message back: " + std::to_string(message_back.size()));
+  conn->Send(message_back);
 }
 
 int main(int argc, char** argv) {

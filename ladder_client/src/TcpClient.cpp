@@ -101,6 +101,7 @@ void TcpClient::OnConnectionCallback(SocketAddr&& addr) {
            + std::to_string(conn_->channel()->fd()));
   
   conn_->SetWriteCallback(write_callback_);
+  
   if(connection_callback_) {
     connection_callback_(conn_);
   }

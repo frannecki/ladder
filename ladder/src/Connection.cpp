@@ -94,14 +94,17 @@ void Connection::OnCloseCallback() {
 
 void Connection::SetReadCallback(const ReadEvtCallback& callback) {
   read_callback_ = callback;
+  channel_->SetReadCallback(std::bind(&Connection::OnReadCallback, this));
 }
 
 void Connection::SetWriteCallback(const WriteEvtCallback& callback) {
   write_callback_ = callback;
+  channel_->SetWriteCallback(std::bind(&Connection::OnWriteCallback, this));
 }
 
 void Connection::SetCloseCallback(const ConnectCloseCallback& callback) {
   close_callback_ = callback;
+  channel_->SetCloseCallback(std::bind(&Connection::OnCloseCallback, this));
 }
 
 ChannelPtr Connection::channel() const {
