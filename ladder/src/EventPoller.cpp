@@ -73,13 +73,20 @@ void EventPoller::AddChannel(const ChannelPtr& channel) {
   event.events = channel->GetEvents();
   {
     std::lock_guard<std::mutex> lock(mutex_);
-    channels_.insert(std::pair<int, ChannelPtr>(
-      channel->fd(), channel));
-    ret = epoll_ctl(epfd_, EPOLL_CTL_ADD,
-                    channel->fd(), &event);
+    if(channels_.find(channel->fd()) == channels_.end()) {
+      channels_.insert(std::pair<int, ChannelPtr>(
+        channel->fd(), channel));
+      ret = epoll_ctl(epfd_, EPOLL_CTL_ADD,
+                      channel->fd(), &event);
+    }
   }
   if(ret < 0) {
-    EXIT("[EventPoller] epoll_ctl add");
+    switch(errno) {
+      case(EEXIST):
+        break;
+      default:
+        EXIT("[EventPoller] epoll_ctl add");
+    }
   }
 }
 
@@ -90,7 +97,12 @@ void EventPoller::RemoveChannel(int fd) {
     iter = channels_.erase(iter);
     int ret = epoll_ctl(epfd_, EPOLL_CTL_DEL, fd, NULL);
     if(ret < 0) {
-      EXIT("[EventPoller] epoll_ctl del");
+      switch(errno) {
+        case(ENOENT):
+          break;
+        default:
+          EXIT("[EventPoller] epoll_ctl del");
+      }
     }
   }
 }

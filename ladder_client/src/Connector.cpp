@@ -27,6 +27,7 @@ void Connector::SetConnectionFailureCallback(const ConnectionFailureCallback& ca
 
 void Connector::Start() {
   channel_->SetWriteCallback(std::bind(&Connector::HandleConnect, this));
+  channel_->SetErrorCallback(std::bind(&Connector::Retry, this));
   const sockaddr_t* sa = addr_.addr();
   int ret = socket::connect(channel_->fd(), sa,
                             ipv6_ ? sizeof(sa->addr6_) : sizeof(sa->addr_));

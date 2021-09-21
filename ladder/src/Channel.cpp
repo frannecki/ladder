@@ -35,6 +35,10 @@ void Channel::SetCloseCallback(const std::function<void()>& callback) {
   close_callback_ = callback;
 }
 
+void Channel::SetErrorCallback(const std::function<void()>& callback) {
+  error_callback_ = callback;
+}
+
 void Channel::SetEvents(uint32_t events) {
   events_ = events;
 }
@@ -57,6 +61,18 @@ void Channel::SetEpollEdgeTriggered(bool edge_triggered) {
 
 
 void Channel::HandleEvents() {
+  if(events_ & EPOLLERR) {
+    if(error_callback_) {
+      error_callback_();
+    }
+    return;
+  }
+  if((events_ & EPOLLHUP)) {
+    if(close_callback_) {
+      close_callback_();
+    }
+    return;
+  }
   if(events_ & EPOLLOUT) {
     if(write_callback_) {
       write_callback_();
@@ -65,11 +81,6 @@ void Channel::HandleEvents() {
   if(events_ & (EPOLLIN | EPOLLPRI | EPOLLRDHUP)) {
     if(read_callback_) {
       read_callback_();
-    }
-  }
-  if((events_ & EPOLLHUP)) {
-    if(close_callback_) {
-      close_callback_();
     }
   }
   SetEvents(0);

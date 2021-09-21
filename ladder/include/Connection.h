@@ -15,6 +15,7 @@ public:
   Connection(const EventLoopPtr& loop, int fd);
   ~Connection();
   void Init();
+  void SetChannelCallbacks();
   void Send(const std::string& buf);
   void OnReadCallback();
   void OnWriteCallback();

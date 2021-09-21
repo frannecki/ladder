@@ -20,6 +20,7 @@ public:
   void SetReadCallback(const std::function<void()>& callback);
   void SetWriteCallback(const std::function<void()>& callback);
   void SetCloseCallback(const std::function<void()>& callback);
+  void SetErrorCallback(const std::function<void()>& callback);
   void SetEvents(uint32_t events);
   void SetEpollEdgeTriggered(bool edge_triggered=true);
   uint32_t GetEvents() const;
@@ -41,6 +42,7 @@ private:
   std::function<void()> read_callback_;
   std::function<void()> write_callback_;
   std::function<void()> close_callback_;
+  std::function<void()> error_callback_;
 };
 
 } // namespace ladder

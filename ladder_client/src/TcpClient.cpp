@@ -100,7 +100,7 @@ void TcpClient::OnConnectionCallback(SocketAddr&& addr) {
            addr.ip() + ":" + std::to_string(addr.port()) + ". fd = " \
            + std::to_string(conn_->channel()->fd()));
   
-  conn_->SetWriteCallback(write_callback_);
+  conn_->SetChannelCallbacks();
   
   if(connection_callback_) {
     connection_callback_(conn_);

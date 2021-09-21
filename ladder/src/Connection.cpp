@@ -22,9 +22,14 @@ void Connection::Init() {
   // do not call shared_from_this() in constructor
   channel_->SetEpollEdgeTriggered();
   channel_->AddToLoop();
+  SetChannelCallbacks();
+}
+
+void Connection::SetChannelCallbacks() {
   channel_->SetReadCallback(std::bind(&Connection::OnReadCallback, this));
   channel_->SetWriteCallback(std::bind(&Connection::OnWriteCallback, this));
   channel_->SetCloseCallback(std::bind(&Connection::OnCloseCallback, this));
+  channel_->SetErrorCallback(std::bind(&Connection::OnCloseCallback, this));
 }
 
 Connection::~Connection() {
@@ -85,6 +90,7 @@ void Connection::OnWriteCallback() {
 }
 
 void Connection::OnCloseCallback() {
+  shut_down_ = true;
   channel_->ShutDownWrite();
   channel_->RemoveFromLoop();
   if(close_callback_) {
@@ -94,17 +100,14 @@ void Connection::OnCloseCallback() {
 
 void Connection::SetReadCallback(const ReadEvtCallback& callback) {
   read_callback_ = callback;
-  channel_->SetReadCallback(std::bind(&Connection::OnReadCallback, this));
 }
 
 void Connection::SetWriteCallback(const WriteEvtCallback& callback) {
   write_callback_ = callback;
-  channel_->SetWriteCallback(std::bind(&Connection::OnWriteCallback, this));
 }
 
 void Connection::SetCloseCallback(const ConnectCloseCallback& callback) {
   close_callback_ = callback;
-  channel_->SetCloseCallback(std::bind(&Connection::OnCloseCallback, this));
 }
 
 ChannelPtr Connection::channel() const {

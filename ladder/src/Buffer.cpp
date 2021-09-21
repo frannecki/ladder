@@ -26,8 +26,8 @@ std::string Buffer::Read(size_t n) {
 
 uint32_t Buffer::Peek(size_t n, std::string& result) {
   uint32_t readable  = std::min(static_cast<uint32_t>(n), ReadableBytes());
-  result.assign(buffer_.data() + read_index_,
-                buffer_.data() + read_index_ + readable);
+  result.assign(buffer_.begin() + read_index_,
+                buffer_.begin() + read_index_ + readable);
   return readable;
 }
 
@@ -140,6 +140,8 @@ int Buffer::WriteBufferToFd(int fd) {
 #if EWOULDBLOCK != EAGAIN
         case EWOULDBLOCK:
 #endif
+        case(ECONNRESET):
+        case(EPIPE):
           break;
         default:
           EXIT("[Buffer] write");

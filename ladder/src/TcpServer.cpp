@@ -1,4 +1,5 @@
 #include <unistd.h>
+#include <signal.h>
 #include <fcntl.h>
 #include <sys/socket.h>
 
@@ -17,6 +18,12 @@ using namespace std::placeholders;
 
 namespace ladder {
 
+void signal_handler(int signum) {
+  if(signum == SIGPIPE) {
+    LOG_FATAL("SIGPIPE ignored");
+  }
+}
+
 using TcpConnectionCloseCallback = std::unique_ptr<std::function<void(TcpServer*, int)>>;
 
 TcpServer::TcpServer(const SocketAddr& addr,
@@ -26,7 +33,7 @@ TcpServer::TcpServer(const SocketAddr& addr,
   loop_thread_num_(loop_thread_num),
   working_thread_num_(working_thread_num)
 {
-
+  signal(SIGPIPE, signal_handler);
 }
 
 TcpServer::~TcpServer() {

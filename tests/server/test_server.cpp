@@ -24,7 +24,7 @@ void OnConnection(const ConnectionPtr& conn) {
 }
 
 int main(int argc, char** argv) {
-  Logger::create();
+  Logger::create("./test_server.log");
   SocketAddr addr("0.0.0.0", 8070, false);
   TcpServer server(addr, 1);
   server.SetConnectionCallback(std::bind(OnConnection, _1));
