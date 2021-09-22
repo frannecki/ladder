@@ -1,4 +1,4 @@
-# Ladder: A Light-weight Reactor Based Web Server
+# Ladder: A Light-weight Reactor Web Server
 
 ## Prerequisites
 * protobuf 3.x
@@ -30,10 +30,19 @@
   bazel build --cxxopts="-std=c++11" //:ladder_tests_server
   bazel build --cxxopts="-std=c++11" //:ladder_tests_proto_server
   bazel build --cxxopts="-std=c++11" //:ladder_tests_event_poller
-  bazel build --cxxopts="-std=c++11" //:ladder_tests_client_event_client
+  bazel build --cxxopts="-std=c++11" //:ladder_tests_client_client
   bazel build --cxxopts="-std=c++11" //:ladder_tests_client_mass_clients
   bazel build --cxxopts="-std=c++11" //:ladder_tests_client_tcp_client
   bazel build --cxxopts="-std=c++11" //:ladder_tests_client_event_loop_thread
   ```
 
+* cmake
+
+  ```sh
+  mkdir -p build && cd build
+  cmake ..
+  make
+  ```
+
 ## Usage
+Please refer to the [test demo](tests/server) for more details.
