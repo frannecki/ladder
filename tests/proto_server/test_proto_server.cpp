@@ -8,7 +8,7 @@
 #include <ProtobufCodec.h>
 #include <Logger.h>
 
-#include "../proto/tests.pb.h"
+#include "proto/tests.pb.h"
 
 using namespace ladder;
 using namespace std::placeholders;
