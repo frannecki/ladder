@@ -42,8 +42,7 @@ Logger::Logger(const char* filename) : running_(true) {
     fd_ = STDERR_FILENO;
   }
   else {
-    fd_ = ::open(filename,
-                 O_CREAT | O_WRONLY | O_APPEND | O_NONBLOCK);
+    fd_ = ::open(filename, O_CREAT | O_WRONLY | O_APPEND);
     if(fd_ < 0) {
       EXIT("[Logger] open");
     }
