@@ -30,6 +30,7 @@
   bazel build --cxxopts="-std=c++11" //:ladder_tests_server
   bazel build --cxxopts="-std=c++11" //:ladder_tests_proto_server
   bazel build --cxxopts="-std=c++11" //:ladder_tests_event_poller
+  bazel build --cxxopts="-std=c++11" //:ladder_tests_client_timer
   bazel build --cxxopts="-std=c++11" //:ladder_tests_client_client
   bazel build --cxxopts="-std=c++11" //:ladder_tests_client_mass_clients
   bazel build --cxxopts="-std=c++11" //:ladder_tests_client_tcp_client

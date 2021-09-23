@@ -61,7 +61,7 @@ TESTS_SUB = ["logger", "server", "proto_server", "event_poller"]
      deps = [":ladder", ":tests_cc_proto"],
  ) for sub in TESTS_SUB]
 
-TEST_SUB_CLIENT = ["client", "mass_clients", "tcp_client", "event_loop_thread"]
+TEST_SUB_CLIENT = ["timer", "client", "mass_clients", "tcp_client", "event_loop_thread"]
 
 [cc_binary(
      name = "ladder_tests_client_{}".format(sub),
