@@ -28,6 +28,8 @@ void Connector::SetConnectionFailureCallback(const ConnectionFailureCallback& ca
 void Connector::Start() {
   channel_->SetWriteCallback(std::bind(&Connector::HandleConnect, this));
   channel_->SetErrorCallback(std::bind(&Connector::Retry, this));
+  channel_->SetCloseCallback(std::bind(&Connector::Retry, this));
+  channel_->SetReadCallback(nullptr);
   const sockaddr_t* sa = addr_.addr();
   int ret = socket::connect(channel_->fd(), sa,
                             ipv6_ ? sizeof(sa->addr6_) : sizeof(sa->addr_));
@@ -37,9 +39,7 @@ void Connector::Start() {
       case EINPROGRESS:
       case EINTR:
       case EISCONN:
-        if(socket::getsockerropt(channel_->fd()) == 0) {
-          break;
-        }
+        break;
 
 #if EWOULDBLOCK != EAGAIN
       case(EWOULDBLOCK):
@@ -71,6 +71,10 @@ void Connector::Start() {
 }
 
 void Connector::HandleConnect() {
+  if(socket::getsockerropt(channel_->fd())) {
+    Retry();
+    return;
+  }
   sockaddr_t addr;
   socklen_t addr_len = ipv6_ ? sizeof(addr.addr6_) : sizeof(addr.addr_);
   socket::getsockname(channel_->fd(), &addr, &addr_len);
