@@ -7,6 +7,8 @@
 #include <Timer.h>
 #include <Channel.h>
 #include <EventLoop.h>
+#include <Socket.h>
+
 #include <Logger.h>
 
 namespace ladder {

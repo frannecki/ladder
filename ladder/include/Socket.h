@@ -47,6 +47,7 @@ int shutdown_write(int fd);
 int shutdown_read(int fd);
 int close(int fd);
 int getsockname(int fd, sockaddr_t* addr, socklen_t* addr_len);
+int getsockerropt(int fd);
 
 } // namespace socket
 

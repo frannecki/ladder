@@ -37,7 +37,9 @@ void Connector::Start() {
       case EINPROGRESS:
       case EINTR:
       case EISCONN:
-        break;
+        if(socket::getsockerropt(channel_->fd()) == 0) {
+          break;
+        }
 
 #if EWOULDBLOCK != EAGAIN
       case(EWOULDBLOCK):
@@ -47,11 +49,7 @@ void Connector::Start() {
       case EADDRNOTAVAIL:
       case ECONNREFUSED:
       case ENETUNREACH:
-        if((retry_ += 1) <= max_retry_) {
-          LOG_DEBUG("Connect failed. Trying again");
-          Retry();
-          retry_timeout_ <<= 1;
-        }
+        Retry();
         break;
 
       // case EACCES:
@@ -67,6 +65,7 @@ void Connector::Start() {
         LOG_FATAL("Failure with ::connect. fd = " + std::to_string(channel_->fd()) + \
                   " errno = " + std::to_string(errno));
         perror("connect");
+        Retry();
     }
   }
 }
@@ -82,8 +81,17 @@ void Connector::HandleConnect() {
 }
 
 void Connector::Retry() {
-  // TODO: retry connect
-  timer_->SetInterval(retry_timeout_, false);
+  if((retry_ += 1) <= max_retry_) {
+    LOG_DEBUG("Connect failed. Trying again after " + std::to_string(retry_timeout_) + " ms.");
+    // TODO: retry connect
+    timer_->SetInterval(retry_timeout_ * 1000, false);
+    retry_timeout_ <<= 1;
+  }
+  else {
+    if(connection_failure_callback_) {
+      connection_failure_callback_();
+    }
+  }
 }
 
 } // namespace ladder

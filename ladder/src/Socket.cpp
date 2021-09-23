@@ -156,6 +156,13 @@ int getsockname(int fd, sockaddr_t* addr, socklen_t* addr_len) {
   return ret;
 }
 
+int getsockerropt(int fd) {
+  int err;
+  socklen_t len = sizeof(int);
+  getsockopt(fd, SOL_SOCKET, SO_ERROR, &err, &len);
+  return err;
+}
+
 
 } // socket
 

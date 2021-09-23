@@ -50,6 +50,8 @@ void TcpClient::Connect() {
     std::bind(&TcpClient::OnConnectionCallback, 
               this,
               std::placeholders::_1));
+  connector_->SetConnectionFailureCallback(
+    std::bind(&TcpClient::OnConnectionFailureCallback, this));
   LOG_INFO("Trying to establish connection to target. fd = " + std::to_string(fd));
   conn_->Init();
   
