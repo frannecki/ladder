@@ -5,7 +5,7 @@ TGT=$(TGT_PATH)/libladder.so
 
 INCLUDE += -Iinclude/
 OBJ += $(patsubst %.cpp,%.o,$(shell find src -maxdepth 1 -name '*.cpp' -type f))
-LIB += -L/usr/local/lib -lpthread -lprotobuf
+LIB += -L/usr/local/lib -lpthread -lprotobuf -lz
 
 ALL: $(TGT)
 

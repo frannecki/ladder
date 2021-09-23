@@ -1,7 +1,7 @@
 #!/bin/bash
 
 export INCLUDE_DIR="-I`pwd`/../ladder/include -I/usr/local/include -I`pwd`"
-export LIB_DIR="-L`pwd`/../ladder/build -L/usr/local/lib -L/usr/local/lib64 -lpthread -lladder -lprotobuf ../proto/tests.pb.cc"
+export LIB_DIR="-L`pwd`/../ladder/build -L/usr/local/lib -L/usr/local/lib64 -lpthread -lladder -lprotobuf -lz ../proto/tests.pb.cc"
 
 SUBS=$@
 

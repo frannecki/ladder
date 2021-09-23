@@ -18,7 +18,7 @@ namespace ladder {
   #define LOG_DEBUG(message)
 #endif
 #define LOG_INFO(message) LOG_SEVERITY(message, INFO)
-#define LOG_SEVERITY(message, severity) Logger::instance()->WriteLog(message, #severity)
+#define LOG_SEVERITY(message, severity) if(Logger::instance()) Logger::instance()->WriteLog(message, #severity)
 
 std::string GetCurrentDateTime();
 
@@ -31,9 +31,6 @@ public:
 
   template <typename MessageType>
   void WriteLog(MessageType&& message, std::string&& severity) {
-    if(this == nullptr) {
-      return;
-    }
     std::string line = "[" + GetCurrentDateTime() + "][" + severity + "] " + std::forward<MessageType>(message) + "\n";
     // {
       // std::lock_guard<std::mutex> lock(mutex_);

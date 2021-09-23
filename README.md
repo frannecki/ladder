@@ -10,7 +10,7 @@
 
   ```sh
   # GNU make
-  make
+  ./build.sh
   ```
 
 * bazel

@@ -46,8 +46,6 @@ cc_binary(
             ":tests_cc_proto",
             "@com_google_googletest//:gtest",
             "@com_google_googletest//:gtest_main",
-            "@com_google_googletest//:gmock",
-            "@com_google_googletest//:gmock_main",
     ],
 )
 
