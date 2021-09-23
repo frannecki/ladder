@@ -45,6 +45,7 @@ int accept(int fd, sockaddr_t* addr, socklen_t* addr_len);
 int connect(int fd, const sockaddr_t* addr, socklen_t addr_len);
 int shutdown_write(int fd);
 int shutdown_read(int fd);
+int close(int fd);
 int getsockname(int fd, sockaddr_t* addr, socklen_t* addr_len);
 
 } // namespace socket

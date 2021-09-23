@@ -7,6 +7,7 @@
 #include <utils.h>
 #include <Channel.h>
 #include <EventPoller.h>
+#include <Socket.h>
 
 namespace ladder {
 
@@ -124,8 +125,8 @@ Pipe::Pipe() {
 }
 
 Pipe::~Pipe() {
-  ::close(fd_[0]);
-  ::close(fd_[1]);
+  socket::close(fd_[0]);
+  socket::close(fd_[1]);
 }
 
 void Pipe::Wakeup() {

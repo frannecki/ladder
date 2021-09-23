@@ -18,7 +18,7 @@ public:
     if(addr6) {
       delete addr6;
     }
-    ::close(fd);
+    socket::close(fd);
   }
 
   static ladder::SocketAddr* addr;

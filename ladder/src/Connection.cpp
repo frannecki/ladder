@@ -7,6 +7,8 @@
 #include <EventLoop.h>
 #include <Buffer.h>
 
+#include <Socket.h>
+
 namespace ladder {
 
 Connection::Connection(const EventLoopPtr& loop, int fd) : 
@@ -33,7 +35,7 @@ void Connection::SetChannelCallbacks() {
 }
 
 Connection::~Connection() {
-  ::close(channel_->fd());
+  socket::close(channel_->fd());
   delete read_buffer_;
   delete write_buffer_;
 }

@@ -24,7 +24,7 @@ Timer::Timer(const EventLoopPtr& loop) :
 }
 
 Timer::~Timer() {
-  ::close(timer_fd_);
+  socket::close(timer_fd_);
 }
 
 void Timer::SetTimerEventCallback(const TimerEventCallback& callback) {

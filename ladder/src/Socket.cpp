@@ -1,3 +1,5 @@
+#include <unistd.h>
+
 #include <mutex>
 
 #include <Socket.h>
@@ -134,6 +136,14 @@ int shutdown_read(int fd) {
   int ret = ::shutdown(fd, SHUT_RD);
   if(ret < 0) {
     EXIT("shutdown SHUT_RD");
+  }
+  return ret;
+}
+
+int close(int fd) {
+  int ret = ::close(fd);
+  if(ret < 0) {
+    EXIT("close");
   }
   return ret;
 }
