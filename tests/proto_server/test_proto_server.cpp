@@ -22,9 +22,9 @@ void OnMessage(const ConnectionPtr& conn, TestMessage1* message, const ProtobufC
   LOG_INFO("Received message: " + message->GetTypeName());
   LOG_INFO("message key: " + message->key());
   LOG_INFO("message value: " + message->value());
-  LOG_INFO("success: " + std::to_string(message->success()));
-  LOG_INFO("message validate: " + std::to_string(message->validate()));
-  LOG_INFO("message id: " + std::to_string(message->id()));
+  LOGF_INFO("success: %d", message->success());
+  LOGF_INFO("message validate: %d", message->validate());
+  LOGF_INFO("message id: %u", message->id());
 
   message->set_id(message->id() + 1);
   codec.Send(conn, message);
@@ -35,7 +35,7 @@ void OnDefaultMessage(const ConnectionPtr& conn, google::protobuf::Message* mess
 }
 
 void OnConnection(const ConnectionPtr& conn, const ProtobufCodec& codec) {
-  LOG_INFO("Current number of clients connected: " + std::to_string(++count));
+  LOGF_INFO("Current number of clients connected: %d", ++count);
   ladder::TestMessage1 message;
   message.set_key("arbitrary_key");
   message.set_value("arbitrary_value");

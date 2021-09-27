@@ -10,6 +10,8 @@
 
 namespace ladder {
 
+const int kMaxMessageLength = 1024;
+
 #define LOG_FATAL(message) LOG_SEVERITY(message, FATAL)
 #define LOG_WARNING(message) LOG_SEVERITY(message, WARNING)
 #ifdef DEBUG
@@ -19,6 +21,17 @@ namespace ladder {
 #endif
 #define LOG_INFO(message) LOG_SEVERITY(message, INFO)
 #define LOG_SEVERITY(message, severity) if(Logger::instance()) Logger::instance()->WriteLog(message, #severity)
+
+// for formatted logging
+#define LOGF_FATAL(fmt, ...) LOGF_SEVERITY(fmt, FATAL, __VA_ARGS__)
+#define LOGF_WARNING(fmt, ...) LOGF_SEVERITY(fmt, WARNING, __VA_ARGS__)
+#ifdef DEBUG
+  #define LOGF_DEBUG(fmt, ...) LOGF_SEVERITY(fmt, DEBUG, __VA_ARGS__)
+#else
+  #define LOGF_DEBUG(fmt, ...)
+#endif
+#define LOGF_INFO(fmt, ...) LOGF_SEVERITY(fmt, INFO, __VA_ARGS__)
+#define LOGF_SEVERITY(fmt, severity, ...) if(Logger::instance()) Logger::instance()->WriteLogFmt(#severity, fmt, __VA_ARGS__)
 
 std::string GetCurrentDateTime();
 
@@ -37,6 +50,8 @@ public:
       message_queue_.emplace(line);
     // }
   }
+
+  void WriteLogFmt(std::string&& severity, const char* fmt, ...);
 
 private:
   Logger(const char* filepath);

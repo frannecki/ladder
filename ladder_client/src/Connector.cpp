@@ -62,8 +62,8 @@ void Connector::Start() {
       //   break;
 
       default:
-        LOG_FATAL("Failure with ::connect. fd = " + std::to_string(channel_->fd()) + \
-                  " errno = " + std::to_string(errno));
+        LOGF_FATAL("Failure with ::connect. fd = %d. errno = %d",
+                   channel_->fd(), errno);
         perror("connect");
         Retry();
     }

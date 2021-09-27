@@ -52,7 +52,7 @@ void TcpClient::Connect() {
               std::placeholders::_1));
   connector_->SetConnectionFailureCallback(
     std::bind(&TcpClient::OnConnectionFailureCallback, this));
-  LOG_INFO("Trying to establish connection to target. fd = " + std::to_string(fd));
+  LOGF_INFO("Trying to establish connection to target. fd = %d", fd);
   conn_->Init();
   
   // Try connecting
@@ -83,8 +83,8 @@ void TcpClient::SetConnectionCallback(const ConnectionEvtCallback& callback) {
 }
 
 void TcpClient::OnConnectionFailureCallback() {
-  LOG_INFO("Failed to connect to remote server. fd = " + \
-            std::to_string(conn_->channel()->fd()));
+  LOGF_INFO("Failed to connect to remote server. fd = %d",
+            conn_->channel()->fd());
   conn_.reset();
   {
     std::lock_guard<std::mutex> lock(mutex_status_);
@@ -97,10 +97,9 @@ void TcpClient::OnConnectionCallback(SocketAddr&& addr) {
     std::lock_guard<std::mutex> lock(mutex_status_);
     status_ = TcpConnectionStatus::kConnected;
   }
-  LOG_INFO("Connected to remote server " + target_addr_.ip() + \
-           ":" + std::to_string(target_addr_.port()) + " from " + \
-           addr.ip() + ":" + std::to_string(addr.port()) + ". fd = " \
-           + std::to_string(conn_->channel()->fd()));
+  LOGF_INFO("Connected to remote server %s:%u from %s:%u. fd = %d",
+            target_addr_.ip().c_str(), target_addr_.port(),
+            addr.ip().c_str(), addr.port(), conn_->channel()->fd());
   
   conn_->SetChannelCallbacks();
   

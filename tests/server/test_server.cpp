@@ -19,7 +19,7 @@ void OnMessage(const ConnectionPtr& conn, Buffer* buffer) {
 }
 
 void OnConnection(const ConnectionPtr& conn) {
-  LOG_INFO("Current number of clients connected: " + std::to_string(++count));
+  LOGF_INFO("Current number of clients connected: %d", ++count);
   conn->Send("Hello -- This is a ladder server.");
 }
 

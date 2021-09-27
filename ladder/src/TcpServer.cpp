@@ -55,8 +55,8 @@ void TcpServer::Start() {
               this,
               std::placeholders::_1,
               std::placeholders::_2));
-  LOG_INFO("Listening on fd = " + std::to_string(fd) + " " + \
-           addr_.ip() + ":" + std::to_string(addr_.port()));
+  LOGF_INFO("Listening on fd = %d %s:%u", fd,
+            addr_.ip().c_str(), addr_.port());
   loop_threads_.reset(new EventLoopThreadPool(loop_thread_num_));
   loop_->StartLoop();
 }
@@ -90,9 +90,8 @@ void TcpServer::OnNewConnection(int fd, const SocketAddr& addr) {
   {
     std::lock_guard<std::mutex> lock(mutex_connections_);
     connections_.insert(std::pair<int, ConnectionPtr>(fd, connection));
-    LOG_INFO("New connection from client " + addr.ip() + ":" \
-             + std::to_string(addr.port()) + " fd = " + std::to_string(fd) \
-             + " Current client number: " + std::to_string(connections_.size()));
+    LOGF_INFO("New connection from client %s:%u. fd = %d. Current client number: %u",
+              addr.ip().c_str(), addr.port(), fd, connections_.size());
   }
   // action on connection
   if(connection_callback_) {
@@ -101,7 +100,7 @@ void TcpServer::OnNewConnection(int fd, const SocketAddr& addr) {
 }
 
 void TcpServer::OnCloseConnectionCallback(int fd) {
-  LOG_INFO("Socket closed: " + std::to_string(fd));
+  LOGF_INFO("Socket closed: %d", fd);
   {
     std::lock_guard<std::mutex> lock(mutex_connections_);
     auto iter = connections_.find(fd);

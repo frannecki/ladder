@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <string.h>
+#include <stdarg.h>
 
 #include <Logger.h>
 #include <utils.h>
@@ -13,7 +14,7 @@ namespace ladder {
 std::string GetCurrentDateTime() {
     struct timeval tv;
     gettimeofday(&tv, NULL);
-    struct tm  *current = localtime(&(tv.tv_sec));
+    struct tm *current = localtime(&(tv.tv_sec));
     char buf[40], minor_buf[10];
     strftime(buf, sizeof(buf), "%Y-%m-%d %X.", current);
     snprintf(minor_buf, sizeof(minor_buf), "%06ld", tv.tv_usec);
@@ -23,7 +24,7 @@ std::string GetCurrentDateTime() {
 }
 
 Logger* Logger::instance() {
-  return instance_;
+  return instance_ ? instance_ : Logger::create();
 }
 
 Logger* Logger::create(std::string log_path) {
@@ -39,13 +40,13 @@ Logger* Logger::instance_ = nullptr;
 
 Logger::Logger(const char* filename) : running_(true) {
   if(strlen(filename) == 0) {
-    fd_ = STDERR_FILENO;
+    char log_path[20] = {0};
+    snprintf(log_path, sizeof(log_path), "ladder_%d.log", getpid());
+    filename = log_path;
   }
-  else {
-    fd_ = ::open(filename, O_CREAT | O_WRONLY | O_APPEND);
-    if(fd_ < 0) {
-      EXIT("[Logger] open");
-    }
+  fd_ = ::open(filename, O_CREAT | O_WRONLY | O_APPEND);
+  if(fd_ < 0) {
+    EXIT("[Logger] open");
   }
   logging_thread_ = std::thread(&Logger::ThreadFunc, this);
 }
@@ -57,6 +58,17 @@ Logger::~Logger() {
   // }
   logging_thread_.join();
   close(fd_);
+}
+
+void Logger::WriteLogFmt(std::string&& severity, const char* fmt, ...) {
+  std::string prefix = "[" + GetCurrentDateTime() + "][" + severity + "] ";
+  char msg[kMaxMessageLength];
+  va_list args;
+  va_start(args, fmt);
+  int ret = vsnprintf(msg, sizeof(msg), fmt, args);
+  va_end(args);
+  std::string message(msg, msg + ret);
+  message_queue_.emplace(prefix + message + "\n");
 }
 
 void Logger::ThreadFunc() {
