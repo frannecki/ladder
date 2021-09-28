@@ -5,7 +5,7 @@
 
 namespace ladder {
 
-const uint32_t kPrependLength = 8;  // 8-byte initial offset
+const uint32_t kPrependLength = 16;  // 16-byte initial offset
 const uint32_t kReadBufferSize = 1024;
 const uint32_t kWriteBufferSize = 1024;
 
@@ -122,7 +122,7 @@ int Buffer::ReadBufferFromFd(int fd) {
     else {
       Write(std::string(buf, buf+ret));
     }
-    if(ret < 0) {
+    if(ret <= 0) {
       break;
     }
   }
