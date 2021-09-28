@@ -19,7 +19,7 @@ $(TGT): $(OBJ)
 	$(CC) $(CFLAGS) $(INCLUDE) -c -o $@ $^ $(LIB)
 
 %pb.cc: %proto
-	$(PROTO) --proto_path=./proto  --cpp_out=./proto $^
+	$(PROTO) -I=../proto  --cpp_out=../proto $^
 
 clean:
 	rm -r $(TGT)

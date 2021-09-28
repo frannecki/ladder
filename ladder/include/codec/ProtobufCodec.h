@@ -1,5 +1,5 @@
-#ifndef LADDER_CODEC_H
-#define LADDER_CODEC_H
+#ifndef LADDER_PROTOBUF_CODEC_H
+#define LADDER_PROTOBUF_CODEC_H
 
 #include <map>
 #include <functional>
@@ -8,6 +8,7 @@
 #include <google/protobuf/descriptor.h>
 
 #include <Aliases.h>
+#include <codec/Codec.h>
 
 namespace ladder {
 
@@ -39,16 +40,12 @@ public:
 
 };
 
-class ProtobufCodec {
+class ProtobufCodec : public Codec {
 
 using CallbackPtr = std::shared_ptr<Callback>;
 
 public:
-  ProtobufCodec();
-
-  void Send(const ConnectionPtr& conn, google::protobuf::Message* message) const;
-
-  void OnMessage(const ConnectionPtr& conn, Buffer* buffer);
+  virtual ~ProtobufCodec();
 
   void RegisterDefaultMessageCallback(
     const std::function<void(const ConnectionPtr&, google::protobuf::Message*)>& callback);
@@ -62,11 +59,13 @@ public:
   static uint32_t kMinMessageLength;
 
 private:
-  void ComposeMessage(google::protobuf::Message* message, std::string& buf) const;
-  int ParseMessage(google::protobuf::Message*& message, Buffer* buffer);
   
   std::map<const google::protobuf::Descriptor*, CallbackPtr> callbacks_;
   std::function<void(const ConnectionPtr&, google::protobuf::Message*)> default_callback_;
+
+  void ComposeMessage(const void* message, std::string& buf) const override;
+  bool ParseMessage(const std::string& packet, void*& message) const override;
+  bool HandleMessage(const ConnectionPtr& conn, void* message) const override;
 };
 
 } // namespace ladder

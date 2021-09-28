@@ -5,7 +5,8 @@
 #include "proto/tests.pb.h"
 
 #define private public
-#include <ProtobufCodec.h>
+#define protected public
+#include <codec/ProtobufCodec.h>
 
 class ProtobufCodecTest : public testing::Test {
 protected:
@@ -20,7 +21,7 @@ protected:
     }
   }
 
-  ladder::ProtobufCodec* codec;
+  ladder::Codec* codec;
 };
 
 TEST_F(ProtobufCodecTest, test_message) {
@@ -31,18 +32,22 @@ TEST_F(ProtobufCodecTest, test_message) {
   message.set_validate(true);
   message.set_id(9);
 
-  std::string buf;
-  codec->ComposeMessage(&message, buf);
+  std::string packet;
+  codec->Encapsulate(&message, packet);
 
   ladder::Buffer buffer;
-  buffer.Write(buf);
-  google::protobuf::Message* msg = nullptr;
-  int length = codec->ParseMessage(msg, &buffer);
+  buffer.Write(packet);
+  
+  std::string raw_data;
+  ASSERT_TRUE(codec->Decapsulate(raw_data, &buffer));
 
-  ASSERT_GT(length, ladder::ProtobufCodec::kMinMessageLength);
+  ASSERT_GT(raw_data.size(), ladder::ProtobufCodec::kMinMessageLength);
+
+  void* msg = nullptr;
+  ASSERT_TRUE(codec->ParseMessage(raw_data, msg));
   ASSERT_TRUE(msg != nullptr);
 
-  ladder::TestMessage1 *msg1 = dynamic_cast<ladder::TestMessage1*>(msg);
+  ladder::TestMessage1 *msg1 = reinterpret_cast<ladder::TestMessage1*>(msg);
   EXPECT_EQ(msg1->key(), "arbitrary_key");
   EXPECT_EQ(msg1->value(), "arbitrary_value");
   EXPECT_FALSE(msg1->success());

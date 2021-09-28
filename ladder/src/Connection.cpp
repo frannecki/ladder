@@ -9,6 +9,8 @@
 
 #include <Socket.h>
 
+#include <Logger.h>
+
 namespace ladder {
 
 Connection::Connection(const EventLoopPtr& loop, int fd) : 
@@ -51,8 +53,9 @@ void Connection::Send(const std::string& buf) {
 void Connection::OnReadCallback() {
   int ret = read_buffer_->ReadBufferFromFd(channel_->fd());
   if(ret == 0) {
-    // FIN accepted
+    // FIN received
     // channel_->ShutDownWrite();
+    LOGF_INFO("FIN received fd = %d", channel_->fd());
     shut_down_ = true;
     if(write_buffer_->Empty()) {
       channel_->ShutDownWrite();

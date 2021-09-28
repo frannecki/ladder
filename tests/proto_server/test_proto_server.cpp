@@ -5,7 +5,7 @@
 #include <Buffer.h>
 #include <Socket.h>
 #include <Connection.h>
-#include <ProtobufCodec.h>
+#include <codec/ProtobufCodec.h>
 #include <Logger.h>
 
 #include "proto/tests.pb.h"

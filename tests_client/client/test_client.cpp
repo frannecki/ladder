@@ -69,7 +69,7 @@ int main(int argc, char** argv) {
     }
     else {
       buffer[ret] = 0;
-      fprintf(stdout, "Received buffer of %d bytes from server: %s\n",
+      fprintf(stdout, "Received buffer of %d bytes from server after shutdown: %s\n",
               ret, buffer);
     }
   }
