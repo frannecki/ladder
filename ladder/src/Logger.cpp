@@ -27,8 +27,8 @@ Logger* Logger::instance() {
   return instance_ ? instance_ : Logger::create();
 }
 
-Logger* Logger::create(std::string log_path) {
-  static Logger* instance = new Logger(log_path.c_str());
+Logger* Logger::create(std::string log_path, int level) {
+  static Logger* instance = new Logger(log_path.c_str(), level);
   return instance_ = instance;
 }
 
@@ -38,10 +38,12 @@ void Logger::release() {
 
 Logger* Logger::instance_ = nullptr;
 
-Logger::Logger(const char* filename) : running_(true) {
+Logger::Logger(const char* filename, int level) : 
+  running_(true), level_(level)
+{
   if(strlen(filename) == 0) {
     char log_path[20] = {0};
-    snprintf(log_path, sizeof(log_path), "ladder_%d.log", getpid());
+    snprintf(log_path, sizeof(log_path), "ladder.%d.log", getpid());
     filename = log_path;
   }
   fd_ = ::open(filename, O_CREAT | O_WRONLY | O_APPEND);
@@ -60,8 +62,10 @@ Logger::~Logger() {
   close(fd_);
 }
 
-void Logger::WriteLogFmt(std::string&& severity, const char* fmt, ...) {
-  std::string prefix = "[" + GetCurrentDateTime() + "][" + severity + "] ";
+void Logger::WriteLogFmt(enum LogLevel severity, const char* fmt, ...) {
+  if(static_cast<int>(severity) < level_)  return;
+  std::string prefix = "[" + GetCurrentDateTime() + "][" + \
+                       kLogLevels[static_cast<int>(severity)] + "] ";
   char msg[kMaxMessageLength];
   va_list args;
   va_start(args, fmt);
@@ -87,5 +91,8 @@ void Logger::ThreadFunc() {
     }
   }
 }
+
+const char* Logger::kLogLevels[] = {"TRACE", "DEBUG", "INFO",
+                                    "WARNING", "ERROR", "FATAL"};
 
 } // namespace ladder

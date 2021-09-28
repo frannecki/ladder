@@ -4,7 +4,7 @@
 using namespace ladder;
 
 int main() {
-  // Logger::create("./test_logger.log");
+  // Logger::create("./test_logger.log", kLogError);
   while(1) {
     LOG_FATAL("This is a fatal log message.");
     LOG_INFO("Greeting: Are You OK?");
