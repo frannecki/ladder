@@ -18,7 +18,7 @@ void EventLoop::StartLoop() {
     running_ = true;
   }
   while(running_) {
-    std::vector<ChannelPtr> active_channels;
+    std::vector<Channel*> active_channels;
     poller_->Poll(active_channels);
     for(auto& channel : active_channels) {
       channel->HandleEvents();
@@ -36,8 +36,8 @@ void EventLoop::StopLoop() {
   running_ = false;
 }
 
-void EventLoop::AddChannel(const ChannelPtr& channel) {
-  poller_->AddChannel(channel);
+void EventLoop::UpdateChannel(Channel* channel, int op) {
+  poller_->UpdateChannel(channel, op);
 }
 
 void EventLoop::RemoveChannel(int fd) {

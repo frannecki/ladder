@@ -2,7 +2,6 @@
 #include <sys/epoll.h>
 
 #include <utils.h>
-#include <Logger.h>
 #include <Channel.h>
 #include <EventLoop.h>
 #include <Socket.h>
@@ -12,15 +11,14 @@ namespace ladder {
 Channel::Channel(EventLoopPtr loop, int fd) :
   fd_(fd),
   loop_(loop),
-  events_(EPOLLIN)
+  // EPOLLOUT set initially
+  event_mask_(EPOLLIN | EPOLLRDHUP | EPOLLOUT)
 {
 
 }
 
 Channel::~Channel() {
-  if(loop_) {
-    RemoveFromLoop();
-  }
+
 }
 
 void Channel::SetReadCallback(const std::function<void()>& callback) {
@@ -43,8 +41,12 @@ void Channel::SetEvents(uint32_t events) {
   events_ = events;
 }
 
-uint32_t Channel::GetEvents() const {
+uint32_t Channel::events() const {
   return events_;
+}
+
+uint32_t Channel::event_mask() const {
+  return event_mask_;
 }
 
 void Channel::SetEpollEdgeTriggered(bool edge_triggered) {
@@ -52,24 +54,36 @@ void Channel::SetEpollEdgeTriggered(bool edge_triggered) {
   // Since the socket is writable most of the time, almost
   // every trigger will set this flag.
   if(edge_triggered) {
-    events_ |= (EPOLLET | EPOLLOUT);
+    event_mask_ |= EPOLLET;
   }
   else {
-    events_ &= (~(EPOLLET | EPOLLOUT));
+    event_mask_ &= (~EPOLLET);
   }
+}
+
+void Channel::EnableWrite(bool enable) {
+  if(enable) {
+    event_mask_ |= EPOLLOUT;
+  }
+  else {
+    event_mask_ &= (~EPOLLOUT);
+  }
+  UpdateToLoop(EPOLL_CTL_MOD);
 }
 
 
 void Channel::HandleEvents() {
-  if(events_ & EPOLLERR) {
-    if(error_callback_) {
-      error_callback_();
+  if(events_ & EPOLLHUP) {
+    // normally EPOLLHUP is not generated.
+    // peer close signal (EPOLLRDHUP) is mostly handled after read or write
+    if(close_callback_) {
+      close_callback_();
     }
     return;
   }
-  if((events_ & EPOLLHUP)) {
-    if(close_callback_) {
-      close_callback_();
+  if(events_ & EPOLLERR) {
+    if(error_callback_) {
+      error_callback_();
     }
     return;
   }
@@ -78,24 +92,27 @@ void Channel::HandleEvents() {
       write_callback_();
     }
   }
+  // Pay close attention to the order of event handing.
+  // Handling read event could cause this channel to deconstruct
   if(events_ & (EPOLLIN | EPOLLPRI | EPOLLRDHUP)) {
     if(read_callback_) {
       read_callback_();
     }
   }
-  SetEvents(0);
 }
 
 int Channel::fd() const {
   return fd_;
 }
 
-void Channel::AddToLoop() {
-  loop_->AddChannel(shared_from_this());
+void Channel::UpdateToLoop(int op) {
+  loop_->UpdateChannel(this, op);
 }
 
 void Channel::RemoveFromLoop() {
-  loop_->RemoveChannel(fd_);
+  if(loop_) {
+    loop_->RemoveChannel(fd_);
+  }
 }
 
 void Channel::ShutDownWrite() {

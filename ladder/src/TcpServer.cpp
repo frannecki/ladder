@@ -48,7 +48,7 @@ void TcpServer::Start() {
   addr_.Bind(fd);
   socket::listen(fd);
   channel_.reset(new Channel(loop_, fd));
-  channel_->AddToLoop();
+  channel_->UpdateToLoop();
   acceptor_.reset(new Acceptor(channel_, addr_.ipv6()));
   acceptor_->SetNewConnectionCallback(
     std::bind(&TcpServer::OnNewConnectionCallback, 

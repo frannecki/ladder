@@ -74,7 +74,7 @@ int main(int argc, char** argv) {
     }
   }
 
-  fprintf(stdout, "connection closed");
+  fprintf(stdout, "connection closed\n");
 
   if(close(sockfd) < 0) {
     perror("close");

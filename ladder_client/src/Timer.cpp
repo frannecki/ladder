@@ -21,7 +21,7 @@ Timer::Timer(const EventLoopPtr& loop) :
     EXIT("[Timer] timerfd_create");
   }
   timer_channel_ = std::make_shared<Channel>(loop, timer_fd_);
-  timer_channel_->AddToLoop();
+  timer_channel_->UpdateToLoop();
   timer_channel_->SetReadCallback(std::bind(&Timer::OnTimer, this));
 }
 

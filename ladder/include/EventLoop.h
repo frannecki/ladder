@@ -21,7 +21,7 @@ public:
   EventLoop();
   void StartLoop();
   void StopLoop();
-  void AddChannel(const ChannelPtr& channel);
+  void UpdateChannel(Channel* channel, int op);
   void RemoveChannel(int fd);
   void QueueInLoop(std::function<void()>&& task);
   void SetWakeupCallback(const std::function<void()>& callback);

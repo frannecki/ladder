@@ -9,8 +9,6 @@
 
 #include <Socket.h>
 
-#include <Logger.h>
-
 namespace ladder {
 
 Connection::Connection(const EventLoopPtr& loop, int fd) : 
@@ -25,7 +23,7 @@ Connection::Connection(const EventLoopPtr& loop, int fd) :
 void Connection::Init() {
   // do not call shared_from_this() in constructor
   channel_->SetEpollEdgeTriggered();
-  channel_->AddToLoop();
+  channel_->UpdateToLoop();
   SetChannelCallbacks();
 }
 
@@ -51,15 +49,11 @@ void Connection::Send(const std::string& buf) {
 }
 
 void Connection::OnReadCallback() {
+  if(shut_down_)  return;
   int ret = read_buffer_->ReadBufferFromFd(channel_->fd());
   if(ret == 0) {
     // FIN received
-    // channel_->ShutDownWrite();
-    LOGF_INFO("FIN received fd = %d", channel_->fd());
     shut_down_ = true;
-    if(write_buffer_->Empty()) {
-      channel_->ShutDownWrite();
-    }
 
     // IMPORTANT: OnCloseCallback can only be called once
     // since the current connection would be destructed after the call
@@ -82,20 +76,34 @@ void Connection::OnReadCallback() {
   if(read_callback_ && !read_buffer_->Empty()) {
     read_callback_(shared_from_this(), read_buffer_);
   }
+
+  if(shut_down_ && write_buffer_->Empty()) {
+    OnCloseCallback();
+  }
 }
 
 void Connection::OnWriteCallback() {
-  write_buffer_->WriteBufferToFd(channel_->fd());
+  int ret = write_buffer_->WriteBufferToFd(channel_->fd());
   if(write_callback_) {
     write_callback_(write_buffer_);
   }
   if(shut_down_ && write_buffer_->Empty()) {
-    channel_->ShutDownWrite();
+    // channel_->ShutDownWrite();
+    OnCloseCallback();
+  }
+  
+  if(ret < 0) {
+    // reached EAGAIN / EWOULDBLOCK,
+    // output buffer unavaiable to write
+    channel_->EnableWrite();
+  }
+  else {
+    // output buffer currently available for write
+    channel_->EnableWrite(false);
   }
 }
 
 void Connection::OnCloseCallback() {
-  shut_down_ = true;
   channel_->ShutDownWrite();
   channel_->RemoveFromLoop();
   if(close_callback_) {

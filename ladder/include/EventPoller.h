@@ -19,16 +19,15 @@ class EventPoller {
 public:
   EventPoller();
   ~EventPoller();
-  void Poll(std::vector<ChannelPtr>& active_channels);
-  void AddChannel(const ChannelPtr& channel);
+  void Poll(std::vector<Channel*>& active_channels);
+  void UpdateChannel(Channel* channel, int op);
   void RemoveChannel(int fd);
   void Wakeup();
   void SetWakeupCallback(const std::function<void()>& callback);
 
 private:
   int epfd_;
-  std::map<int, ChannelPtr> channels_;
-  std::mutex mutex_;
+  int cur_poll_size_;
   PipePtr pipe_;
 };
 

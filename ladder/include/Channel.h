@@ -2,6 +2,7 @@
 #define LADDER_CHANNEL_H
 
 #include <stdint.h>
+#include <sys/epoll.h>
 
 #include <memory>
 #include <functional>
@@ -12,7 +13,7 @@ class EventLoop;
 
 using EventLoopPtr = std::shared_ptr<EventLoop>;
 
-class Channel : public std::enable_shared_from_this<Channel> {
+class Channel {
 public:
   Channel(EventLoopPtr loop, int fd);
   ~Channel();
@@ -22,10 +23,12 @@ public:
   void SetCloseCallback(const std::function<void()>& callback);
   void SetErrorCallback(const std::function<void()>& callback);
   void SetEvents(uint32_t events);
-  void SetEpollEdgeTriggered(bool edge_triggered=true);
-  uint32_t GetEvents() const;
+  void SetEpollEdgeTriggered(bool edge_triggered = true);
+  void EnableWrite(bool enable = true);
+  uint32_t events() const;
+  uint32_t event_mask() const;
   void HandleEvents();
-  void AddToLoop();
+  void UpdateToLoop(int op = EPOLL_CTL_ADD);
   void RemoveFromLoop();
 
   void ShutDownWrite();
@@ -39,6 +42,7 @@ private:
   int fd_;
   EventLoopPtr loop_;
   uint32_t events_;
+  uint32_t event_mask_;
   std::function<void()> read_callback_;
   std::function<void()> write_callback_;
   std::function<void()> close_callback_;
