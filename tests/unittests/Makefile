@@ -22,5 +22,5 @@ $(TGT): $(OBJ)
 	$(PROTO) -I=../proto  --cpp_out=../proto $^
 
 clean:
-	rm -r $(TGT)
-	rm $(OBJ)
+	rm -rf $(TGT)
+	rm -f $(OBJ)

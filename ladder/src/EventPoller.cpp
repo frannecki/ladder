@@ -7,6 +7,7 @@
 #include <Channel.h>
 #include <EventPoller.h>
 #include <Socket.h>
+#include <MemoryPool.h>
 
 namespace ladder {
 
@@ -28,7 +29,12 @@ EventPoller::~EventPoller() {
 
 void EventPoller::Poll(std::vector<Channel*>& active_channels) {
 
-  struct epoll_event* evts = new struct epoll_event[cur_poll_size_];
+  bool alloc_success = true;
+  struct epoll_event* evts = MemoryPool<epoll_event>::allocate_n(cur_poll_size_);
+  if(evts == nullptr) {
+    alloc_success = false;
+    evts = new struct epoll_event[cur_poll_size_];
+  }
 
   int ret = epoll_wait(epfd_, evts, cur_poll_size_,
                        kEpollTimeoutMs / 10);
@@ -48,7 +54,12 @@ void EventPoller::Poll(std::vector<Channel*>& active_channels) {
     active_channels.emplace_back(channel);
   }
 
-  delete []evts;
+  if(!alloc_success) {
+    delete []evts;
+  }
+  else {
+    MemoryPool<epoll_event>::free(evts, true);
+  }
 }
 
 void EventPoller::UpdateChannel(Channel* channel,
