@@ -73,7 +73,7 @@ void EventPoller::UpdateChannel(Channel* channel,
                       channel->fd(), &event);
   if(ret < 0) {
     switch(errno) {
-      case(EEXIST):
+      case EEXIST:
         break;
       default:
         EXIT("[EventPoller] epoll_ctl add");
@@ -88,7 +88,7 @@ void EventPoller::RemoveChannel(int fd) {
   int ret = epoll_ctl(epfd_, EPOLL_CTL_DEL, fd, NULL);
   if(ret < 0) {
     switch(errno) {
-      case(ENOENT):
+      case ENOENT:
         break;
       default:
         EXIT("[EventPoller] epoll_ctl del");

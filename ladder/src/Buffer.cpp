@@ -119,8 +119,8 @@ int Buffer::WriteBufferToFd(int fd) {
 #if EWOULDBLOCK != EAGAIN
         case EWOULDBLOCK:
 #endif
-        case(ECONNRESET):
-        case(EPIPE):
+        case ECONNRESET:
+        case EPIPE:
           break;
         default:
           EXIT("[Buffer] write");
