@@ -118,6 +118,14 @@ int connect(int fd, const sockaddr_t* addr, socklen_t addr_len) {
   return ret;
 }
 
+int write(int fd, const void* buf, size_t len) {
+  return ::write(fd, buf, len);
+}
+
+int read(int fd, void* buf, size_t len) {
+  return ::read(fd, buf, len);
+}
+
 int shutdown_write(int fd) {
   int ret = ::shutdown(fd, SHUT_WR);
   if(ret < 0) {

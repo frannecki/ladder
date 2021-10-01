@@ -6,7 +6,6 @@
 #include <Channel.h>
 #include <utils.h>
 #include <Socket.h>
-#include <ThreadPool.h>
 
 namespace ladder {
 

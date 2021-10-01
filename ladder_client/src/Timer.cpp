@@ -1,6 +1,5 @@
 #include <unistd.h>
 #include <sys/timerfd.h>
-#include <sys/epoll.h>
 #include <string.h>
 
 #include <utils.h>
@@ -8,8 +7,6 @@
 #include <Channel.h>
 #include <EventLoop.h>
 #include <Socket.h>
-
-#include <Logger.h>
 
 namespace ladder {
 
@@ -56,7 +53,7 @@ uint64_t Timer::GetInterval() const {
 
 void Timer::OnTimer() {
   uint64_t exp;
-  if(::read(timer_fd_, &exp, sizeof(exp)) < 0) {
+  if(socket::read(timer_fd_, &exp, sizeof(exp)) < 0) {
     EXIT("[Timer] read");
   }
   if(callback_) {

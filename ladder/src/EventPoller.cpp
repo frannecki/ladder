@@ -122,7 +122,7 @@ Pipe::~Pipe() {
 
 void Pipe::Wakeup() {
   char ch;
-  ::write(fd_[1], &ch, sizeof(ch));
+  socket::write(fd_[1], &ch, sizeof(ch));
 }
 
 ChannelPtr Pipe::channel() const {
@@ -135,7 +135,7 @@ void Pipe::SetWakeupCallback(const std::function<void()>& callback) {
 
 void Pipe::ReadCallback() {
   char ch;
-  ::read(fd_[0], &ch, sizeof(ch));
+  socket::read(fd_[0], &ch, sizeof(ch));
   if(wakeup_callback_) {
     wakeup_callback_();
   }

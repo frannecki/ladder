@@ -1,6 +1,7 @@
 #include <unistd.h>
 
 #include <Buffer.h>
+#include <Socket.h>
 #include <utils.h>
 
 namespace ladder {
@@ -85,7 +86,7 @@ int Buffer::ReadBufferFromFd(int fd) {
   int ret = 0;
   char buf[kReadBufferSize];
   while(1) {
-    ret = ::read(fd, buf, kReadBufferSize);
+    ret = socket::read(fd, buf, kReadBufferSize);
     if(ret < 0) {
       switch(errno) {
         case EAGAIN:
@@ -112,7 +113,7 @@ int Buffer::WriteBufferToFd(int fd) {
   std::string buf;
   while(ReadableBytes() > 0) {
     Peek(kWriteBufferSize, buf);
-    int ret = ::write(fd, buf.c_str(), buf.size());
+    int ret = socket::write(fd, buf.c_str(), buf.size());
     if(ret < 0) {
       switch(errno) {
         case EAGAIN:
