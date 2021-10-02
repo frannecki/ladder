@@ -24,7 +24,6 @@ short valid_filters[] = {
 											 EVFILT_WRITE,
 											 EVFILT_TIMER
 											};
-#endif
 
 static int kqueue_ctl(int kq,
 											uintptr_t ident,
@@ -47,6 +46,8 @@ static int kqueue_ctl(int kq,
   }
 	return ret;
 }
+
+#endif
 
 EventPoller::EventPoller() : cur_poll_size_(0) {
   pipe_.reset(new Pipe);
@@ -115,10 +116,10 @@ void EventPoller::Poll(std::vector<Channel*>& active_channels) {
 
   for(int i = 0; i < ret; ++i) {
 #ifdef __linux__
-    int evt = poll_evts[i].events;
+    uint32_t evt = poll_evts[i].events;
     auto channel = reinterpret_cast<Channel*>(poll_evts[i].data.ptr);
 #elif defined(__FreeBSD__)
-		int evt = 0;
+		uint32_t evt = 0;
 		short flt = poll_evts[i].filter;
 		auto channel = reinterpret_cast<Channel*>(poll_evts[i].udata);
 		if(poll_evts[i].flags & EV_ERROR) {
@@ -169,9 +170,9 @@ void EventPoller::UpdateChannel(Channel* channel,
   }
 #elif defined(__FreeBSD__)
 	int ret = -1;
-	int event_mask = channel->event_mask();
+	uint32_t event_mask = channel->event_mask();
 	while(event_mask) {
-		int status = event_mask & (-event_mask);
+		uint32_t status = event_mask & (-event_mask);
 		event_mask ^= status;
 		auto iter = stat_2_flt_.find(status);
 		if(iter == stat_2_flt_.end()) {
@@ -245,7 +246,7 @@ void EventPoller::SetWakeupCallback(const std::function<void()>& callback) {
 
 // map between filters and status
 
-std::map<short, int> EventPoller::flt_2_stat_ = \
+std::map<short, uint32_t> EventPoller::flt_2_stat_ = \
 	{
 		{EVFILT_READ, kPollEvent::kPollIn},
 	  {EVFILT_WRITE, kPollEvent::kPollOut},
@@ -253,7 +254,7 @@ std::map<short, int> EventPoller::flt_2_stat_ = \
 		{EVFILT_USER, kPollEvent::kPollErr}		// use user event to indicate error
 	};
 
-std::map<int, short> EventPoller::stat_2_flt_ = \
+std::map<uint32_t, short> EventPoller::stat_2_flt_ = \
 	{
 		{kPollEvent::kPollIn, EVFILT_READ},
 	  {kPollEvent::kPollOut, EVFILT_WRITE},

@@ -40,7 +40,6 @@ if(GTest_FOUND)
 endif()
 
 list(APPEND TESTS_EXECUTABLES "logger" "server" "proto_server" "event_poller")
-message(${TESTS_EXECUTABLES})
 foreach(child ${TESTS_EXECUTABLES})
     file(GLOB CUR_SOURCES tests/${child}/*.cpp tests/proto/*.pb.cc)
     add_executable(test_${child} ${CUR_SOURCES})

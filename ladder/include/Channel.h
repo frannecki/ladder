@@ -26,7 +26,7 @@ public:
   void SetWriteCallback(const std::function<void()>& callback);
   void SetCloseCallback(const std::function<void()>& callback);
   void SetErrorCallback(const std::function<void()>& callback);
-  void SetEvents(int events);
+  void SetEvents(uint32_t events);
   void EnableWrite(bool enable = true);
   uint32_t events() const;
   void HandleEvents();
@@ -49,8 +49,8 @@ private:
 
   int fd_;
   EventLoopPtr loop_;
-  int events_;
-  int event_mask_;
+  uint32_t events_;
+  uint32_t event_mask_;
   std::function<void()> read_callback_;
   std::function<void()> write_callback_;
   std::function<void()> close_callback_;

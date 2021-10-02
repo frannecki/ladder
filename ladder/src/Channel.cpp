@@ -41,7 +41,7 @@ void Channel::SetErrorCallback(const std::function<void()>& callback) {
   error_callback_ = callback;
 }
 
-void Channel::SetEvents(int events) {
+void Channel::SetEvents(uint32_t events) {
 	events_ |= events;
 }
 

@@ -15,7 +15,7 @@
 
 namespace ladder {
 
-enum kPollEvent : int {
+enum kPollEvent : uint32_t {
 #ifdef __linux__
 	kPollIn = EPOLLIN,
   kPollOut = EPOLLOUT,
@@ -55,8 +55,8 @@ private:
   int cur_poll_size_;
   PipePtr pipe_;
 #ifdef __FreeBSD__
-	static std::map<short, int> flt_2_stat_;	// filter to status
-	static std::map<int, short> stat_2_flt_;			// status to filter
+	static std::map<short, int64> flt_2_stat_;	// filter to status
+	static std::map<int64, short> stat_2_flt_;			// status to filter
 #endif
 };
 
