@@ -6,12 +6,13 @@ option(DEBUG OFF)
 
 find_package(Threads REQUIRED)
 find_package(Protobuf REQUIRED)
+find_package(ZLIB REQUIRED)
 find_package(GTest REQUIRED)
 
-file(GLOB LADDER_SOURCES ladder/src/*.cpp)
+file(GLOB LADDER_SOURCES ladder/src/*.cpp ladder/src/*/*.cpp)
 add_library(ladder SHARED ${LADDER_SOURCES})
 target_include_directories(ladder PUBLIC ${Protobuf_INCLUDE_DIRS} ladder/include)
-target_link_libraries(ladder ${Protobuf_LIBRARIES} Threads::Threads)
+target_link_libraries(ladder ${Protobuf_LIBRARIES} ${ZLIB_LIBRARIES} Threads::Threads)
 
 file(GLOB LADDER_CLIENT_SOURCES ladder_client/src/*.cpp)
 add_library(ladder_client SHARED ${LADDER_CLIENT_SOURCES})

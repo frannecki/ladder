@@ -30,6 +30,7 @@ void Connector::Start() {
   channel_->SetErrorCallback(std::bind(&Connector::Retry, this));
   channel_->SetCloseCallback(std::bind(&Connector::Retry, this));
   channel_->SetReadCallback(nullptr);
+  channel_->EnableWrite(true);
   const sockaddr_t* sa = addr_.addr();
   int ret = socket::connect(channel_->fd(), sa,
                             ipv6_ ? sizeof(sa->addr6_) : sizeof(sa->addr_));

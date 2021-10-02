@@ -52,4 +52,8 @@ void EventLoop::SetWakeupCallback(const std::function<void()>& callback) {
   poller_->SetWakeupCallback(callback);
 }
 
+int EventLoop::UpdateEvent(const struct kevent* evt) {
+	return poller_->UpdateEvent(evt);
+}
+
 } // namespace ladder

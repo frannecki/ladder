@@ -22,7 +22,9 @@ Connection::Connection(const EventLoopPtr& loop, int fd) :
 
 void Connection::Init() {
   // do not call shared_from_this() in constructor
+#ifdef __linux
   channel_->SetEpollEdgeTriggered();
+#endif
   channel_->UpdateToLoop();
   SetChannelCallbacks();
 }

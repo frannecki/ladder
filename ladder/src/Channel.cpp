@@ -10,8 +10,13 @@ namespace ladder {
 Channel::Channel(EventLoopPtr loop, int fd) :
   fd_(fd),
   loop_(loop),
-  // EPOLLOUT set initially
-  event_mask_(EPOLLIN | EPOLLRDHUP | EPOLLOUT)
+	events_(0),
+  // POLL_OUT set initially
+#ifdef __linux__
+	event_mask_(kPollEvent::kPollIn | kPollEvent::kPollRdHup | kPollEvent::kPollOut)
+#elif defined(__FreeBSD__)
+	event_mask_(kPollEvent::kPollIn)
+#endif
 {
 
 }
@@ -36,8 +41,8 @@ void Channel::SetErrorCallback(const std::function<void()>& callback) {
   error_callback_ = callback;
 }
 
-void Channel::SetEvents(uint32_t events) {
-  events_ = events;
+void Channel::SetEvents(int events) {
+	events_ |= events;
 }
 
 uint32_t Channel::events() const {
@@ -48,56 +53,72 @@ uint32_t Channel::event_mask() const {
   return event_mask_;
 }
 
+#ifdef __linux__
 void Channel::SetEpollEdgeTriggered(bool edge_triggered) {
-  // IMPORTANT: re-consider whether to add EPOLLOUT here.
+  // IMPORTANT: re-consider whether to add POLL_OUT here.
   // Since the socket is writable most of the time, almost
   // every trigger will set this flag.
   if(edge_triggered) {
-    event_mask_ |= EPOLLET;
+    event_mask_ |= kPollEvent::kPollEt;
   }
   else {
-    event_mask_ &= (~EPOLLET);
+    event_mask_ &= (~kPollEvent::kPollEt);
   }
 }
+#endif
 
 void Channel::EnableWrite(bool enable) {
+#ifdef __linux__
   if(enable) {
-    event_mask_ |= EPOLLOUT;
+    event_mask_ |= kPollEvent::kPollOut;
   }
   else {
-    event_mask_ &= (~EPOLLOUT);
+    event_mask_ &= (~kPollEvent::kPollOut);
   }
   UpdateToLoop(EPOLL_CTL_MOD);
+#elif defined(__FreeBSD__)
+  event_mask_ = kPollEvent::kPollOut;
+	// UpdateToLoop(enable ? (EV_ADD | EV_ENABLE | EV_CLEAR) : EV_DISABLE);
+	UpdateToLoop(enable ? (EV_ADD | EV_ENABLE) : EV_DISABLE);
+#endif
 }
 
 
 void Channel::HandleEvents() {
-  if(events_ & EPOLLHUP) {
-    // normally EPOLLHUP is not generated.
-    // peer close signal (EPOLLRDHUP) is mostly handled after read or write
+#ifdef __linux__
+  if(events_ & kPollEvent::kPollHup) {
+    // normally POLL_HUP is not generated.
+    // peer close signal (POLL_RDHUP) is 
+		// mostly handled after read or write
     if(close_callback_) {
       close_callback_();
     }
     return;
   }
-  if(events_ & EPOLLERR) {
+#endif
+  if(events_ & kPollEvent::kPollErr) {
     if(error_callback_) {
       error_callback_();
     }
     return;
   }
-  if(events_ & EPOLLOUT) {
+  if(events_ & kPollEvent::kPollOut) {
     if(write_callback_) {
       write_callback_();
     }
   }
   // Pay close attention to the order of event handing.
   // Handling read event could cause this channel to deconstruct
-  if(events_ & (EPOLLIN | EPOLLPRI | EPOLLRDHUP)) {
+#ifdef __linux__
+	if(events_ & (kPollEvent::kPollIn | kPollEvent::kPollOut | kPollEvent::kPollRdHup)) {
+#elif defined(__FreeBSD__)
+	if(events_ & kPollEvent::kPollIn) {
+#endif
     if(read_callback_) {
       read_callback_();
     }
   }
+	events_ = 0;
 }
 
 int Channel::fd() const {
@@ -127,15 +148,21 @@ void Channel::ShutDownRead() {
 }
 
 bool Channel::Iswriting() const {
-  return events_ & EPOLLOUT;
+  return events_ & kPollEvent::kPollOut;
 }
 
 bool Channel::IsReading() const {
-  return events_ & (EPOLLIN | EPOLLPRI);
+#ifdef __linux__
+  return events_ & (kPollEvent::kPollIn | kPollEvent::kPollPri);
+#elif defined(__FreeBSD__)
+  return events_ & kPollEvent::kPollIn;
+#endif
 }
 
 EventLoopPtr Channel::loop() const {
   return loop_;
 }
 
+
 } // namespace ladder
+

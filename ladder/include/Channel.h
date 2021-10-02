@@ -2,7 +2,11 @@
 #define LADDER_CHANNEL_H
 
 #include <stdint.h>
+#ifdef __linux__
 #include <sys/epoll.h>
+#elif defined(__FreeBSD__)
+#include <sys/event.h>
+#endif
 
 #include <memory>
 #include <functional>
@@ -22,13 +26,17 @@ public:
   void SetWriteCallback(const std::function<void()>& callback);
   void SetCloseCallback(const std::function<void()>& callback);
   void SetErrorCallback(const std::function<void()>& callback);
-  void SetEvents(uint32_t events);
-  void SetEpollEdgeTriggered(bool edge_triggered = true);
+  void SetEvents(int events);
   void EnableWrite(bool enable = true);
   uint32_t events() const;
-  uint32_t event_mask() const;
   void HandleEvents();
-  void UpdateToLoop(int op = EPOLL_CTL_ADD);
+  uint32_t event_mask() const;
+#ifdef __linux__
+	void UpdateToLoop(int op = EPOLL_CTL_ADD);
+  void SetEpollEdgeTriggered(bool edge_triggered = true);
+#elif defined(__FreeBSD__)
+	void UpdateToLoop(int op = EV_ADD | EV_ENABLE);// | EV_CLEAR);
+#endif
   void RemoveFromLoop();
 
   void ShutDownWrite();
@@ -41,8 +49,8 @@ private:
 
   int fd_;
   EventLoopPtr loop_;
-  uint32_t events_;
-  uint32_t event_mask_;
+  int events_;
+  int event_mask_;
   std::function<void()> read_callback_;
   std::function<void()> write_callback_;
   std::function<void()> close_callback_;
