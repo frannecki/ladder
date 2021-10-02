@@ -26,6 +26,9 @@ public:
   void QueueInLoop(std::function<void()>&& task);
   void SetWakeupCallback(const std::function<void()>& callback);
   // TODO: wake up poller for urgent tasks
+#ifdef __FreeBSD__
+	int UpdateEvent(const struct kevent* evt);
+#endif
 
 private:
   EventPollerPtr poller_;

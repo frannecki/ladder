@@ -18,7 +18,7 @@ std::string GetCurrentDateTime() {
     char buf[40], minor_buf[10];
     strftime(buf, sizeof(buf), "%Y-%m-%d %X.", current);
     snprintf(minor_buf, sizeof(minor_buf), "%06ld", tv.tv_usec);
-    strncat(buf, minor_buf, sizeof(buf));
+    strncat(buf, minor_buf, sizeof(buf)-strlen(buf)-1);
 
     return std::string(buf);
 }

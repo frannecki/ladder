@@ -18,14 +18,14 @@ SocketAddr::SocketAddr(sockaddr_t* addr, bool ipv6) :
 {
   char buf[50];
   if(ipv6) {
-    if(inet_ntop(AF_INET6, &(addr->addr6_.sin6_addr), buf, sizeof(buf)) < 0) {
+    if(inet_ntop(AF_INET6, &(addr->addr6_.sin6_addr), buf, sizeof(buf)) == NULL) {
       EXIT("inet_pton");
     }
     ip_ = std::string(buf);
     port_ = ntohs(addr->addr6_.sin6_port);
   }
   else {
-    if(inet_ntop(AF_INET, &(addr->addr_.sin_addr), buf, sizeof(buf)) < 0) {
+    if(inet_ntop(AF_INET, &(addr->addr_.sin_addr), buf, sizeof(buf)) == NULL) {
       EXIT("inet_pton");
     }
     ip_ = std::string(buf);

@@ -52,4 +52,10 @@ void EventLoop::SetWakeupCallback(const std::function<void()>& callback) {
   poller_->SetWakeupCallback(callback);
 }
 
+#ifdef __FreeBSD__
+int EventLoop::UpdateEvent(const struct kevent* evt) {
+	return poller_->UpdateEvent(evt);
+}
+#endif
+
 } // namespace ladder
