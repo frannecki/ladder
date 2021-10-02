@@ -5,11 +5,14 @@
 * zlib
 * googletest 1.10.x (optional, for unit tests)
 
+## Supported Platforms
+* Linux
+* FreeBSD
+
 ## Building
 * GNU make
 
   ```sh
-  # GNU make
   ./build.sh
   ```
 
