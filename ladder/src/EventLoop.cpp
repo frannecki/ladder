@@ -54,7 +54,7 @@ void EventLoop::SetWakeupCallback(const std::function<void()>& callback) {
 
 #ifdef __FreeBSD__
 int EventLoop::UpdateEvent(const struct kevent* evt) {
-	return poller_->UpdateEvent(evt);
+  return poller_->UpdateEvent(evt);
 }
 #endif
 

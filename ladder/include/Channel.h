@@ -32,10 +32,10 @@ public:
   void HandleEvents();
   uint32_t event_mask() const;
 #ifdef __linux__
-	void UpdateToLoop(int op = EPOLL_CTL_ADD);
+  void UpdateToLoop(int op = EPOLL_CTL_ADD);
   void SetEpollEdgeTriggered(bool edge_triggered = true);
 #elif defined(__FreeBSD__)
-	void UpdateToLoop(int op = EV_ADD | EV_ENABLE);// | EV_CLEAR);
+  void UpdateToLoop(int op = EV_ADD | EV_ENABLE);// | EV_CLEAR);
 #endif
   void RemoveFromLoop();
 

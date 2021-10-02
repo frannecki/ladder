@@ -20,31 +20,31 @@ static thread_local struct kevent poll_evts[kPollLimit];
 
 const int kNumValidFilters = 3;
 short valid_filters[] = {
-											 EVFILT_READ,
-											 EVFILT_WRITE,
-											 EVFILT_TIMER
-											};
+                          EVFILT_READ,
+                          EVFILT_WRITE,
+                          EVFILT_TIMER
+                        };
 
 static int kqueue_ctl(int kq,
-											uintptr_t ident,
-											short filter,
-											u_short flags,
-											void* udata)
+                      uintptr_t ident,
+                      short filter,
+                      u_short flags,
+                      void* udata)
 {
-	struct kevent evt;
-	EV_SET(&evt, ident, filter, flags, 0, 0, udata);
+  struct kevent evt;
+  EV_SET(&evt, ident, filter, flags, 0, 0, udata);
   int ret = kevent(kq, &evt, 1, NULL, 0, NULL);
   if(ret < 0) {
     switch(errno) {
       case EBADF:
-			case ENOENT:
-			case EINTR:
+      case ENOENT:
+      case EINTR:
         break;
       default:
         EXIT("[EventPoller] kevent del");
     }
   }
-	return ret;
+  return ret;
 }
 
 #endif
@@ -58,17 +58,17 @@ EventPoller::EventPoller() : cur_poll_size_(0) {
   }
   UpdateChannel(pipe_->channel().get(), EPOLL_CTL_ADD);
 #elif defined(__FreeBSD__)
-	poll_fd_ = kqueue();
-	if(poll_fd_ < 0) {
-		EXIT("[EventPoller] kqueue");
-	}
+  poll_fd_ = kqueue();
+  if(poll_fd_ < 0) {
+    EXIT("[EventPoller] kqueue");
+  }
   UpdateChannel(pipe_->channel().get(), EV_ADD);
 #endif
   cur_poll_size_ += 1;
 }
 
 EventPoller::~EventPoller() {
-  ;
+
 }
 
 void EventPoller::Poll(std::vector<Channel*>& active_channels) {
@@ -84,8 +84,8 @@ void EventPoller::Poll(std::vector<Channel*>& active_channels) {
   // int ret = epoll_wait(poll_fd_, poll_evts, cur_poll_size_,
   //                      kPollTimeoutMs / 10);
   memset(poll_evts, 0, kPollLimit * sizeof(epoll_event));
-	int ret = epoll_wait(poll_fd_, poll_evts, kPollLimit,
-                       kPollTimeoutMs / 10);
+  int ret = epoll_wait(poll_fd_, poll_evts, kPollLimit,
+                        kPollTimeoutMs / 10);
   if(ret == -1) {
     switch(errno) {
       case EINTR:
@@ -100,8 +100,8 @@ void EventPoller::Poll(std::vector<Channel*>& active_channels) {
   //   alloc_success = false;
   //   poll_evts = new struct kevent[cur_poll_size_];
   // }
-	// TODO: set kevent timeout
-	// int ret = kevent(poll_fd_, NULL, 0, poll_evts, cur_poll_size_, NULL);
+  // TODO: set kevent timeout
+  // int ret = kevent(poll_fd_, NULL, 0, poll_evts, cur_poll_size_, NULL);
   memset(poll_evts, 0, kPollLimit * sizeof(struct kevent));
 	int ret = kevent(poll_fd_, NULL, 0, poll_evts, kPollLimit, NULL);
 	if(ret == -1) {
@@ -119,21 +119,21 @@ void EventPoller::Poll(std::vector<Channel*>& active_channels) {
     uint32_t evt = poll_evts[i].events;
     auto channel = reinterpret_cast<Channel*>(poll_evts[i].data.ptr);
 #elif defined(__FreeBSD__)
-		uint32_t evt = 0;
-		short flt = poll_evts[i].filter;
-		auto channel = reinterpret_cast<Channel*>(poll_evts[i].udata);
-		if(poll_evts[i].flags & EV_ERROR) {
-			channel->SetEvents(kPollEvent::kPollErr);
-			continue;
-		}
+    uint32_t evt = 0;
+    short flt = poll_evts[i].filter;
+    auto channel = reinterpret_cast<Channel*>(poll_evts[i].udata);
+    if(poll_evts[i].flags & EV_ERROR) {
+      channel->SetEvents(kPollEvent::kPollErr);
+      continue;
+    }
 
-		auto iter = flt_2_stat_.find(flt);
-		if(iter != flt_2_stat_.end()) {
-			evt = iter->second;
-		}
+    auto iter = flt_2_stat_.find(flt);
+    if(iter != flt_2_stat_.end()) {
+      evt = iter->second;
+    }
 
 #endif
-		channel->SetEvents(evt);
+    channel->SetEvents(evt);
     active_channels.emplace_back(channel);
   }
 
@@ -144,7 +144,7 @@ void EventPoller::Poll(std::vector<Channel*>& active_channels) {
 #ifdef __linux__
   //   MemoryPool<epoll_event>::free(poll_evts, true);
 #elif defined(__FreeBSD__)
-	// 	 MemoryPool<struct kevent>::free(poll_evts, true);
+  // 	 MemoryPool<struct kevent>::free(poll_evts, true);
 #endif
 }
 
@@ -157,9 +157,9 @@ void EventPoller::UpdateChannel(Channel* channel,
   event.events = channel->event_mask();
   event.data.ptr = channel;
   int ret = epoll_ctl(poll_fd_,
-											EPOLL_CTL_ADD,
+                      EPOLL_CTL_ADD,
                       channel->fd(),
-											&event);
+                      &event);
   if(ret < 0) {
     switch(errno) {
       case EEXIST:
@@ -169,27 +169,27 @@ void EventPoller::UpdateChannel(Channel* channel,
     }
   }
 #elif defined(__FreeBSD__)
-	int ret = -1;
-	uint32_t event_mask = channel->event_mask();
-	while(event_mask) {
-		uint32_t status = event_mask & (-event_mask);
-		event_mask ^= status;
-		auto iter = stat_2_flt_.find(status);
-		if(iter == stat_2_flt_.end()) {
-			continue;
-		}
-		int n = kqueue_ctl(poll_fd_,
-											 channel->fd(),
-											 iter->second,
-											 op,
-											 channel);
-		if(n > 0) {
-			ret = n;
-		}
-	}
-	if(ret < 0) {
-		// kevent failed
-	}
+  int ret = -1;
+  uint32_t event_mask = channel->event_mask();
+  while(event_mask) {
+    uint32_t status = event_mask & (-event_mask);
+    event_mask ^= status;
+    auto iter = stat_2_flt_.find(status);
+    if(iter == stat_2_flt_.end()) {
+      continue;
+    }
+    int n = kqueue_ctl(poll_fd_,
+                        channel->fd(),
+                        iter->second,
+                        op,
+                        channel);
+    if(n > 0) {
+      ret = n;
+    }
+  }
+  if(ret < 0) {
+    // kevent failed
+  }
 #endif
   else {
     cur_poll_size_ += 1;
@@ -198,7 +198,7 @@ void EventPoller::UpdateChannel(Channel* channel,
 
 #ifdef __FreeBSD__
 int EventPoller::UpdateEvent(const struct kevent* evt) {
-	return kevent(poll_fd_, evt, 1, NULL, 0, NULL);
+  return kevent(poll_fd_, evt, 1, NULL, 0, NULL);
 }
 #endif
 
@@ -214,19 +214,19 @@ void EventPoller::RemoveChannel(int fd) {
     }
   }
 #elif defined(__FreeBSD__)
-	int ret = -1;
-	for(int idx = 0; idx < kNumValidFilters; ++idx) {
-		int n = kqueue_ctl(poll_fd_,
-											 fd,
-											 valid_filters[idx],
-											 EV_DELETE,
-											 NULL);
-		if(n > 0) {
-			ret = n;
-		}
-	}
-	if(ret < 0) {
-		// no event deleted
+  int ret = -1;
+  for(int idx = 0; idx < kNumValidFilters; ++idx) {
+    int n = kqueue_ctl(poll_fd_,
+                        fd,
+                        valid_filters[idx],
+                        EV_DELETE,
+                        NULL);
+    if(n > 0) {
+      ret = n;
+    }
+  }
+  if(ret < 0) {
+    // no event deleted
   }
 #endif
   else {
@@ -247,19 +247,19 @@ void EventPoller::SetWakeupCallback(const std::function<void()>& callback) {
 // map between filters and status
 
 std::map<short, uint32_t> EventPoller::flt_2_stat_ = \
-	{
-		{EVFILT_READ, kPollEvent::kPollIn},
-	  {EVFILT_WRITE, kPollEvent::kPollOut},
-		{EVFILT_TIMER, kPollEvent::kPollIn},
-		{EVFILT_USER, kPollEvent::kPollErr}		// use user event to indicate error
-	};
+  {
+    {EVFILT_READ, kPollEvent::kPollIn},
+    {EVFILT_WRITE, kPollEvent::kPollOut},
+    {EVFILT_TIMER, kPollEvent::kPollIn},
+    {EVFILT_USER, kPollEvent::kPollErr}		// use user event to indicate error
+  };
 
 std::map<uint32_t, short> EventPoller::stat_2_flt_ = \
-	{
-		{kPollEvent::kPollIn, EVFILT_READ},
-	  {kPollEvent::kPollOut, EVFILT_WRITE},
-		{kPollEvent::kPollErr, EVFILT_USER}
-	};
+  {
+    {kPollEvent::kPollIn, EVFILT_READ},
+    {kPollEvent::kPollOut, EVFILT_WRITE},
+    {kPollEvent::kPollErr, EVFILT_USER}
+  };
 #endif
 
 Pipe::Pipe() {

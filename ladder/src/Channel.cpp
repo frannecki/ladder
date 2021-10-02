@@ -10,12 +10,12 @@ namespace ladder {
 Channel::Channel(EventLoopPtr loop, int fd) :
   fd_(fd),
   loop_(loop),
-	events_(0),
+  events_(0),
   // POLL_OUT set initially
 #ifdef __linux__
-	event_mask_(kPollEvent::kPollIn | kPollEvent::kPollRdHup | kPollEvent::kPollOut)
+  event_mask_(kPollEvent::kPollIn | kPollEvent::kPollRdHup | kPollEvent::kPollOut)
 #elif defined(__FreeBSD__)
-	event_mask_(kPollEvent::kPollIn)
+  event_mask_(kPollEvent::kPollIn)
 #endif
 {
 
@@ -78,8 +78,8 @@ void Channel::EnableWrite(bool enable) {
   UpdateToLoop(EPOLL_CTL_MOD);
 #elif defined(__FreeBSD__)
   event_mask_ = kPollEvent::kPollOut;
-	// UpdateToLoop(enable ? (EV_ADD | EV_ENABLE | EV_CLEAR) : EV_DISABLE);
-	UpdateToLoop(enable ? (EV_ADD | EV_ENABLE) : EV_DISABLE);
+  // UpdateToLoop(enable ? (EV_ADD | EV_ENABLE | EV_CLEAR) : EV_DISABLE);
+  UpdateToLoop(enable ? (EV_ADD | EV_ENABLE) : EV_DISABLE);
 #endif
 }
 
@@ -89,7 +89,7 @@ void Channel::HandleEvents() {
   if(events_ & kPollEvent::kPollHup) {
     // normally POLL_HUP is not generated.
     // peer close signal (POLL_RDHUP) is 
-		// mostly handled after read or write
+    // mostly handled after read or write
     if(close_callback_) {
       close_callback_();
     }
@@ -110,15 +110,15 @@ void Channel::HandleEvents() {
   // Pay close attention to the order of event handing.
   // Handling read event could cause this channel to deconstruct
 #ifdef __linux__
-	if(events_ & (kPollEvent::kPollIn | kPollEvent::kPollOut | kPollEvent::kPollRdHup)) {
+  if(events_ & (kPollEvent::kPollIn | kPollEvent::kPollOut | kPollEvent::kPollRdHup)) {
 #elif defined(__FreeBSD__)
-	if(events_ & kPollEvent::kPollIn) {
+  if(events_ & kPollEvent::kPollIn) {
 #endif
     if(read_callback_) {
       read_callback_();
     }
   }
-	events_ = 0;
+  events_ = 0;
 }
 
 int Channel::fd() const {

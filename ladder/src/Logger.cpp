@@ -12,15 +12,15 @@
 namespace ladder {
 
 std::string GetCurrentDateTime() {
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    struct tm *current = localtime(&(tv.tv_sec));
-    char buf[40], minor_buf[10];
-    strftime(buf, sizeof(buf), "%Y-%m-%d %X.", current);
-    snprintf(minor_buf, sizeof(minor_buf), "%06ld", tv.tv_usec);
-    strncat(buf, minor_buf, sizeof(buf)-strlen(buf)-1);
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  struct tm *current = localtime(&(tv.tv_sec));
+  char buf[40], minor_buf[10];
+  strftime(buf, sizeof(buf), "%Y-%m-%d %X.", current);
+  snprintf(minor_buf, sizeof(minor_buf), "%06ld", tv.tv_usec);
+  strncat(buf, minor_buf, sizeof(buf)-strlen(buf)-1);
 
-    return std::string(buf);
+  return std::string(buf);
 }
 
 Logger* Logger::instance() {
