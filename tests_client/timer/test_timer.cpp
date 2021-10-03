@@ -19,7 +19,6 @@ void PrintTick1(int *tick) {
 }
 
 int main(int argc, char** argv) {
-  ladder::Logger::create();
   ladder::EventLoop loop;
   ladder::Timer *timer = new ladder::Timer(ladder::EventLoopPtr(&loop));
   ladder::Timer *timer1 = new ladder::Timer(ladder::EventLoopPtr(&loop));
