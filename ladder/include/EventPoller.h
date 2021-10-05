@@ -32,7 +32,6 @@ enum kPollEvent : uint32_t {
 };
 
 class Channel;
-using ChannelPtr = std::shared_ptr<Channel>;
 
 class Pipe;
 using PipePtr = std::unique_ptr<Pipe>;
@@ -65,14 +64,14 @@ public:
   Pipe();
   ~Pipe();
   void Wakeup();
-  ChannelPtr channel() const;
+  Channel* channel() const;
   void SetWakeupCallback(const std::function<void()>& callback);
 
 private:
   void ReadCallback();
 
   int fd_[2];
-  ChannelPtr channel_;
+  Channel* channel_;
   std::function<void()> wakeup_callback_;
 };
 

@@ -1,4 +1,4 @@
-# Ladder: A Light-weight Reactor Web Server
+# Ladder: A Light-weight Reactor-pattern Server
 
 ## Prerequisites
 * protobuf 3.x
@@ -9,7 +9,8 @@
 * Linux
 * FreeBSD
 
-## Building
+## Usage
+### Building
 * GNU make
 
   ```sh
@@ -48,5 +49,5 @@
   make
   ```
 
-## Usage
+### Usage
 Please refer to the [test demo](tests/server) for more details.

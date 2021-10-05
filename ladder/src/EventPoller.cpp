@@ -56,7 +56,7 @@ EventPoller::EventPoller() : cur_poll_size_(0) {
   if(poll_fd_ < 0) {
     EXIT("[EventPoller] epoll_create1");
   }
-  UpdateChannel(pipe_->channel().get(), EPOLL_CTL_ADD);
+  UpdateChannel(pipe_->channel(), EPOLL_CTL_ADD);
 #elif defined(__FreeBSD__)
   poll_fd_ = kqueue();
   if(poll_fd_ < 0) {
@@ -73,16 +73,7 @@ EventPoller::~EventPoller() {
 
 void EventPoller::Poll(std::vector<Channel*>& active_channels) {
 
-  // bool alloc_success = true;
-
 #ifdef __linux__
-  // struct epoll_event* poll_evts = MemoryPool<epoll_event>::allocate_n(cur_poll_size_);
-  // if(evts == nullptr) {
-  //   alloc_success = false;
-  //   poll_evts = new struct epoll_event[cur_poll_size_];
-  // }
-  // int ret = epoll_wait(poll_fd_, poll_evts, cur_poll_size_,
-  //                      kPollTimeoutMs / 10);
   memset(poll_evts, 0, kPollLimit * sizeof(epoll_event));
   int ret = epoll_wait(poll_fd_, poll_evts, kPollLimit,
                         kPollTimeoutMs / 10);
@@ -95,13 +86,7 @@ void EventPoller::Poll(std::vector<Channel*>& active_channels) {
     }
   }
 #elif defined(__FreeBSD__)
-  // struct kevent* poll_evts = MemoryPool<struct kevent>::allocate_n(cur_poll_size_);
-  // if(poll_evts == nullptr) {
-  //   alloc_success = false;
-  //   poll_evts = new struct kevent[cur_poll_size_];
-  // }
   // TODO: set kevent timeout
-  // int ret = kevent(poll_fd_, NULL, 0, poll_evts, cur_poll_size_, NULL);
   memset(poll_evts, 0, kPollLimit * sizeof(struct kevent));
 	int ret = kevent(poll_fd_, NULL, 0, poll_evts, kPollLimit, NULL);
 	if(ret == -1) {
@@ -137,15 +122,6 @@ void EventPoller::Poll(std::vector<Channel*>& active_channels) {
     active_channels.emplace_back(channel);
   }
 
-  // if(!alloc_success) {
-  //   delete []poll_evts;
-  // }
-  // else {
-#ifdef __linux__
-  //   MemoryPool<epoll_event>::free(poll_evts, true);
-#elif defined(__FreeBSD__)
-  // 	 MemoryPool<struct kevent>::free(poll_evts, true);
-#endif
 }
 
 void EventPoller::UpdateChannel(Channel* channel,
@@ -266,13 +242,14 @@ Pipe::Pipe() {
   if(::pipe2(fd_, O_NONBLOCK) < 0) {
     EXIT("pipe2");
   }
-  channel_ = std::make_shared<Channel>(nullptr, fd_[0]);
+  channel_ = new Channel(nullptr, fd_[0]);
   channel_->SetReadCallback(std::bind(&Pipe::ReadCallback, this));
 }
 
 Pipe::~Pipe() {
   socket::close(fd_[0]);
   socket::close(fd_[1]);
+  delete channel_;
 }
 
 void Pipe::Wakeup() {
@@ -280,7 +257,7 @@ void Pipe::Wakeup() {
   socket::write(fd_[1], &ch, sizeof(ch));
 }
 
-ChannelPtr Pipe::channel() const {
+Channel* Pipe::channel() const {
   return channel_;
 }
 
