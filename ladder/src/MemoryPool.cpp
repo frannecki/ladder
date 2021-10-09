@@ -52,7 +52,9 @@ char* MemoryPoolImpl::allocate() {
       // TODO: expand memory pool?
     }
     blocks_->next_ = block->next_;
-    return block->memory_;
+    char* memory = block->memory_;
+    delete block;
+    return memory;
   }
 }
 
