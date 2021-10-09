@@ -1,4 +1,6 @@
+#ifdef __unix__
 #include <unistd.h>
+#endif
 #ifdef __linux__
 #include <sys/sendfile.h>
 #endif
@@ -130,7 +132,13 @@ int read(int fd, void* buf, size_t len) {
 }
 
 int sendfile(int out_fd, int in_fd, off_t* offset, size_t count) {
+#ifdef __linux__
   int ret = ::sendfile(out_fd, in_fd, offset, count);
+#elif defined(__FreeBSD__)
+  off_t bytes_sent;
+  int success = ::sendfile(in_fd, out_fd, *offset, count, NULL, &bytes_sent, 0);
+  int ret = (success == 0) ? static_cast<int>(bytes_sent) : 0;
+#endif
   return ret;
 }
 

@@ -62,7 +62,7 @@ EventPoller::EventPoller() : cur_poll_size_(0) {
   if(poll_fd_ < 0) {
     EXIT("[EventPoller] kqueue");
   }
-  UpdateChannel(pipe_->channel().get(), EV_ADD);
+  UpdateChannel(pipe_->channel(), EV_ADD);
 #endif
   cur_poll_size_ += 1;
 }
