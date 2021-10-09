@@ -18,7 +18,7 @@ class MemoryPoolImpl {
 public:
   static MemoryPoolImpl* instance();
   static void release();
-  static MemoryPoolImpl* create(size_t num_blocks = 1024,
+  static MemoryPoolImpl* create(size_t num_blocks = 256,
                                 size_t block_size = 1024);
 
   char* allocate(size_t n);
@@ -83,6 +83,53 @@ public:
       delete []memory;
     }
   }
+
+};
+
+template <typename T>
+class MemoryWrapper {
+
+public:
+  template<typename... Args>
+  MemoryWrapper(Args&& ...args) : 
+    ptr_(MemoryPool<T>::allocate(std::forward<Args>(args)...)),
+    arr_(false),
+    success_(true)
+  {
+    if(ptr_ == nullptr) {
+      success_ = false;
+      ptr_ = new T(std::forward<Args>(args)...);
+    }
+  }
+
+  MemoryWrapper(size_t n) : 
+    ptr_(MemoryPool<T>::allocate_n(n)),
+    arr_(true),
+    success_(true)
+  {
+    if(ptr_ == nullptr) {
+      success_ = false;
+      ptr_ = new T[n];
+    }
+  }
+
+  ~MemoryWrapper() {
+    if(success_) MemoryPool<T>::free(ptr_, arr_);
+    else if(arr_) {
+      delete [] ptr_;
+    }
+    else {
+      delete ptr_;
+    }
+    ptr_ = nullptr;
+  }
+
+  T* get() {return ptr_;}
+
+private:
+  T* ptr_;
+  bool arr_;
+  bool success_;
 
 };
 

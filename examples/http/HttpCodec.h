@@ -26,6 +26,7 @@ class HttpMessage {
 
 public:
   HttpMessage();
+  virtual ~HttpMessage();
   bool ComposeHeaders(std::string& message);
   int ParseMessage(const std::string& message, int &length);
   struct HttpContext* context();
@@ -63,6 +64,7 @@ using HttpCodecMessageCallback = std::function<void(
 
 public:
   HttpCodec();
+  ~HttpCodec();
   void OnClientMessage(const ConnectionPtr& conn, Buffer* buffer);
   void SetClientMessageCallback(const HttpCodecMessageCallback& callback);
   void ParseRequest();

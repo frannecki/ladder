@@ -21,6 +21,7 @@ using RequestCallback = std::function<
 
 public:
   HttpServer(const SocketAddr& addr);
+  ~HttpServer();
   void RegisterCallback(enum kHttpRequestMethod,
                         const RequestCallback& callback);
 

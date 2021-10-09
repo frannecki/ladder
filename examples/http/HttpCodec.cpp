@@ -3,7 +3,7 @@
 #include <utils.h>
 #include <Connection.h>
 #include <Buffer.h>
-#include <Logging.h>
+#include <MemoryPool.h>
 
 #include "HttpCodec.h"
 #include "http_defs.h"
@@ -18,8 +18,14 @@ void HttpContext::clear() {
   payload_.clear();
 }
 
-HttpMessage::HttpMessage() : context_(new HttpContext) {
+HttpMessage::HttpMessage() : 
+  context_(new HttpContext)
+{
 
+}
+
+HttpMessage::~HttpMessage() {
+  delete context_;
 }
 
 struct HttpContext* HttpMessage::context() {
@@ -200,6 +206,11 @@ HttpCodec::HttpCodec() :
   response_(new HttpResponse)
 {
 
+}
+
+HttpCodec::~HttpCodec() {
+  delete request_;
+  delete response_;
 }
 
 void HttpCodec::SetClientMessageCallback(const HttpCodecMessageCallback& callback) {

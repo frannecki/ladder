@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include <MemoryPool.h>
 #include <utils.h>
 namespace ladder {
 
@@ -16,7 +17,9 @@ std::vector<int> FindSubstr(const std::string& str,
     int len1 = str.size();
     int len2 = pat.size();
     std::vector<int> positions;
-    int* next = new int[1 + len2];
+    
+    MemoryWrapper<int> wrapper(1 + len2);
+    int* next = wrapper.get();
 
     int t = next[0] = -1, i = 0, j;
     while (i < len2) {
@@ -43,7 +46,7 @@ std::vector<int> FindSubstr(const std::string& str,
         j = next[j];
       }
     }
-    delete[]next;
+    next = nullptr;
 
     return positions;
 }

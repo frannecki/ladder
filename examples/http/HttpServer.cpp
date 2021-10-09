@@ -19,6 +19,10 @@ HttpServer::HttpServer(const SocketAddr& addr) :
                             codec_, _1, _2));
 }
 
+HttpServer::~HttpServer() {
+  delete codec_;
+}
+
 void HttpServer::OnMessage(struct HttpContext* ctx1,
                            struct HttpContext* ctx2)
 {
