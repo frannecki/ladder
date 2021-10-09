@@ -5,7 +5,7 @@
 #include <Buffer.h>
 #include <Connection.h>
 
-#include <Logger.h>
+#include <Logging.h>
 
 using namespace ladder;
 using namespace std::placeholders;

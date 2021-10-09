@@ -2,7 +2,7 @@
 
 #include <thread>
 
-#include <Logger.h>
+#include <Logging.h>
 #include <EventPoller.h>
 
 #define private public

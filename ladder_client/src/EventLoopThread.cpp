@@ -1,7 +1,7 @@
 #include <EventLoopThread.h>
 #include <EventLoop.h>
 
-#include <Logger.h>
+#include <Logging.h>
 
 namespace ladder {
 

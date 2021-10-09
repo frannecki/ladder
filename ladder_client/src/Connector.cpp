@@ -2,7 +2,7 @@
 #include <Channel.h>
 #include <Timer.h>
 
-#include <Logger.h>
+#include <Logging.h>
 
 namespace ladder {
 

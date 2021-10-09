@@ -6,7 +6,7 @@
 #include <Socket.h>
 #include <Connection.h>
 #include <codec/ProtobufCodec.h>
-#include <Logger.h>
+#include <Logging.h>
 
 #include "proto/tests.pb.h"
 
@@ -48,7 +48,7 @@ void OnConnection(const ConnectionPtr& conn, const ProtobufCodec& codec) {
 int main(int argc, char** argv) {
   Logger::create();
   SocketAddr addr("0.0.0.0", 8070, false);
-  TcpServer server(addr, 1);
+  TcpServer server(addr, false);
   ProtobufCodec codec;
   codec.RegisterMessageCallback<ladder::TestMessage1>(std::bind(OnMessage, _1, _2, codec));
   codec.RegisterDefaultMessageCallback(std::bind(OnDefaultMessage, _1, _2));

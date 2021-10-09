@@ -3,7 +3,7 @@
 
 #include <Timer.h>
 #include <EventLoop.h>
-#include <Logger.h>
+#include <Logging.h>
 
 static int tick_ = 0;
 static int tick1_ = 0;

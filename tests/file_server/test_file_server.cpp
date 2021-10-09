@@ -20,13 +20,13 @@ void OnMessage(const ConnectionPtr& conn, Buffer* buffer) {
 
 void OnConnection(const ConnectionPtr& conn) {
   LOGF_INFO("Current number of clients connected: %d", ++count);
-  conn->Send("Hello -- This is a ladder server.");
+  conn->SendFile("First paragraph of Charles Dickens' A Tale of Two Cities: ", "./test.txt");
 }
 
 int main(int argc, char** argv) {
-  Logger::create("./test_server.log");
+  Logger::create("./test_file_server.log");
   SocketAddr addr("0.0.0.0", 8070, false);
-  TcpServer server(addr, false);
+  TcpServer server(addr, true);
   server.SetConnectionCallback(std::bind(OnConnection, _1));
   server.SetReadCallback(std::bind(OnMessage, _1, _2));
   server.Start();

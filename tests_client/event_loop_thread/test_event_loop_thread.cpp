@@ -1,7 +1,7 @@
 #include <unistd.h>
 
 #include <EventLoopThread.h>
-#include <Logger.h>
+#include <Logging.h>
 
 using namespace ladder;
 

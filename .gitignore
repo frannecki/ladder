@@ -12,3 +12,6 @@ bazel-*
 # debugging
 core*
 profiling/
+
+# http
+webpages/
