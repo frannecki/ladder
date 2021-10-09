@@ -3,6 +3,9 @@
 
 #include <stdio.h>
 
+#include <string>
+#include <vector>
+
 namespace ladder {
 
 const int kEnableOption = 1;
@@ -11,6 +14,12 @@ const int kEnableOption = 1;
 
 void exit_fatal(const char* msg);
 
+std::vector<int> FindSubstr(const std::string& str,
+                            const std::string& pat);
+
+bool CheckIfFileExists(const std::string& path);
+
+int GetFileSize(const std::string& path);
 
 } // namespace ladder
 

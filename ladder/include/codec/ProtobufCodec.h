@@ -7,7 +7,7 @@
 #include <google/protobuf/message.h>
 #include <google/protobuf/descriptor.h>
 
-#include <Aliases.h>
+#include <Base.h>
 #include <codec/Codec.h>
 
 namespace ladder {

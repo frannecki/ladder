@@ -222,7 +222,7 @@ void EventPoller::SetWakeupCallback(const std::function<void()>& callback) {
 
 // map between filters and status
 
-std::map<short, uint32_t> EventPoller::flt_2_stat_ = \
+std::unordered_map<short, uint32_t> EventPoller::flt_2_stat_ = \
   {
     {EVFILT_READ, kPollEvent::kPollIn},
     {EVFILT_WRITE, kPollEvent::kPollOut},
@@ -230,7 +230,7 @@ std::map<short, uint32_t> EventPoller::flt_2_stat_ = \
     {EVFILT_USER, kPollEvent::kPollErr}		// use user event to indicate error
   };
 
-std::map<uint32_t, short> EventPoller::stat_2_flt_ = \
+std::unordered_map<uint32_t, short> EventPoller::stat_2_flt_ = \
   {
     {kPollEvent::kPollIn, EVFILT_READ},
     {kPollEvent::kPollOut, EVFILT_WRITE},

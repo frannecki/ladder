@@ -11,8 +11,8 @@
 #include <Acceptor.h>
 #include <Connection.h>
 
-#include <Aliases.h>
-#include <Logger.h>
+#include <Base.h>
+#include <Logging.h>
 
 using namespace std::placeholders;
 
@@ -27,9 +27,11 @@ void signal_handler(int signum) {
 using TcpConnectionCloseCallback = std::unique_ptr<std::function<void(TcpServer*, int)>>;
 
 TcpServer::TcpServer(const SocketAddr& addr,
+                     bool send_file,
                      size_t loop_thread_num,
                      size_t working_thread_num) : 
   addr_(addr),
+  send_file_(send_file),
   loop_thread_num_(loop_thread_num),
   working_thread_num_(working_thread_num)
 {
@@ -79,7 +81,7 @@ void TcpServer::OnNewConnectionCallback(int fd, SocketAddr&& addr) {
 
 void TcpServer::OnNewConnection(int fd, const SocketAddr& addr) {
   EventLoopPtr loop = loop_threads_->GetNextLoop();
-  ConnectionPtr connection = std::make_shared<Connection>(loop, fd);
+  ConnectionPtr connection = std::make_shared<Connection>(loop, fd, send_file_);
   connection->SetReadCallback(read_callback_);
   connection->SetWriteCallback(write_callback_);
   connection->SetCloseCallback(std::bind(

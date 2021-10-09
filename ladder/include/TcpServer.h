@@ -6,7 +6,7 @@
 #include <mutex>
 
 #include <utils.h>
-#include <Aliases.h>
+#include <Base.h>
 #include <Socket.h>
 
 namespace ladder {
@@ -17,6 +17,7 @@ class SocketAddr;
 class TcpServer {
 public:
   TcpServer(const SocketAddr& addr,
+            bool send_file = false,
             size_t loop_thread_num=8,
             size_t working_thread_num=8);
   ~TcpServer();
@@ -40,6 +41,7 @@ private:
   AcceptorPtr acceptor_;
   std::map<int, ConnectionPtr> connections_;
   SocketAddr addr_;
+  bool send_file_;
   size_t loop_thread_num_;
   size_t working_thread_num_;
   std::mutex mutex_connections_;

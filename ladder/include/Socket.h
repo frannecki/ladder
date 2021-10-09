@@ -45,6 +45,7 @@ int accept(int fd, sockaddr_t* addr, socklen_t* addr_len);
 int connect(int fd, const sockaddr_t* addr, socklen_t addr_len);
 int write(int fd, const void* buf, size_t len);
 int read(int fd, void* buf, size_t len);
+int sendfile(int out_fd, int in_fd, off_t* offset, size_t count);
 int shutdown_write(int fd);
 int shutdown_read(int fd);
 int close(int fd);

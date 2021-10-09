@@ -5,6 +5,7 @@
 #include <sys/epoll.h>
 #elif defined(__FreeBSD__)
 #include <sys/event.h>
+#include <unordered_map>
 #endif
 
 #include <map>
@@ -54,8 +55,8 @@ private:
   int cur_poll_size_;
   PipePtr pipe_;
 #ifdef __FreeBSD__
-  static std::map<short, uint32_t> flt_2_stat_;	// filter to status
-  static std::map<uint32_t, short> stat_2_flt_;			// status to filter
+  static std::unordered_map<short, uint32_t> flt_2_stat_;	// filter to status
+  static std::unordered_map<uint32_t, short> stat_2_flt_;			// status to filter
 #endif
 };
 

@@ -6,18 +6,25 @@
 #include <Connection.h>
 #include <EventLoop.h>
 #include <Buffer.h>
-
+#include <FileBuffer.h>
 #include <Socket.h>
 
 namespace ladder {
 
-Connection::Connection(const EventLoopPtr& loop, int fd) : 
+Connection::Connection(const EventLoopPtr& loop, int fd, bool send_file) : 
   channel_(new Channel(loop, fd)),
   read_buffer_(new Buffer),
-  write_buffer_(new Buffer),
-  shut_down_(false)
+  write_plain_buffer_(nullptr),
+  write_file_buffer_(nullptr),
+  shut_down_(false),
+  send_file_(send_file)
 {
-
+  if(send_file) {
+    write_buffer_ = write_file_buffer_ = new FileBuffer;
+  }
+  else {
+    write_buffer_ = write_plain_buffer_ = new Buffer;
+  }
 }
 
 void Connection::Init() {
@@ -43,11 +50,19 @@ Connection::~Connection() {
 }
 
 void Connection::Send(const std::string& buf) {
-  if(shut_down_) {
-    return;
-  }
+  if(shut_down_) return;
   write_buffer_->Write(buf);
-  write_buffer_->WriteBufferToFd(channel_->fd());
+
+  int ret = write_buffer_->WriteBufferToFd(channel_->fd());
+  EnableWrite(ret);
+}
+
+void Connection::SendFile(std::string&& header, const std::string& filename) {
+  if(shut_down_ || !send_file_)  return;
+  write_file_buffer_->AddFile(std::move(header), filename);
+
+  int ret = write_buffer_->WriteBufferToFd(channel_->fd());
+  EnableWrite(ret);
 }
 
 void Connection::OnReadCallback() {
@@ -93,16 +108,8 @@ void Connection::OnWriteCallback() {
     // channel_->ShutDownWrite();
     OnCloseCallback();
   }
-  
-  if(ret < 0) {
-    // reached EAGAIN / EWOULDBLOCK,
-    // output buffer unavaiable to write
-    channel_->EnableWrite();
-  }
-  else {
-    // output buffer currently available for write
-    channel_->EnableWrite(false);
-  }
+
+  EnableWrite(ret);
 }
 
 void Connection::OnCloseCallback() {
@@ -127,6 +134,18 @@ void Connection::SetCloseCallback(const ConnectCloseCallback& callback) {
 
 ChannelPtr Connection::channel() const {
   return channel_;
+}
+
+void Connection::EnableWrite(int ret) {
+  if(ret < 0) {
+    // reached EAGAIN / EWOULDBLOCK,
+    // output buffer unavaiable to write
+    channel_->EnableWrite();
+  }
+  else {
+    // output buffer currently available for write
+    channel_->EnableWrite(false);
+  }
 }
 
 } // namespace ladder

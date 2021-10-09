@@ -6,7 +6,7 @@
 #include <string.h>
 #include <stdarg.h>
 
-#include <Logger.h>
+#include <Logging.h>
 #include <utils.h>
 
 namespace ladder {

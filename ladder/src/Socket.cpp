@@ -1,4 +1,7 @@
 #include <unistd.h>
+#ifdef __linux__
+#include <sys/sendfile.h>
+#endif
 
 #include <mutex>
 
@@ -124,6 +127,11 @@ int write(int fd, const void* buf, size_t len) {
 
 int read(int fd, void* buf, size_t len) {
   return ::read(fd, buf, len);
+}
+
+int sendfile(int out_fd, int in_fd, off_t* offset, size_t count) {
+  int ret = ::sendfile(out_fd, in_fd, offset, count);
+  return ret;
 }
 
 int shutdown_write(int fd) {

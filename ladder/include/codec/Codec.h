@@ -1,7 +1,7 @@
 #ifndef LADDER_CODEC_H
 #define LADDER_CODEC_H
 
-#include <Aliases.h>
+#include <Base.h>
 
 namespace ladder {
 
