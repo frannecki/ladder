@@ -13,3 +13,6 @@ cd unittests && make && cd ..
 ./build.sh && cd ..
 
 cd tests_client && ./build.sh && cd ..
+
+## build http server
+cd examples/http && make && cd ..

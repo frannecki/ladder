@@ -68,3 +68,10 @@ TEST_SUB_CLIENT = ["timer", "client", "mass_clients", "tcp_client", "event_loop_
      linkopts = ["-lpthread"],
      deps = [":ladder_client", ":tests_cc_proto"],
  ) for sub in TEST_SUB_CLIENT]
+
+cc_binary(
+    name = "test_http_server",
+    srcs = glob(["examples/http/*.cpp"]),
+    includes = ["ladder/include"],
+    deps = [":ladder"],
+)

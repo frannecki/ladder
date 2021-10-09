@@ -60,6 +60,11 @@ foreach(child ${TESTS_CLIENT_EXECUTABLES})
     target_link_libraries(test_client_${child} ladder ladder_client Threads::Threads)
 endforeach()
 
+file(GLOB HTTP_SERVER_SOURCES examples/http/*.cpp)
+add_executable(test_http_server ${HTTP_SERVER_SOURCES})
+target_include_directories(test_http_server PUBLIC ladder/include)
+target_link_directories(test_http_server PUBLIC build)
+target_link_libraries(test_http_server ladder)
 
 if(DEBUG)
     target_compile_definitions(ladder DEBUG)
