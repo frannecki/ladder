@@ -5,9 +5,9 @@ load("@rules_proto//proto:defs.bzl", "proto_library")
 
 cc_library(
     name = "ladder",
-    srcs = glob(["ladder/src/*.cpp"]),
-    hdrs = glob(["ladder/include/*.h"]),
-    includes = ["ladder/include"],
+    srcs = glob(["ladder/src/*.cpp", "ladder/src/codec/*.cpp"]),
+    hdrs = glob(["ladder/include/*.h", "ladder/include/codec/*.h"]),
+    includes = ["ladder/include", "ladder/include/codec"],
     deps = ["@com_google_protobuf//:protobuf",
             "@zlib//:zlib"
     ],
@@ -41,7 +41,10 @@ proto_library(
 cc_binary(
     name = "ladder_unit_tests",
     srcs = glob(["tests/unittests/*.cpp"]),
-    includes = ["ladder/include", "tests"],
+    includes = ["ladder/include",
+                "ladder/include/codec",
+                "tests"
+    ],
     deps = [":ladder",
             ":tests_cc_proto",
             "@com_google_googletest//:gtest",
@@ -54,7 +57,7 @@ TESTS_SUB = ["logger", "server", "proto_server", "event_poller"]
 [cc_binary(
      name = "ladder_tests_{}".format(sub),
      srcs = glob(["tests/{}/*.cpp".format(sub)]),
-     includes = ["ladder/include", "tests"],
+     includes = ["ladder/include", "ladder/include/codec", "tests"],
      linkopts = ["-lpthread"],
      deps = [":ladder", ":tests_cc_proto"],
  ) for sub in TESTS_SUB]
@@ -64,14 +67,14 @@ TEST_SUB_CLIENT = ["timer", "client", "mass_clients", "tcp_client", "event_loop_
 [cc_binary(
      name = "ladder_tests_client_{}".format(sub),
      srcs = glob(["tests_client/{}/*.cpp".format(sub)]),
-     includes = ["ladder/include", "tests"],
+     includes = ["ladder/include", "ladder/include/codec", "tests"],
      linkopts = ["-lpthread"],
      deps = [":ladder_client", ":tests_cc_proto"],
  ) for sub in TEST_SUB_CLIENT]
 
 cc_binary(
     name = "test_http_server",
-    srcs = glob(["examples/http/*.cpp"]),
-    includes = ["ladder/include"],
+    srcs = glob(["examples/http/*.cpp", "examples/http/*.h"]),
+    includes = ["ladder/include", "examples/http"],
     deps = [":ladder"],
 )
