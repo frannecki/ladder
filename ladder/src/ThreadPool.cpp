@@ -12,8 +12,8 @@ ThreadPool::ThreadPool(size_t capacity) :
 void ThreadPool::Init() {
   for(size_t i = 0; i < capacity_; ++i)
   threads_.emplace_back(std::thread([this](){
+    Callback cur_task;
     while(1) {
-      Callback cur_task;
       {
         std::unique_lock<std::mutex> lock(mutex_);
         condition_.wait(lock, [this]() {

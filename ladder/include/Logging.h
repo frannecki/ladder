@@ -5,6 +5,7 @@
 #include <string>
 #include <queue>
 #include <thread>
+#include <condition_variable>
 
 #include <iostream>
 
@@ -61,10 +62,11 @@ public:
     if(static_cast<int>(severity) < level_)  return;
     std::string line = "[" + GetCurrentDateTime() + "][" + kLogLevels[static_cast<int>(severity)] + \
                        "] " + std::forward<MessageType>(message) + "\n";
-    // {
-      // std::lock_guard<std::mutex> lock(mutex_);
+    {
+      std::unique_lock<std::mutex> lock(mutex_);
       message_queue_.emplace(line);
-    // }
+    }
+    condition_.notify_one();
   }
 
   void WriteLogFmt(enum LogLevel severity, const char* fmt, ...);
@@ -79,7 +81,9 @@ private:
   int level_;
   // std::mutex mutex_;
   std::queue<std::string> message_queue_;
+  std::mutex mutex_;
   std::thread logging_thread_;
+  std::condition_variable condition_;
   static Logger* instance_;
 
   static const char* kLogLevels[];

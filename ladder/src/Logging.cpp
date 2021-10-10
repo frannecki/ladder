@@ -54,10 +54,11 @@ Logger::Logger(const char* filename, int level) :
 }
 
 Logger::~Logger() {
-  // {
-  //  std::lock_guard<std::mutex> lock(mutex_);
+  {
+    std::unique_lock<std::mutex> lock(mutex_);
     running_ = false;
-  // }
+  }
+  condition_.notify_one();
   logging_thread_.join();
   close(fd_);
 }
@@ -72,22 +73,30 @@ void Logger::WriteLogFmt(enum LogLevel severity, const char* fmt, ...) {
   int ret = vsnprintf(msg, sizeof(msg), fmt, args);
   va_end(args);
   std::string message(msg, msg + ret);
-  message_queue_.emplace(prefix + message + "\n");
+  {
+    std::unique_lock<std::mutex> lock(mutex_);
+    message_queue_.emplace(prefix + message + "\n");
+  }
+  condition_.notify_one();
 }
 
 void Logger::ThreadFunc() {
-  while(running_ || !message_queue_.empty()) {
-    if(message_queue_.empty()) {
-      continue;
+  std::string msg;
+  while(1) {
+    {
+      std::unique_lock<std::mutex> lock(mutex_);
+      condition_.wait(lock, [this]() {
+        return !running_ || !message_queue_.empty();
+      });
+      if(!running_ && message_queue_.empty()) {
+        break;
+      }
+      msg = message_queue_.front();
+      message_queue_.pop();
     }
-    std::string msg = message_queue_.front();
     int ret = ::write(fd_, msg.c_str(), msg.size());
     if(ret < -1) {
       // TODO: handle write error
-    }
-    else {
-      // std::lock_guard<std::mutex> lock(mutex_);
-      message_queue_.pop();
     }
   }
 }
