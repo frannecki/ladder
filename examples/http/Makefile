@@ -1,6 +1,6 @@
 CC=g++
 PROTO=protoc
-CFLAGS=-Wall -std=c++11 -O0 -g -DDEBUG
+CFLAGS=-Wall -std=c++11 -O0 -g -DDEBUG -fno-omit-frame-pointer
 TGT=test_http_server.out
 PROJECT_PATH=./../../ladder
 

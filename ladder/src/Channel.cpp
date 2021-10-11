@@ -5,6 +5,8 @@
 #include <EventLoop.h>
 #include <Socket.h>
 
+#include <Logging.h>
+
 namespace ladder {
 
 Channel::Channel(EventLoopPtr loop, int fd) :
@@ -22,7 +24,7 @@ Channel::Channel(EventLoopPtr loop, int fd) :
 }
 
 Channel::~Channel() {
-
+  LOGF_DEBUG("Destroying channel fd = %d", fd_);
 }
 
 void Channel::SetReadCallback(const std::function<void()>& callback) {

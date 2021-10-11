@@ -1,5 +1,5 @@
 CC=g++
-CFLAGS=-Wall -std=c++11 -O0 -g -fPIC -DDEBUG
+CFLAGS=-Wall -std=c++11 -O0 -g -fPIC -DDEBUG -fno-omit-frame-pointer
 TGT_PATH=build
 TGT=$(TGT_PATH)/libladder.so
 
