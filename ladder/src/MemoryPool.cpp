@@ -35,11 +35,15 @@ MemoryPoolImpl::MemoryPoolImpl(size_t num_blocks,
 
 MemoryPoolImpl::~MemoryPoolImpl() {
   MemoryBlock* block = blocks_->next_;
+  MemoryBlock* prev = nullptr;
   blocks_->next_ = nullptr;
   while(block) {
     delete block->memory_;
     block->memory_ = nullptr;
+    prev = block;
     block = block->next_;
+    delete prev;
+    prev = nullptr;
   }
 }
 

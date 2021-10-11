@@ -88,7 +88,9 @@ void Channel::EnableWrite(bool enable) {
 
 void Channel::HandleEvents() {
 #ifdef __linux__
-  if(events_ & kPollEvent::kPollHup) {
+  uint32_t evts = events_;
+  events_ = 0;
+  if(evts & kPollEvent::kPollHup) {
     // normally POLL_HUP is not generated.
     // peer close signal (POLL_RDHUP) is 
     // mostly handled after read or write
@@ -98,13 +100,13 @@ void Channel::HandleEvents() {
     return;
   }
 #endif
-  if(events_ & kPollEvent::kPollErr) {
+  if(evts & kPollEvent::kPollErr) {
     if(error_callback_) {
       error_callback_();
     }
     return;
   }
-  if(events_ & kPollEvent::kPollOut) {
+  if(evts & kPollEvent::kPollOut) {
     if(write_callback_) {
       write_callback_();
     }
@@ -112,15 +114,14 @@ void Channel::HandleEvents() {
   // Pay close attention to the order of event handing.
   // Handling read event could cause this channel to deconstruct
 #ifdef __linux__
-  if(events_ & (kPollEvent::kPollIn | kPollEvent::kPollOut | kPollEvent::kPollRdHup)) {
+  if(evts & (kPollEvent::kPollIn | kPollEvent::kPollOut | kPollEvent::kPollRdHup)) {
 #elif defined(__FreeBSD__)
-  if(events_ & kPollEvent::kPollIn) {
+  if(evts & kPollEvent::kPollIn) {
 #endif
     if(read_callback_) {
       read_callback_();
     }
   }
-  events_ = 0;
 }
 
 int Channel::fd() const {

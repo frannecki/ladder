@@ -72,5 +72,6 @@ int main(int argc, char** argv) {
   HttpServer server(addr);
   server.RegisterCallback(kHttpRequestMethod::kHttpGet, HandleHttpGet);
   server.Start();
+  Logger::release();
   return 0;
 }
