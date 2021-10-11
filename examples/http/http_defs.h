@@ -21,6 +21,7 @@ enum kHttpHeaderField : int {
   kContentType,
   kUserAgent,
   kContentLength,
+  kContentEncoding,
   kHost,
   kConnection
 };
@@ -105,6 +106,7 @@ static const std::unordered_map<int, std::string> kHeaderFieldStrs = \
   {kHttpHeaderField::kContentType, "Content-Type"},
   {kHttpHeaderField::kUserAgent, "User-Agent"},
   {kHttpHeaderField::kContentLength, "Content-Length"},
+  {kHttpHeaderField::kContentEncoding, "Content-Encoding"},
   {kHttpHeaderField::kHost, "Host"},
   {kHttpHeaderField::kConnection, "Connection"}
 };

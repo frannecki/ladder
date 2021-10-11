@@ -1,6 +1,5 @@
 #include <Connection.h>
 #include <Buffer.h>
-#include <Logging.h>
 
 #include "HttpServer.h"
 

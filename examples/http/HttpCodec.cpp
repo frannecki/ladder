@@ -4,6 +4,8 @@
 #include <Connection.h>
 #include <Buffer.h>
 #include <MemoryPool.h>
+#include <GZip.h>
+#include <Logging.h>
 
 #include "HttpCodec.h"
 #include "http_defs.h"
@@ -106,6 +108,7 @@ bool HttpMessage::ComposeHeaders(std::string& message) {
       message += iter_field->second + ": " + iter->second + kHeaderBreak;
     }
   }
+  
   message += kHeaderBreak;
 
   return true;
@@ -226,6 +229,8 @@ void HttpCodec::OnClientMessage(const ConnectionPtr& conn, Buffer* buffer) {
     // message incomplete;
     return;
   }
+  LOG_DEBUG(message);
+
   buffer->HaveRead(length);
   request_->context()->status_code_ = status;
 
@@ -236,9 +241,15 @@ void HttpCodec::OnClientMessage(const ConnectionPtr& conn, Buffer* buffer) {
 
   std::string headers;
   
+  // std::string filebuf = GZipper::DeflateFile(response_->context()->uri_);
+  // response_->context()->headers_[kHttpHeaderField::kContentLength] = std::to_string(filebuf.size());
+  // response_->context()->headers_[kHttpHeaderField::kContentEncoding] = "gzip";
+
   response_->ComposeHeaders(headers);
   if(response_->context()->status_code_ == kHttpStatusCode::kOk) {
     conn->SendFile(std::move(headers), response_->context()->uri_);
+    LOG_DEBUG(response_->context()->uri_);
+    // conn->Send(std::move(headers) + std::move(filebuf));
   }
   else {
     conn->Send(std::move(headers));
