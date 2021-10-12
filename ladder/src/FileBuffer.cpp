@@ -35,6 +35,12 @@ void FileBuffer::Write(const std::string& content) {
 }
 
 int FileBuffer::WriteBufferToFd(int fd) {
+
+  int ret = buffer_->WriteBufferToFd(fd);
+  if(ret < 0) {
+    return ret;
+  }
+
   while(!pending_files_.empty()) {
     if(fd_ == -1) {
       buffer_->Write(pending_files_.front().header_);
@@ -55,7 +61,7 @@ int FileBuffer::WriteBufferToFd(int fd) {
       }
     }
 
-    int ret = buffer_->WriteBufferToFd(fd);
+    ret = buffer_->WriteBufferToFd(fd);
     if(ret < 0) {
       return ret;
     }
