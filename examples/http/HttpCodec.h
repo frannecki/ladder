@@ -18,6 +18,8 @@ struct HttpContext {
   std::string payload_;
 
   int status_code_;
+  int content_encoding_;
+  int content_length_;
 
   void clear();
 };

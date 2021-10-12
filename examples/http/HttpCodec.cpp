@@ -5,13 +5,40 @@
 #include <Buffer.h>
 #include <MemoryPool.h>
 #include <GZip.h>
-#include <Logging.h>
 
 #include "HttpCodec.h"
 #include "http_defs.h"
 
 namespace ladder {
 namespace http {
+
+static std::vector<std::string> SplitString(const std::string& str,
+                                            const std::string& breaking) {
+  
+  std::vector<int> breakpoints = FindSubstr(str, breaking);
+  
+  size_t num_breakpoints = breakpoints.size();
+  std::vector<std::string> splits;
+
+  int cur_start = 0;
+  for(size_t i = 0; i < num_breakpoints; ++i) {
+    splits.emplace_back(str.substr(cur_start, breakpoints[i] - cur_start));
+    cur_start = breakpoints[i] + breaking.size();
+  }
+
+  splits.emplace_back(str.substr(cur_start, str.size() - cur_start));
+
+  return splits;
+}
+
+static bool EncodingSupported(int encoding) {
+  if(encoding == kAcceptContentEncoding::kIdentity \
+    || encoding == kAcceptContentEncoding::kGzip)
+  {
+    return true;
+  }
+  return false;
+}
 
 void HttpContext::clear() {
   uri_.clear();
@@ -34,7 +61,9 @@ struct HttpContext* HttpMessage::context() {
   return context_;
 }
 
-int HttpMessage::ParseMessage(const std::string& message, int &length) {
+int HttpMessage::ParseMessage(const std::string& message,
+                              int &length)
+{
   length = 0;
   std::vector<int> double_breakpoints = FindSubstr(
     message, kHeaderBreak + kHeaderBreak);
@@ -42,20 +71,18 @@ int HttpMessage::ParseMessage(const std::string& message, int &length) {
     return -1;  // packet incomplete
   }
   
-  std::vector<int> breakpoints = FindSubstr(
-    message.substr(0, double_breakpoints[0] + kHeaderBreak.size()),
-    kHeaderBreak);
+  std::vector<std::string> lines = SplitString(
+    message.substr(0, double_breakpoints[0]), kHeaderBreak);
   
   context_->clear();
-  size_t num_breakpoints = breakpoints.size();
 
-  for(size_t i = 0; i < num_breakpoints; ++i) {
+  for(size_t i = 0; i < lines.size(); ++i) {
     if(i == 0) {
-      context_->start_line_ = message.substr(0, breakpoints[i]);
+      context_->start_line_ = lines[i];
       continue;
     }
-    std::string line = message.substr(breakpoints[i-1] + kHeaderBreak.size(),
-                                      breakpoints[i] - breakpoints[i-1] - kHeaderBreak.size());
+
+    std::string& line = lines[i];
     int position_colon = -1;
     for(size_t j = 0; j < line.size(); ++j) {
       if(line[j] == ':') {
@@ -71,8 +98,8 @@ int HttpMessage::ParseMessage(const std::string& message, int &length) {
     std::string key = line.substr(0, position_colon);
     auto iter = kHeaderFields.find(std::move(key));
     if(iter != kHeaderFields.end()) {
-      context_->headers_[iter->second] = line.substr(position_colon + 1,
-                                                     line.size() - position_colon - 1);
+      context_->headers_[iter->second] = line.substr(position_colon + 2,
+                                                     line.size() - position_colon - 2);
     }
   }
 
@@ -102,6 +129,10 @@ int HttpMessage::ParseMessage(const std::string& message, int &length) {
 bool HttpMessage::ComposeHeaders(std::string& message) {
   if(!PrepareMessage())  return false;
   message += context_->start_line_ + kHeaderBreak;
+
+  context_->headers_[kHttpHeaderField::kContentLength] = \
+    std::to_string(context_->content_length_);
+
   for(auto iter = context_->headers_.begin(); iter != context_->headers_.end(); ++iter) {
     auto iter_field = kHeaderFieldStrs.find(iter->first);
     if(iter_field != kHeaderFieldStrs.end()) {
@@ -119,16 +150,8 @@ HttpRequest::HttpRequest() {
 }
 
 int HttpRequest::HandleMessage() {
-  size_t cur_start = 0;
-  std::vector<std::string> http_method_fields;  // method, uri and version
-  for(size_t j = 0; j <= context_->start_line_.size(); ++j) {
-    if(context_->start_line_[j] == ' ' || j == context_->start_line_.size()) {
-      http_method_fields.push_back(
-        context_->start_line_.substr(cur_start, j - cur_start));
-      cur_start = j + 1;
-    }
-  }
-  
+  std::vector<std::string> http_method_fields = SplitString(context_->start_line_, " ");  // method, uri and version
+
   if(http_method_fields.size() != 3) {
     return kHttpStatusCode::kBadRequest;
   }
@@ -149,6 +172,19 @@ int HttpRequest::HandleMessage() {
     1, http_method_fields[1].size() - 1);
   context_->version_ = http_method_fields[2];
 
+  context_->content_encoding_ = kAcceptContentEncoding::kIdentity;
+  auto iter = context_->headers_.find(kHttpHeaderField::kAcceptEncoding);
+  if(iter != context_->headers_.end()) {
+    std::vector<std::string> accept_encodings = SplitString(iter->second, ", ");
+    for(std::string& enc: accept_encodings) {
+      auto iter_enc = kContentEncodings.find(enc);
+      if(iter_enc != kContentEncodings.end() && EncodingSupported(iter_enc->second)) {
+        context_->content_encoding_ = iter_enc->second;
+        break;
+      }
+    }
+  }
+
   return kHttpStatusCode::kOk;
 }
 
@@ -166,15 +202,7 @@ HttpResponse::HttpResponse() {
 }
 
 int HttpResponse::HandleMessage() {
-  size_t cur_start = 0;
-  std::vector<std::string> http_method_fields;  // method, uri and version
-  for(size_t j = 0; j <= context_->start_line_.size(); ++j) {
-    if(context_->start_line_[j] == ' ' || j == context_->start_line_.size()) {
-      http_method_fields.push_back(
-        context_->start_line_.substr(cur_start, j - cur_start));
-      cur_start = j + 1;
-    }
-  }
+  std::vector<std::string> http_method_fields = SplitString(context_->start_line_, " ");  // method, uri and version
   
   if(http_method_fields.size() != 3) {
     return -1;
@@ -190,6 +218,19 @@ int HttpResponse::HandleMessage() {
 
   context_->version_ = http_method_fields[0];
   context_->method_ = std::atoi(http_method_fields[1].c_str());
+
+  context_->content_encoding_ = kAcceptContentEncoding::kIdentity;
+  auto iter = context_->headers_.find(kHttpHeaderField::kAcceptEncoding);
+  if(iter != context_->headers_.end()) {
+    std::vector<std::string> accept_encodings = SplitString(iter->second, ", ");
+    auto iter_enc = kContentEncodings.find(accept_encodings[0]);
+    if(iter_enc != kContentEncodings.end() && EncodingSupported(iter_enc->second)) {
+      context_->content_encoding_ = iter_enc->second;
+    }
+    else {
+      return kHttpStatusCode::kNotAcceptable;
+    }
+  }
 
   return 0;
 }
@@ -229,7 +270,6 @@ void HttpCodec::OnClientMessage(const ConnectionPtr& conn, Buffer* buffer) {
     // message incomplete;
     return;
   }
-  LOG_DEBUG(message);
 
   buffer->HaveRead(length);
   request_->context()->status_code_ = status;
@@ -240,18 +280,23 @@ void HttpCodec::OnClientMessage(const ConnectionPtr& conn, Buffer* buffer) {
   }
 
   std::string headers;
-  
-  // std::string filebuf = GZipper::DeflateFile(response_->context()->uri_);
-  // response_->context()->headers_[kHttpHeaderField::kContentLength] = std::to_string(filebuf.size());
-  // response_->context()->headers_[kHttpHeaderField::kContentEncoding] = "gzip";
 
-  response_->ComposeHeaders(headers);
   if(response_->context()->status_code_ == kHttpStatusCode::kOk) {
-    conn->SendFile(std::move(headers), response_->context()->uri_);
-    LOG_DEBUG(response_->context()->uri_);
-    // conn->Send(std::move(headers) + std::move(filebuf));
+    if(request_->context()->content_encoding_ == kGzip)
+    {
+      std::string filebuf = GZipper::DeflateFile(response_->context()->uri_);
+      response_->context()->content_length_ = filebuf.size();
+      response_->context()->headers_[kHttpHeaderField::kContentEncoding] = "gzip";
+      response_->ComposeHeaders(headers);
+      conn->Send(std::move(headers) + std::move(filebuf));
+    }
+    else {
+      response_->ComposeHeaders(headers);
+      conn->SendFile(std::move(headers), response_->context()->uri_);
+    }
   }
   else {
+    response_->ComposeHeaders(headers);
     conn->Send(std::move(headers));
   }
 }

@@ -11,27 +11,95 @@ using namespace ladder::http;
 
 static const std::string kUnknownFileMimeType = "text/plain; charset=utf-8";
 
-static const std::unordered_map<std::string, std::string> kFileMimeTypes = \
-{
-  {"htm", "text/html; charset=utf-8"}, {"html", "text/html; charset=utf-8"},
-  {"ico", "image/vnd.microsoft.icon"}, {"js", "text/javascript; charset=utf-8"},
-  {"css", "text/css"}, {"csv", "text/csv; charset=utf-8"}, {".txt", "text/plain; charset=utf-8"},
-  {"jpg", "image/jpeg"}, {"json", "application/json; charset=utf-8"}, {"jpeg", "image/jpeg"},
-  {"png", "image/png"}, {"tif", "image/tiff"}, {"tiff", "image/tiff"}, {"pdf", "application/pdf"},
-  {"svg", "image/svg+xml; charset=utf-8"}, {"bmp", "image/bmp"}, {"avi", "video/x-msvideo"},
-  {"epub", "application/epub+zip"}, {"gif", "application/epub+zip"}, {"mp3", "audio/mpeg"},
-  {"mp4", "video"}, {"xml", "application/xml; charset=utf-8"}
+static const int kCompressibleFileSizeThreshold = 2048;
+
+enum kFileFormat {
+  kFileFormatHtml = 0,
+  kFileFormatJs,
+  kFileFormatCss,
+  kFileFormatSvg,
+  kFileFormatXml,
+  kFileFormatText,
+  kFileFormatJson,
+  kFileFormatCsv,
+  kFileFormatBmp,
+
+  kFileFormatCompressible,
+
+  kFileFormatJpg,
+  kFileFormatPng,
+  kFileFormatIco,
+  kFileFormatGif,
+  kFileFormatTif,
+  kFileFormatPdf,
+  kFileFormatEpub,
+  kFileFormatMp3,
+  kFileFormatMp4,
+  kFileFormatAvi,
 };
 
-static std::string GetFileSuffix(const std::string& filename) {
+static const std::unordered_map<std::string, int> kFileMimeTypeCodes = \
+{
+  {"htm", kFileFormat::kFileFormatHtml},
+  {"html", kFileFormat::kFileFormatHtml},
+  {"ico", kFileFormat::kFileFormatIco},
+  {"js", kFileFormat::kFileFormatJs},
+  {"css", kFileFormat::kFileFormatCss},
+  {"csv", kFileFormat::kFileFormatCsv},
+  {"txt", kFileFormat::kFileFormatText},
+  {"jpg", kFileFormat::kFileFormatJpg},
+  {"jpeg", kFileFormat::kFileFormatJpg},
+  {"json", kFileFormat::kFileFormatJson},
+  {"png", kFileFormat::kFileFormatPng},
+  {"tif", kFileFormat::kFileFormatTif},
+  {"tiff", kFileFormat::kFileFormatTif},
+  {"pdf", kFileFormat::kFileFormatPdf},
+  {"svg", kFileFormat::kFileFormatSvg},
+  {"bmp", kFileFormat::kFileFormatBmp},
+  {"avi", kFileFormat::kFileFormatAvi},
+  {"epub", kFileFormat::kFileFormatEpub},
+  {"gif", kFileFormat::kFileFormatGif},
+  {"mp3", kFileFormat::kFileFormatMp3},
+  {"mp4", kFileFormat::kFileFormatMp4},
+  {"xml", kFileFormat::kFileFormatXml}
+};
+
+static const std::unordered_map<int, std::string> kFileMimeTypes = \
+{
+  {kFileFormat::kFileFormatHtml, "text/html; charset=utf-8"},
+  {kFileFormat::kFileFormatIco, "image/vnd.microsoft.icon"},
+  {kFileFormat::kFileFormatJs, "text/javascript; charset=utf-8"},
+  {kFileFormat::kFileFormatCss, "text/css"},
+  {kFileFormat::kFileFormatCsv, "text/csv; charset=utf-8"},
+  {kFileFormat::kFileFormatText, "text/plain; charset=utf-8"},
+  {kFileFormat::kFileFormatJpg, "image/jpeg"},
+  {kFileFormat::kFileFormatJson, "application/json; charset=utf-8"},
+  {kFileFormat::kFileFormatPng, "image/png"},
+  {kFileFormat::kFileFormatTif, "image/tiff"},
+  {kFileFormat::kFileFormatPdf, "application/pdf"},
+  {kFileFormat::kFileFormatSvg, "image/svg+xml; charset=utf-8"},
+  {kFileFormat::kFileFormatBmp, "image/bmp"},
+  {kFileFormat::kFileFormatAvi, "video/x-msvideo"},
+  {kFileFormat::kFileFormatEpub, "application/epub+zip"},
+  {kFileFormat::kFileFormatGif, "image/gif"},
+  {kFileFormat::kFileFormatMp3, "audio/mpeg"},
+  {kFileFormat::kFileFormatMp4, "video"},
+  {kFileFormat::kFileFormatXml, "application/xml; charset=utf-8"}
+};
+
+static int GetFileSuffix(const std::string& filename) {
   std::string suffix;
   for(int i = filename.size()-1; i >= 0; --i) {
     if(filename[i] == '.') {
-      suffix = filename.substr(i+1, filename.size()-(i+1));
+      suffix = filename.substr(i+1, filename.size() - (i+1));
       break;
     }
   }
-  return suffix;
+  auto iter = kFileMimeTypeCodes.find(suffix);
+  if(iter != kFileMimeTypeCodes.end()) {
+    return iter->second;
+  }
+  return -1;
 }
 
 static std::string kResourceRoot = "resources/";
@@ -43,21 +111,30 @@ void HandleHttpGet(struct HttpContext* ctx1, struct HttpContext* ctx2) {
       ctx1->uri_ = "index.html";
     }
 
-    auto iter = kFileMimeTypes.find(GetFileSuffix(ctx1->uri_));
+    int fmt = GetFileSuffix(ctx1->uri_);
+    auto iter = kFileMimeTypes.find(fmt);
     if(iter != kFileMimeTypes.end()) {
       ctx2->headers_[kHttpHeaderField::kContentType] = iter->second;
     }
     else {
       ctx2->headers_[kHttpHeaderField::kContentType] = kUnknownFileMimeType;
     }
+    if(fmt >= kFileFormat::kFileFormatCompressible) {
+      ctx1->content_encoding_ = kAcceptContentEncoding::kIdentity;
+    }
 
-    if(CheckIfFileExists(kResourceRoot + ctx1->uri_)) {
-      ctx2->uri_ = kResourceRoot + ctx1->uri_;
+    ctx2->uri_ = kResourceRoot + ctx1->uri_;
+    int file_size = GetFileSize(ctx2->uri_);
+    if(file_size <= kCompressibleFileSizeThreshold) {
+      ctx1->content_encoding_ = kAcceptContentEncoding::kIdentity;
+    }
+
+    if(file_size >= 0) {
       ctx2->status_code_ = kHttpStatusCode::kOk;
-      ctx2->headers_[kHttpHeaderField::kContentLength] = std::to_string(GetFileSize(ctx2->uri_));
+      ctx2->content_length_ = file_size;
     }
     else {
-      ctx2->headers_[kHttpHeaderField::kContentLength] = "0";
+      ctx2->content_length_ = 0;
       ctx2->status_code_ = kHttpStatusCode::kNotFound;
     }
   }

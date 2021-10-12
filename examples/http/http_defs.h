@@ -22,6 +22,7 @@ enum kHttpHeaderField : int {
   kUserAgent,
   kContentLength,
   kContentEncoding,
+  kAcceptEncoding,
   kHost,
   kConnection
 };
@@ -42,6 +43,15 @@ enum kHttpStatusCode : int {
   kNotImplemented = 501,
   kHttpVersionNotSupported = 505,
 
+};
+
+enum kAcceptContentEncoding : int {
+  kGzip = 0,
+  kCompress,
+  kDeflate,
+  kBr,
+  kIdentity,
+  kAll
 };
 
 static const std::string kHeaderBreak = "\r\n";
@@ -96,6 +106,8 @@ static const std::unordered_map<std::string, int> kHeaderFields = \
   {"Content-Type", kHttpHeaderField::kContentType},
   {"User-Agent", kHttpHeaderField::kUserAgent},
   {"Content-Length", kHttpHeaderField::kContentLength},
+  {"Content-Encoding", kHttpHeaderField::kContentEncoding},
+  {"Accept-Encoding", kHttpHeaderField::kAcceptEncoding},
   {"Host", kHttpHeaderField::kHost},
   {"Connection", kHttpHeaderField::kConnection}
 };
@@ -107,8 +119,29 @@ static const std::unordered_map<int, std::string> kHeaderFieldStrs = \
   {kHttpHeaderField::kUserAgent, "User-Agent"},
   {kHttpHeaderField::kContentLength, "Content-Length"},
   {kHttpHeaderField::kContentEncoding, "Content-Encoding"},
+  {kHttpHeaderField::kAcceptEncoding, "Accept-Encoding"},
   {kHttpHeaderField::kHost, "Host"},
   {kHttpHeaderField::kConnection, "Connection"}
+};
+
+static const std::unordered_map<std::string, int> kContentEncodings = \
+{
+  {"gzip", kAcceptContentEncoding::kGzip},
+  {"compress", kAcceptContentEncoding::kCompress},
+  {"deflate", kAcceptContentEncoding::kDeflate},
+  {"br", kAcceptContentEncoding::kBr},
+  {"identity", kAcceptContentEncoding::kIdentity},
+  {"*", kAcceptContentEncoding::kAll}
+};
+
+static const std::unordered_map<int, std::string> kContentEncodingStrs = \
+{
+  {kAcceptContentEncoding::kGzip, "gzip"},
+  {kAcceptContentEncoding::kCompress, "compress"},
+  {kAcceptContentEncoding::kDeflate, "deflate"},
+  {kAcceptContentEncoding::kBr, "br"},
+  {kAcceptContentEncoding::kIdentity, "identity"},
+  {kAcceptContentEncoding::kAll, "*"}
 };
 
 } // namespace http
