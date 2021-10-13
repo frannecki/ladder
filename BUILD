@@ -73,7 +73,7 @@ TEST_SUB_CLIENT = ["timer", "client", "mass_clients", "tcp_client", "event_loop_
  ) for sub in TEST_SUB_CLIENT]
 
 cc_binary(
-    name = "test_http_server",
+    name = "ladder_test_http_server",
     srcs = glob(["examples/http/*.cpp", "examples/http/*.h"]),
     includes = ["ladder/include", "examples/http"],
     deps = [":ladder"],

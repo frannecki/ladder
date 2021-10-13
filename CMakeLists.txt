@@ -73,3 +73,8 @@ if(DEBUG)
         target_compile_definitions(ladder_unit_tests DEBUG)
     endif()
 endif()
+
+install(TARGETS ladder)
+install(DIRECTORY ladder/include/ DESTINATION include/ladder FILES_MATCHING PATTERN "*.h*")
+install(TARGETS ladder_client)
+install(DIRECTORY ladder_client/include/ DESTINATION include/ladder_client FILES_MATCHING PATTERN "*.h*")

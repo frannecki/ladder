@@ -21,7 +21,7 @@
   
   ```sh
   # build all
-  bazel build --cxxopts="-std=c++11" //:all
+  sudo ./build_bazel.sh
   ```
 
   or alternatively
@@ -39,6 +39,7 @@
   bazel build --cxxopts="-std=c++11" //:ladder_tests_client_mass_clients
   bazel build --cxxopts="-std=c++11" //:ladder_tests_client_tcp_client
   bazel build --cxxopts="-std=c++11" //:ladder_tests_client_event_loop_thread
+  bazel build --cxxopts="-std=c++11" //:ladder_test_http_server
   ```
 
 * cmake
