@@ -1,4 +1,4 @@
-# Ladder: A Light-weight Reactor-pattern Server
+# Ladder: A Light-weight Event-driven Server
 
 ## Prerequisites
 * protobuf 3.x

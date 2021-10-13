@@ -2,6 +2,8 @@
 
 #include <GZip.h>
 
+#include <string.h>
+
 namespace ladder {
 
 static const int kGZipBufferSize = 128;
@@ -13,7 +15,7 @@ static const int kDeflationLevel = Z_DEFAULT_COMPRESSION;
 std::string GZipper::Deflate(const std::string& buf) {
   std::string result;
   if(buf.empty())  return result;
-  int ret;
+  int ret, flush;
   int bytes_finished = 0, bytes_total = buf.size();
   unsigned char out_buf[kGZipBufferSize] = {0};
   z_stream strm;
@@ -31,16 +33,16 @@ std::string GZipper::Deflate(const std::string& buf) {
                              kGZipBufferSize);
     strm.next_in = reinterpret_cast<Bytef*>(
       const_cast<char*>(buf.c_str() + bytes_finished));
+    bytes_finished += strm.avail_in;
+    flush = (bytes_finished >= bytes_total) ? Z_FINISH : Z_NO_FLUSH;
 
-    strm.avail_out = 0;
-    while(strm.avail_out == 0) {
+    while(1) {
       strm.avail_out = kGZipBufferSize;
       strm.next_out = out_buf;
-      ret = deflate(&strm, Z_NO_FLUSH);
-      int cur_bytes_finished = kGZipBufferSize - strm.avail_out;
+      ret = deflate(&strm, flush);  // should flush on finish
       result += std::string(reinterpret_cast<char*>(out_buf),
-                            cur_bytes_finished);
-      bytes_finished += cur_bytes_finished;
+                            kGZipBufferSize - strm.avail_out);
+      if(strm.avail_out != 0)  break;
     }
   }
   deflateEnd(&strm);
@@ -51,7 +53,7 @@ std::string GZipper::Deflate(const std::string& buf) {
 std::string GZipper::Inflate(const std::string& buf) {
   std::string result;
   if(buf.empty())  return result;
-  int ret;
+  int ret, flush;
   int bytes_finished = 0, bytes_total = buf.size();
   unsigned char out_buf[kGZipBufferSize] = {0};
   z_stream strm;
@@ -71,16 +73,16 @@ std::string GZipper::Inflate(const std::string& buf) {
                              kGZipBufferSize);
     strm.next_in = reinterpret_cast<Bytef*>(
       const_cast<char*>(buf.c_str() + bytes_finished));
+    bytes_finished += strm.avail_in;
+    flush = (bytes_finished >= bytes_total) ? Z_FINISH : Z_NO_FLUSH;
 
-    strm.avail_out = 0;
-    while(strm.avail_out == 0) {
+    while(1) {
       strm.avail_out = kGZipBufferSize;
       strm.next_out = out_buf;
-      ret = inflate(&strm, Z_NO_FLUSH);
-      int cur_bytes_finished = kGZipBufferSize - strm.avail_out;
+      ret = inflate(&strm, flush);
       result += std::string(reinterpret_cast<char*>(out_buf),
-                            cur_bytes_finished);
-      bytes_finished += cur_bytes_finished;
+                            kGZipBufferSize - strm.avail_out);
+      if(strm.avail_out != 0)  break;
     }
   }
   inflateEnd(&strm);
@@ -117,14 +119,13 @@ std::string GZipper::DeflateFile(const std::string& filename) {
     flush = feof(fp) ? Z_FINISH : Z_NO_FLUSH;
     strm.next_in = in_buf;
 
-    strm.avail_out = 0;
-    while(strm.avail_out == 0) {
+    while(1) {
       strm.avail_out = kGZipFileBufferSize;
       strm.next_out = out_buf;
       ret = deflate(&strm, flush);
-      int cur_bytes_finished = kGZipFileBufferSize - strm.avail_out;
       result += std::string(reinterpret_cast<char*>(out_buf),
-                            cur_bytes_finished);
+                            kGZipFileBufferSize - strm.avail_out);
+      if(strm.avail_out != 0)  break;
     }
   }
   deflateEnd(&strm);
