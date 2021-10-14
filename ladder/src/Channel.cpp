@@ -87,9 +87,9 @@ void Channel::EnableWrite(bool enable) {
 
 
 void Channel::HandleEvents() {
-#ifdef __linux__
   uint32_t evts = events_;
   events_ = 0;
+#ifdef __linux__
   if(evts & kPollEvent::kPollHup) {
     // normally POLL_HUP is not generated.
     // peer close signal (POLL_RDHUP) is 
