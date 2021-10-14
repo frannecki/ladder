@@ -9,8 +9,7 @@
 using namespace ladder;
 using namespace ladder::http;
 
-static const std::string kUnknownFileMimeType = "text/plain; charset=utf-8";
-
+static const std::string kUnknownFileMimeType = "application/octet-stream";
 static const int kCompressibleFileSizeThreshold = 2048;
 
 enum kFileFormat {
