@@ -57,6 +57,15 @@ void Connection::Send(const std::string& buf) {
   EnableWrite(ret);
 }
 
+void Connection::ShutDownWrite() {
+  channel_->ShutDownWrite();
+}
+
+void Connection::Close() {
+  channel_->ShutDownRead();
+  channel_->ShutDownWrite();
+}
+
 void Connection::SendFile(std::string&& header, const std::string& filename) {
   if(shut_down_ || !send_file_)  return;
   write_file_buffer_->AddFile(std::move(header), filename);
@@ -137,15 +146,16 @@ ChannelPtr Connection::channel() const {
 }
 
 void Connection::EnableWrite(int ret) {
-  if(ret < 0) {
-    // reached EAGAIN / EWOULDBLOCK,
-    // output buffer unavaiable to write
-    channel_->EnableWrite();
-  }
-  else {
-    // output buffer currently available for write
-    channel_->EnableWrite(false);
-  }
+  // if(ret < 0) {
+  //   // reached EAGAIN / EWOULDBLOCK,
+  //   // output buffer unavaiable to write
+  //   channel_->EnableWrite();
+  // }
+  // else {
+  //   // output buffer currently available for write
+  //   // channel_->EnableWrite(false);
+  //   channel_->EnableWrite();
+  // }
 }
 
 } // namespace ladder

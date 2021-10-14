@@ -147,6 +147,7 @@ bool HttpMessage::ComposeHeaders(std::string& message) {
 
 HttpRequest::HttpRequest() {
   context_->version_ = "HTTP/1.1";
+  context_->headers_[kHttpHeaderField::kConnection] = "close";
 }
 
 int HttpRequest::HandleMessage() {
@@ -199,6 +200,7 @@ bool HttpRequest::PrepareMessage() {
 
 HttpResponse::HttpResponse() {
   context_->version_ = "HTTP/1.1";
+  context_->headers_[kHttpHeaderField::kConnection] = "close";
 }
 
 int HttpResponse::HandleMessage() {

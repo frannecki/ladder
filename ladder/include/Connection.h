@@ -19,6 +19,8 @@ public:
   void Init();
   void SetChannelCallbacks();
   void Send(const std::string& buf);
+  void ShutDownWrite();
+  void Close();
   void SendFile(std::string&& header, const std::string& filename = "");
   void OnReadCallback();
   void OnWriteCallback();

@@ -13,19 +13,7 @@ static const std::string kUnknownFileMimeType = "application/octet-stream";
 static const int kCompressibleFileSizeThreshold = 2048;
 
 enum kFileFormat {
-  kFileFormatHtml = 0,
-  kFileFormatJs,
-  kFileFormatCss,
-  kFileFormatSvg,
-  kFileFormatXml,
-  kFileFormatText,
-  kFileFormatJson,
-  kFileFormatCsv,
-  kFileFormatBmp,
-
-  kFileFormatCompressible,
-
-  kFileFormatJpg,
+  kFileFormatJpg = 0,
   kFileFormatPng,
   kFileFormatIco,
   kFileFormatGif,
@@ -35,6 +23,19 @@ enum kFileFormat {
   kFileFormatMp3,
   kFileFormatMp4,
   kFileFormatAvi,
+  kFileFormatZip,
+
+  kFileFormatCompressible,
+
+  kFileFormatHtml,
+  kFileFormatJs,
+  kFileFormatCss,
+  kFileFormatSvg,
+  kFileFormatXml,
+  kFileFormatText,
+  kFileFormatJson,
+  kFileFormatCsv,
+  kFileFormatBmp,
 };
 
 static const std::unordered_map<std::string, int> kFileMimeTypeCodes = \
@@ -60,7 +61,8 @@ static const std::unordered_map<std::string, int> kFileMimeTypeCodes = \
   {"gif", kFileFormat::kFileFormatGif},
   {"mp3", kFileFormat::kFileFormatMp3},
   {"mp4", kFileFormat::kFileFormatMp4},
-  {"xml", kFileFormat::kFileFormatXml}
+  {"xml", kFileFormat::kFileFormatXml},
+  {"zip", kFileFormat::kFileFormatZip}
 };
 
 static const std::unordered_map<int, std::string> kFileMimeTypes = \
@@ -118,7 +120,7 @@ void HandleHttpGet(struct HttpContext* ctx1, struct HttpContext* ctx2) {
     else {
       ctx2->headers_[kHttpHeaderField::kContentType] = kUnknownFileMimeType;
     }
-    if(fmt >= kFileFormat::kFileFormatCompressible) {
+    if(fmt <= kFileFormat::kFileFormatCompressible) {
       ctx1->content_encoding_ = kAcceptContentEncoding::kIdentity;
     }
 
