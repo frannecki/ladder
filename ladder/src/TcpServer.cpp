@@ -1,15 +1,15 @@
-#include <unistd.h>
-#include <signal.h>
 #include <fcntl.h>
+#include <signal.h>
 #include <sys/socket.h>
+#include <unistd.h>
 
-#include <TcpServer.h>
-#include <Channel.h>
-#include <EventLoop.h>
-#include <ThreadPool.h>
-#include <EventLoopThreadPool.h>
 #include <Acceptor.h>
+#include <Channel.h>
 #include <Connection.h>
+#include <EventLoop.h>
+#include <EventLoopThreadPool.h>
+#include <TcpServer.h>
+#include <ThreadPool.h>
 
 #include <Base.h>
 #include <Logging.h>
@@ -19,22 +19,20 @@ using namespace std::placeholders;
 namespace ladder {
 
 void signal_handler(int signum) {
-  if(signum == SIGPIPE) {
+  if (signum == SIGPIPE) {
     LOG_FATAL("SIGPIPE ignored");
   }
 }
 
-using TcpConnectionCloseCallback = std::unique_ptr<std::function<void(TcpServer*, int)>>;
+using TcpConnectionCloseCallback =
+    std::unique_ptr<std::function<void(TcpServer*, int)>>;
 
-TcpServer::TcpServer(const SocketAddr& addr,
-                     bool send_file,
-                     size_t loop_thread_num,
-                     size_t working_thread_num) : 
-  addr_(addr),
-  send_file_(send_file),
-  loop_thread_num_(loop_thread_num),
-  working_thread_num_(working_thread_num)
-{
+TcpServer::TcpServer(const SocketAddr& addr, bool send_file,
+                     size_t loop_thread_num, size_t working_thread_num)
+    : addr_(addr),
+      send_file_(send_file),
+      loop_thread_num_(loop_thread_num),
+      working_thread_num_(working_thread_num) {
   signal(SIGPIPE, signal_handler);
 }
 
@@ -53,12 +51,9 @@ void TcpServer::Start() {
   channel_->UpdateToLoop();
   acceptor_.reset(new Acceptor(channel_, addr_.ipv6()));
   acceptor_->SetNewConnectionCallback(
-    std::bind(&TcpServer::OnNewConnectionCallback, 
-              this,
-              std::placeholders::_1,
-              std::placeholders::_2));
-  LOGF_INFO("Listening on fd = %d %s:%u", fd,
-            addr_.ip().c_str(), addr_.port());
+      std::bind(&TcpServer::OnNewConnectionCallback, this,
+                std::placeholders::_1, std::placeholders::_2));
+  LOGF_INFO("Listening on fd = %d %s:%u", fd, addr_.ip().c_str(), addr_.port());
   loop_threads_.reset(new EventLoopThreadPool(loop_thread_num_));
   loop_->StartLoop();
 }
@@ -76,7 +71,8 @@ void TcpServer::SetConnectionCallback(const ConnectionEvtCallback& callback) {
 }
 
 void TcpServer::OnNewConnectionCallback(int fd, SocketAddr&& addr) {
-  working_threads_->emplace(std::bind(&TcpServer::OnNewConnection, this, fd, addr));
+  working_threads_->emplace(
+      std::bind(&TcpServer::OnNewConnection, this, fd, addr));
 }
 
 void TcpServer::OnNewConnection(int fd, const SocketAddr& addr) {
@@ -84,19 +80,18 @@ void TcpServer::OnNewConnection(int fd, const SocketAddr& addr) {
   ConnectionPtr connection = std::make_shared<Connection>(loop, fd, send_file_);
   connection->SetReadCallback(read_callback_);
   connection->SetWriteCallback(write_callback_);
-  connection->SetCloseCallback(std::bind(
-    &TcpServer::OnCloseConnectionCallback,
-    this,
-    fd));
+  connection->SetCloseCallback(
+      std::bind(&TcpServer::OnCloseConnectionCallback, this, fd));
   connection->Init();
   {
     std::lock_guard<std::mutex> lock(mutex_connections_);
     connections_.insert(std::pair<int, ConnectionPtr>(fd, connection));
-    LOGF_INFO("New connection from client %s:%u. fd = %d. Current client number: %u",
-              addr.ip().c_str(), addr.port(), fd, connections_.size());
+    LOGF_INFO(
+        "New connection from client %s:%u. fd = %d. Current client number: %u",
+        addr.ip().c_str(), addr.port(), fd, connections_.size());
   }
   // action on connection
-  if(connection_callback_) {
+  if (connection_callback_) {
     connection_callback_(connection);
   }
 }
@@ -106,18 +101,14 @@ void TcpServer::OnCloseConnectionCallback(int fd) {
   {
     std::lock_guard<std::mutex> lock(mutex_connections_);
     auto iter = connections_.find(fd);
-    if(iter != connections_.end()) {
+    if (iter != connections_.end()) {
       connections_.erase(iter);
     }
   }
 }
 
-EventLoopPtr TcpServer::loop() const {
-  return loop_;
-}
+EventLoopPtr TcpServer::loop() const { return loop_; }
 
-EventLoopThreadPoolPtr TcpServer::loop_threads() const {
-  return loop_threads_;
-}
+EventLoopThreadPoolPtr TcpServer::loop_threads() const { return loop_threads_; }
 
-} // namespace ladder
+}  // namespace ladder

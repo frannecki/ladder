@@ -3,15 +3,13 @@
 #include <MemoryPool.h>
 
 class MemoryPoolTest : public testing::Test {
-protected:
+ protected:
   // MemoryPoolImpl instance should only be
   // created once and released once
-  static void SetUpTestSuite() {
-    pool_ = ladder::MemoryPoolImpl::instance();
-  }
-  
+  static void SetUpTestSuite() { pool_ = ladder::MemoryPoolImpl::instance(); }
+
   static void TearDownTestSuite() {
-    if(pool_) {
+    if (pool_) {
       pool_ = nullptr;
       ladder::MemoryPoolImpl::release();
     }
@@ -32,8 +30,7 @@ struct TestStruct {
   char c;
   uint32_t b;
 
-  TestStruct(int x = 0, char y = 0, uint32_t z = 0) : 
-    a(x), c(y), b(z) {}
+  TestStruct(int x = 0, char y = 0, uint32_t z = 0) : a(x), c(y), b(z) {}
 };
 
 TEST_F(MemoryPoolTest, test_allocate) {
@@ -49,7 +46,7 @@ TEST_F(MemoryPoolTest, test_allocate) {
 TEST_F(MemoryPoolTest, test_allocate_n) {
   int num_allocate = 6;
   TestStruct* p = ladder::MemoryPool<TestStruct>::allocate_n(num_allocate);
-  for(int i = 0; i < num_allocate; ++i) {
+  for (int i = 0; i < num_allocate; ++i) {
     EXPECT_EQ(p[i].a, 0);
     EXPECT_EQ(p[i].c, 0);
     EXPECT_EQ(p[i].b, 0);

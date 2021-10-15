@@ -1,26 +1,21 @@
-#include <EventLoop.h>
 #include <Channel.h>
+#include <EventLoop.h>
 
 #include <utils.h>
 
 namespace ladder {
 
-EventLoop::EventLoop() : 
-  poller_(new EventPoller),
-  running_(false)
-{
-
-}
+EventLoop::EventLoop() : poller_(new EventPoller), running_(false) {}
 
 void EventLoop::StartLoop() {
   {
     std::lock_guard<std::mutex> lock(mutex_running_);
     running_ = true;
   }
-  while(running_) {
+  while (running_) {
     std::vector<Channel*> active_channels;
     poller_->Poll(active_channels);
-    for(auto& channel : active_channels) {
+    for (auto& channel : active_channels) {
       channel->HandleEvents();
     }
   }
@@ -40,9 +35,7 @@ void EventLoop::UpdateChannel(Channel* channel, int op) {
   poller_->UpdateChannel(channel, op);
 }
 
-void EventLoop::RemoveChannel(int fd) {
-  poller_->RemoveChannel(fd);
-}
+void EventLoop::RemoveChannel(int fd) { poller_->RemoveChannel(fd); }
 
 void EventLoop::QueueInLoop(std::function<void()>&& task) {
   pending_tasks_.emplace_back(task);
@@ -58,4 +51,4 @@ int EventLoop::UpdateEvent(const struct kevent* evt) {
 }
 #endif
 
-} // namespace ladder
+}  // namespace ladder

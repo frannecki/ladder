@@ -4,8 +4,8 @@
 #include <memory>
 #include <mutex>
 
-#include <Socket.h>
 #include <Base.h>
+#include <Socket.h>
 
 namespace ladder {
 
@@ -20,11 +20,9 @@ class Connector;
 using ConnectorPtr = std::unique_ptr<Connector>;
 
 class TcpClient {
-public:
-  TcpClient(const SocketAddr& target_addr,
-            const EventLoopPtr& loop,
-            uint16_t retry_initial_timeout,
-            int max_retry=10);
+ public:
+  TcpClient(const SocketAddr& target_addr, const EventLoopPtr& loop,
+            uint16_t retry_initial_timeout, int max_retry = 10);
   ~TcpClient();
 
   void Connect();
@@ -35,8 +33,7 @@ public:
   void SetConnectionCallback(const ConnectionEvtCallback& callback);
   EventLoopPtr loop() const;
 
-private:
-
+ private:
   void OnConnectionCallback(SocketAddr&&);
   void OnConnectionFailureCallback();
   void OnCloseConnectionCallback(int fd);
@@ -53,9 +50,8 @@ private:
   ReadEvtCallback read_callback_;
   WriteEvtCallback write_callback_;
   ConnectionEvtCallback connection_callback_;
-
 };
 
-} // namespace ladder
+}  // namespace ladder
 
 #endif

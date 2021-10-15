@@ -8,11 +8,11 @@
 #include <unordered_map>
 #endif
 
+#include <functional>
 #include <map>
-#include <vector>
 #include <memory>
 #include <mutex>
-#include <functional>
+#include <vector>
 
 namespace ladder {
 
@@ -38,7 +38,7 @@ class Pipe;
 using PipePtr = std::unique_ptr<Pipe>;
 
 class EventPoller {
-public:
+ public:
   EventPoller();
   ~EventPoller();
   void Poll(std::vector<Channel*>& active_channels);
@@ -50,25 +50,25 @@ public:
   void Wakeup();
   void SetWakeupCallback(const std::function<void()>& callback);
 
-private:
+ private:
   int poll_fd_;
   int cur_poll_size_;
   PipePtr pipe_;
 #ifdef __FreeBSD__
-  static std::unordered_map<short, uint32_t> flt_2_stat_;	// filter to status
-  static std::unordered_map<uint32_t, short> stat_2_flt_;			// status to filter
+  static std::unordered_map<short, uint32_t> flt_2_stat_;  // filter to status
+  static std::unordered_map<uint32_t, short> stat_2_flt_;  // status to filter
 #endif
 };
 
 class Pipe {
-public:
+ public:
   Pipe();
   ~Pipe();
   void Wakeup();
   Channel* channel() const;
   void SetWakeupCallback(const std::function<void()>& callback);
 
-private:
+ private:
   void ReadCallback();
 
   int fd_[2];
@@ -76,6 +76,6 @@ private:
   std::function<void()> wakeup_callback_;
 };
 
-} // namespace ladder
+}  // namespace ladder
 
 #endif

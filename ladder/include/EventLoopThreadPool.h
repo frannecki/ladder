@@ -1,9 +1,9 @@
 #ifndef LADDER_EVENT_LOOP_THREAD_POOL_H
 #define LADDER_EVENT_LOOP_THREAD_POOL_H
 
-#include <vector>
 #include <memory>
 #include <mutex>
+#include <vector>
 
 namespace ladder {
 
@@ -14,12 +14,12 @@ class EventLoop;
 using EventLoopPtr = std::shared_ptr<EventLoop>;
 
 class EventLoopThreadPool {
-public:
+ public:
   EventLoopThreadPool(size_t capacity);
   ~EventLoopThreadPool();
   EventLoopPtr GetNextLoop();
 
-private:
+ private:
   void Init();
 
   size_t capacity_;
@@ -29,6 +29,6 @@ private:
   std::mutex mutex_cur_idx_;
 };
 
-} // namespace ladder
+}  // namespace ladder
 
 #endif

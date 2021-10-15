@@ -8,13 +8,13 @@
 namespace ladder {
 
 class IArgumentParser {
-public:
+ public:
   virtual ~IArgumentParser();
   bool Init(int argc, char** argv);
   bool GetBoolArg(const std::string& key);
   bool GetStringArg(const std::string& key, std::string& val);
 
-protected:
+ protected:
   bool CheckRequired();
   virtual void InitOptions() = 0;
 
@@ -24,6 +24,6 @@ protected:
   std::map<std::string, bool> fields_enabled_;
 };
 
-} // namespace ladder
+}  // namespace ladder
 
 #endif

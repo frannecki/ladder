@@ -1,9 +1,9 @@
 #ifndef LADDER_ACCEPTOR_H
 #define LADDER_ACCEPTOR_H
 
-#include <memory>
-#include <functional>
 #include <utils.h>
+#include <functional>
+#include <memory>
 
 #include <Base.h>
 
@@ -14,11 +14,11 @@ class SocketAddr;
 using NewConnectionCallback = std::function<void(int, SocketAddr&&)>;
 
 class Acceptor {
-public:
+ public:
   Acceptor(const ChannelPtr&, bool ipv6);
   void SetNewConnectionCallback(const NewConnectionCallback& callback);
 
-private:
+ private:
   void HandleAcceptCallback();
 
   ChannelPtr channel_;
@@ -26,6 +26,6 @@ private:
   bool ipv6_;
 };
 
-} // namespace ladder
+}  // namespace ladder
 
 #endif

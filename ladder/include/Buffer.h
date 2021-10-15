@@ -1,20 +1,20 @@
 #ifndef LADDER_BUFFER_H
 #define LADDER_BUFFER_H
 
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
-#include <vector>
-#include <string>
 #include <mutex>
+#include <string>
+#include <vector>
 
 #include <Base.h>
 
 namespace ladder {
 
 class Buffer : public IBuffer {
-public:
+ public:
   Buffer();
   std::string Read(size_t n);
   std::string ReadAll();
@@ -31,13 +31,13 @@ public:
   uint32_t Peek(size_t n, std::string& result);
   void HaveRead(size_t n);
 
-private:
+ private:
   uint32_t read_index_, write_index_;
   std::vector<char> buffer_;
-  
+
   std::mutex mutex_;
 };
 
-} // namespace ladder
+}  // namespace ladder
 
 #endif

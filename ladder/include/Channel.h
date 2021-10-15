@@ -8,8 +8,8 @@
 #include <sys/event.h>
 #endif
 
-#include <memory>
 #include <functional>
+#include <memory>
 
 namespace ladder {
 
@@ -18,7 +18,7 @@ class EventLoop;
 using EventLoopPtr = std::shared_ptr<EventLoop>;
 
 class Channel {
-public:
+ public:
   Channel(EventLoopPtr loop, int fd);
   ~Channel();
   int fd() const;
@@ -35,7 +35,7 @@ public:
   void UpdateToLoop(int op = EPOLL_CTL_ADD);
   void SetEpollEdgeTriggered(bool edge_triggered = true);
 #elif defined(__FreeBSD__)
-  void UpdateToLoop(int op = EV_ADD | EV_ENABLE);// | EV_CLEAR);
+  void UpdateToLoop(int op = EV_ADD | EV_ENABLE);  // | EV_CLEAR);
 #endif
   void RemoveFromLoop();
 
@@ -43,7 +43,7 @@ public:
   void ShutDownRead();
   EventLoopPtr loop() const;
 
-private:
+ private:
   bool Iswriting() const;
   bool IsReading() const;
 
@@ -57,6 +57,6 @@ private:
   std::function<void()> error_callback_;
 };
 
-} // namespace ladder
+}  // namespace ladder
 
 #endif

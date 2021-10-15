@@ -1,11 +1,11 @@
-#include <string>
 #include <functional>
+#include <string>
 
-#include <TcpServer.h>
 #include <Buffer.h>
-#include <Socket.h>
 #include <Connection.h>
 #include <Logging.h>
+#include <Socket.h>
+#include <TcpServer.h>
 
 using namespace ladder;
 using namespace std::placeholders;

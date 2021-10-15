@@ -9,13 +9,11 @@
 #include <codec/ProtobufCodec.h>
 
 class ProtobufCodecTest : public testing::Test {
-protected:
-  void SetUp() override {
-    codec = new ladder::ProtobufCodec;
-  }
-  
+ protected:
+  void SetUp() override { codec = new ladder::ProtobufCodec; }
+
   void TearDown() override {
-    if(codec) {
+    if (codec) {
       delete codec;
       codec = nullptr;
     }
@@ -37,7 +35,7 @@ TEST_F(ProtobufCodecTest, test_message) {
 
   ladder::Buffer buffer;
   buffer.Write(packet);
-  
+
   std::string raw_data;
   ASSERT_TRUE(codec->Decapsulate(raw_data, &buffer));
 
@@ -47,7 +45,7 @@ TEST_F(ProtobufCodecTest, test_message) {
   ASSERT_TRUE(codec->ParseMessage(raw_data, msg));
   ASSERT_TRUE(msg != nullptr);
 
-  ladder::TestMessage1 *msg1 = reinterpret_cast<ladder::TestMessage1*>(msg);
+  ladder::TestMessage1* msg1 = reinterpret_cast<ladder::TestMessage1*>(msg);
   EXPECT_EQ(msg1->key(), "arbitrary_key");
   EXPECT_EQ(msg1->value(), "arbitrary_value");
   EXPECT_FALSE(msg1->success());

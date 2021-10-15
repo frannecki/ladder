@@ -6,14 +6,12 @@
 namespace ladder {
 
 class GZipper {
-
-public:
+ public:
   static std::string Deflate(const std::string& buf);
   static std::string Inflate(const std::string& buf);
   static std::string DeflateFile(const std::string& filename);
-
 };
 
-} // namespace ladder
+}  // namespace ladder
 
 #endif

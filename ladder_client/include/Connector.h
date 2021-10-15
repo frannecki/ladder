@@ -17,16 +17,14 @@ using TimerPtr = std::unique_ptr<Timer>;
 const uint16_t kMinRetryInitialTimeout = 5;
 
 class Connector {
-
-
-public:
-  Connector(const ChannelPtr&, int max_retry,
-            const SocketAddr& addr, uint16_t retry_initial_timeout=kMinRetryInitialTimeout*2);
+ public:
+  Connector(const ChannelPtr&, int max_retry, const SocketAddr& addr,
+            uint16_t retry_initial_timeout = kMinRetryInitialTimeout * 2);
   void SetConnectionCallback(const ConnectionCallback& callback);
   void SetConnectionFailureCallback(const ConnectionFailureCallback& callback);
   void Start();
 
-private:
+ private:
   void HandleConnect();
   void Retry();
 
@@ -39,9 +37,8 @@ private:
   ConnectionFailureCallback connection_failure_callback_;
   bool ipv6_;
   SocketAddr addr_;
-
 };
 
-} // namespace ladder
+}  // namespace ladder
 
 #endif

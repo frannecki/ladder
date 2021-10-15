@@ -8,19 +8,17 @@
 namespace ladder {
 
 class EventLoopThread {
-
-public:
+ public:
   EventLoopThread();
   ~EventLoopThread();
   void Stop();
   EventLoopPtr loop() const;
 
-private:
+ private:
   EventLoopPtr loop_;
   std::thread thread_;
-
 };
 
-} // namespace ladder
+}  // namespace ladder
 
 #endif

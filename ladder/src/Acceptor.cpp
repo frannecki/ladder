@@ -4,14 +4,13 @@
 
 #include <Acceptor.h>
 #include <Channel.h>
-#include <utils.h>
 #include <Socket.h>
+#include <utils.h>
 
 namespace ladder {
 
-Acceptor::Acceptor(const ChannelPtr& channel, bool ipv6) :
-  channel_(channel), ipv6_(ipv6)
-{
+Acceptor::Acceptor(const ChannelPtr& channel, bool ipv6)
+    : channel_(channel), ipv6_(ipv6) {
   channel->SetReadCallback(std::bind(&Acceptor::HandleAcceptCallback, this));
 }
 
@@ -25,9 +24,9 @@ void Acceptor::HandleAcceptCallback() {
   bzero(&addr, sizeof(addr));
   int fd = socket::accept(channel_->fd(), &addr, &addr_len);
   SocketAddr sock_addr(&addr, ipv6_);
-  if(new_connection_callback_) {
+  if (new_connection_callback_) {
     new_connection_callback_(fd, std::move(sock_addr));
   }
 }
 
-} // namespace ladder
+}  // namespace ladder

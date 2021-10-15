@@ -1,31 +1,29 @@
 #include <unistd.h>
 
-#include <utils.h>
 #include <Channel.h>
 #include <EventLoop.h>
 #include <Socket.h>
+#include <utils.h>
 
 #include <Logging.h>
 
 namespace ladder {
 
-Channel::Channel(EventLoopPtr loop, int fd) :
-  fd_(fd),
-  loop_(loop),
-  events_(0),
-  // POLL_OUT set initially
+Channel::Channel(EventLoopPtr loop, int fd)
+    : fd_(fd),
+      loop_(loop),
+      events_(0),
+// POLL_OUT set initially
 #ifdef __linux__
-  event_mask_(kPollEvent::kPollIn | kPollEvent::kPollRdHup | kPollEvent::kPollOut)
+      event_mask_(kPollEvent::kPollIn | kPollEvent::kPollRdHup |
+                  kPollEvent::kPollOut)
 #elif defined(__FreeBSD__)
-  event_mask_(kPollEvent::kPollIn)
+      event_mask_(kPollEvent::kPollIn)
 #endif
 {
-
 }
 
-Channel::~Channel() {
-  LOGF_DEBUG("Destroying channel fd = %d", fd_);
-}
+Channel::~Channel() { LOGF_DEBUG("Destroying channel fd = %d", fd_); }
 
 void Channel::SetReadCallback(const std::function<void()>& callback) {
   read_callback_ = callback;
@@ -43,27 +41,20 @@ void Channel::SetErrorCallback(const std::function<void()>& callback) {
   error_callback_ = callback;
 }
 
-void Channel::SetEvents(uint32_t events) {
-	events_ |= events;
-}
+void Channel::SetEvents(uint32_t events) { events_ |= events; }
 
-uint32_t Channel::events() const {
-  return events_;
-}
+uint32_t Channel::events() const { return events_; }
 
-uint32_t Channel::event_mask() const {
-  return event_mask_;
-}
+uint32_t Channel::event_mask() const { return event_mask_; }
 
 #ifdef __linux__
 void Channel::SetEpollEdgeTriggered(bool edge_triggered) {
   // IMPORTANT: re-consider whether to add POLL_OUT here.
   // Since the socket is writable most of the time, almost
   // every trigger will set this flag.
-  if(edge_triggered) {
+  if (edge_triggered) {
     event_mask_ |= kPollEvent::kPollEt;
-  }
-  else {
+  } else {
     event_mask_ &= (~kPollEvent::kPollEt);
   }
 }
@@ -71,10 +62,9 @@ void Channel::SetEpollEdgeTriggered(bool edge_triggered) {
 
 void Channel::EnableWrite(bool enable) {
 #ifdef __linux__
-  if(enable) {
+  if (enable) {
     event_mask_ |= kPollEvent::kPollOut;
-  }
-  else {
+  } else {
     event_mask_ &= (~kPollEvent::kPollOut);
   }
   UpdateToLoop(EPOLL_CTL_MOD);
@@ -85,74 +75,68 @@ void Channel::EnableWrite(bool enable) {
 #endif
 }
 
-
 void Channel::HandleEvents() {
   uint32_t evts = events_;
   events_ = 0;
 #ifdef __linux__
-  if(evts & kPollEvent::kPollHup) {
+  if (evts & kPollEvent::kPollHup) {
     // normally POLL_HUP is not generated.
-    // peer close signal (POLL_RDHUP) is 
+    // peer close signal (POLL_RDHUP) is
     // mostly handled after read or write
-    if(close_callback_) {
+    if (close_callback_) {
       close_callback_();
     }
     return;
   }
 #endif
-  if(evts & kPollEvent::kPollErr) {
-    if(error_callback_) {
+  if (evts & kPollEvent::kPollErr) {
+    if (error_callback_) {
       error_callback_();
     }
     return;
   }
-  if(evts & kPollEvent::kPollOut) {
-    if(write_callback_) {
+  if (evts & kPollEvent::kPollOut) {
+    if (write_callback_) {
       write_callback_();
     }
   }
-  // Pay close attention to the order of event handing.
-  // Handling read event could cause this channel to deconstruct
+    // Pay close attention to the order of event handing.
+    // Handling read event could cause this channel to deconstruct
 #ifdef __linux__
-  if(evts & (kPollEvent::kPollIn | kPollEvent::kPollOut | kPollEvent::kPollRdHup)) {
+  if (evts &
+      (kPollEvent::kPollIn | kPollEvent::kPollOut | kPollEvent::kPollRdHup)) {
 #elif defined(__FreeBSD__)
-  if(evts & kPollEvent::kPollIn) {
+  if (evts & kPollEvent::kPollIn) {
 #endif
-    if(read_callback_) {
+    if (read_callback_) {
       read_callback_();
     }
   }
 }
 
-int Channel::fd() const {
-  return fd_;
-}
+int Channel::fd() const { return fd_; }
 
-void Channel::UpdateToLoop(int op) {
-  loop_->UpdateChannel(this, op);
-}
+void Channel::UpdateToLoop(int op) { loop_->UpdateChannel(this, op); }
 
 void Channel::RemoveFromLoop() {
-  if(loop_) {
+  if (loop_) {
     loop_->RemoveChannel(fd_);
   }
 }
 
 void Channel::ShutDownWrite() {
-  if(!Iswriting()) {
+  if (!Iswriting()) {
     socket::shutdown_write(fd_);
   }
 }
 
 void Channel::ShutDownRead() {
-  if(!IsReading()) {
+  if (!IsReading()) {
     socket::shutdown_read(fd_);
   }
 }
 
-bool Channel::Iswriting() const {
-  return events_ & kPollEvent::kPollOut;
-}
+bool Channel::Iswriting() const { return events_ & kPollEvent::kPollOut; }
 
 bool Channel::IsReading() const {
 #ifdef __linux__
@@ -162,10 +146,6 @@ bool Channel::IsReading() const {
 #endif
 }
 
-EventLoopPtr Channel::loop() const {
-  return loop_;
-}
+EventLoopPtr Channel::loop() const { return loop_; }
 
-
-} // namespace ladder
-
+}  // namespace ladder

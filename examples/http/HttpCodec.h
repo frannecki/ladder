@@ -25,46 +25,39 @@ struct HttpContext {
 };
 
 class HttpMessage {
-
-public:
+ public:
   HttpMessage();
   virtual ~HttpMessage();
   bool ComposeHeaders(std::string& message);
-  int ParseMessage(const std::string& message, int &length);
+  int ParseMessage(const std::string& message, int& length);
   struct HttpContext* context();
 
   virtual int HandleMessage() = 0;
   virtual bool PrepareMessage() = 0;
 
-protected:
+ protected:
   struct HttpContext* context_;
-
 };
 
 class HttpRequest : public HttpMessage {
-
-public:
+ public:
   HttpRequest();
   int HandleMessage() override;
   bool PrepareMessage() override;
-
 };
 
 class HttpResponse : public HttpMessage {
-
-public:
+ public:
   HttpResponse();
   int HandleMessage() override;
   bool PrepareMessage() override;
-
 };
 
 class HttpCodec {
+  using HttpCodecMessageCallback =
+      std::function<void(struct HttpContext*, struct HttpContext*)>;
 
-using HttpCodecMessageCallback = std::function<void(
-  struct HttpContext*, struct HttpContext*)>;
-
-public:
+ public:
   HttpCodec();
   ~HttpCodec();
   void OnClientMessage(const ConnectionPtr& conn, Buffer* buffer);
@@ -72,14 +65,13 @@ public:
   void ParseRequest();
   void ParseResponse();
 
-private:
+ private:
   HttpMessage* request_;
   HttpMessage* response_;
   HttpCodecMessageCallback server_callback_;
-
 };
 
-} // namespace http
-} // namespace ladder
+}  // namespace http
+}  // namespace ladder
 
 #endif

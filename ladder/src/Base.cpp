@@ -2,8 +2,6 @@
 
 namespace ladder {
 
-IBuffer::~IBuffer() {
+IBuffer::~IBuffer() {}
 
-}
-
-} // namespace ladder
+}  // namespace ladder

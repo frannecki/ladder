@@ -1,9 +1,9 @@
 #include <string>
 
-#include <TcpClient.h>
-#include <EventLoopThread.h>
 #include <Buffer.h>
 #include <Connection.h>
+#include <EventLoopThread.h>
+#include <TcpClient.h>
 
 #include <Logging.h>
 
@@ -28,6 +28,7 @@ int main(int argc, char** argv) {
   TcpClient client(addr, loop_thread.loop(), 10);
   client.SetReadCallback(std::bind(OnMessage, _1, _2));
   client.Connect();
-  while(1);
+  while (1)
+    ;
   return 0;
 }

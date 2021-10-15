@@ -29,13 +29,13 @@ using ConnectCloseCallback = std::function<void()>;
 using ConnectionEvtCallback = std::function<void(const ConnectionPtr&)>;
 
 class IBuffer {
-public:
+ public:
   virtual void Write(const std::string& buf) = 0;
   virtual int WriteBufferToFd(int fd) = 0;
   virtual bool Empty() const = 0;
   virtual ~IBuffer();
 };
 
-} // namespace ladder
+}  // namespace ladder
 
 #endif

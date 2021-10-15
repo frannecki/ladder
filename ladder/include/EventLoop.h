@@ -1,10 +1,10 @@
 #ifndef LADDER_EVENT_LOOP_H
 #define LADDER_EVENT_LOOP_H
 
-#include <mutex>
-#include <memory>
-#include <vector>
 #include <functional>
+#include <memory>
+#include <mutex>
+#include <vector>
 
 #include <EventPoller.h>
 
@@ -17,7 +17,7 @@ class EventPoller;
 using EventPollerPtr = std::unique_ptr<EventPoller>;
 
 class EventLoop : public std::enable_shared_from_this<EventLoop> {
-public:
+ public:
   EventLoop();
   void StartLoop();
   void StopLoop();
@@ -30,13 +30,13 @@ public:
   int UpdateEvent(const struct kevent* evt);
 #endif
 
-private:
+ private:
   EventPollerPtr poller_;
   bool running_;
   std::mutex mutex_running_;
   std::vector<std::function<void()>> pending_tasks_;
 };
 
-} // namespace ladder
+}  // namespace ladder
 
 #endif

@@ -1,12 +1,12 @@
-#include <string>
 #include <functional>
+#include <string>
 
-#include <TcpServer.h>
 #include <Buffer.h>
-#include <Socket.h>
 #include <Connection.h>
-#include <codec/ProtobufCodec.h>
 #include <Logging.h>
+#include <Socket.h>
+#include <TcpServer.h>
+#include <codec/ProtobufCodec.h>
 
 #include "proto/tests.pb.h"
 
@@ -17,8 +17,8 @@ static int count = 0;
 
 using TestMessage1Ptr = std::shared_ptr<TestMessage1>;
 
-void OnMessage(const ConnectionPtr& conn, TestMessage1* message, const ProtobufCodec& codec) {
-  
+void OnMessage(const ConnectionPtr& conn, TestMessage1* message,
+               const ProtobufCodec& codec) {
   LOG_INFO("Received message: " + message->GetTypeName());
   LOG_INFO("message key: " + message->key());
   LOG_INFO("message value: " + message->value());
@@ -30,7 +30,8 @@ void OnMessage(const ConnectionPtr& conn, TestMessage1* message, const ProtobufC
   codec.Send(conn, message);
 }
 
-void OnDefaultMessage(const ConnectionPtr& conn, google::protobuf::Message* message) {
+void OnDefaultMessage(const ConnectionPtr& conn,
+                      google::protobuf::Message* message) {
   LOG_WARNING("unrecognized message type: " + message->GetTypeName());
 }
 
@@ -50,7 +51,8 @@ int main(int argc, char** argv) {
   SocketAddr addr("0.0.0.0", 8070, false);
   TcpServer server(addr, false);
   ProtobufCodec codec;
-  codec.RegisterMessageCallback<ladder::TestMessage1>(std::bind(OnMessage, _1, _2, codec));
+  codec.RegisterMessageCallback<ladder::TestMessage1>(
+      std::bind(OnMessage, _1, _2, codec));
   codec.RegisterDefaultMessageCallback(std::bind(OnDefaultMessage, _1, _2));
   server.SetConnectionCallback(std::bind(OnConnection, _1, codec));
   server.SetReadCallback(std::bind(&ProtobufCodec::OnMessage, &codec, _1, _2));

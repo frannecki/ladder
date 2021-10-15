@@ -15,15 +15,15 @@ using TimerEventCallback = std::function<void()>;
 using EventLoopPtr = std::shared_ptr<EventLoop>;
 
 class Timer {
-public:
+ public:
   Timer(const EventLoopPtr& loop);
   ~Timer();
-  void SetInterval(uint64_t microseconds, bool periodic=false);
+  void SetInterval(uint64_t microseconds, bool periodic = false);
   void SetTimerEventCallback(const TimerEventCallback& callback);
   uint64_t GetInterval() const;
   void OnTimer();
 
-private:
+ private:
   ChannelPtr timer_channel_;
   EventLoopPtr loop_;
   int timer_fd_;
@@ -31,6 +31,6 @@ private:
   uint64_t interval_;
 };
 
-} // namespace ladder
+}  // namespace ladder
 
 #endif

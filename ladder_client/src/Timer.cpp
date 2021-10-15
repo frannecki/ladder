@@ -7,21 +7,18 @@
 #endif
 #include <string.h>
 
-#include <utils.h>
-#include <Timer.h>
 #include <Channel.h>
 #include <EventLoop.h>
 #include <Socket.h>
+#include <Timer.h>
+#include <utils.h>
 
 namespace ladder {
 
-Timer::Timer(const EventLoopPtr& loop) :
-  loop_(loop)
-{
+Timer::Timer(const EventLoopPtr& loop) : loop_(loop) {
 #ifdef __linux
-  timer_fd_ = ::timerfd_create(CLOCK_MONOTONIC,
-                                TFD_NONBLOCK | TFD_CLOEXEC);
-  if(timer_fd_ < 0) {
+  timer_fd_ = ::timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
+  if (timer_fd_ < 0) {
     EXIT("[Timer] timerfd_create");
   }
   timer_channel_ = std::make_shared<Channel>(loop, timer_fd_);
@@ -38,8 +35,7 @@ Timer::~Timer() {
   socket::close(timer_fd_);
 #elif defined(__FreeBSD__)
   struct kevent evt;
-  EV_SET(&evt, timer_fd_, EVFILT_TIMER,
-          EV_DELETE, 0, 0, NULL);
+  EV_SET(&evt, timer_fd_, EVFILT_TIMER, EV_DELETE, 0, 0, NULL);
   loop_->UpdateEvent(&evt);
 #endif
 }
@@ -57,11 +53,11 @@ void Timer::SetInterval(uint64_t interval, bool periodic) {
   uint64_t nanoseconds = (microseconds % 1000000) * 1000;
   value.it_value.tv_sec = seconds;
   value.it_value.tv_nsec = nanoseconds;
-  if(periodic) {
+  if (periodic) {
     value.it_interval.tv_sec = seconds;
     value.it_interval.tv_nsec = nanoseconds;
   }
-  if(::timerfd_settime(timer_fd_, 0, &value, NULL) < 0) {
+  if (::timerfd_settime(timer_fd_, 0, &value, NULL) < 0) {
     EXIT("[Timer] timerfd_settime");
   }
 #elif defined(__FreeBSD__)
@@ -69,27 +65,24 @@ void Timer::SetInterval(uint64_t interval, bool periodic) {
   u_short flags = EV_ADD | EV_ENABLE;
   // NOTE: for freebsd there cannot be multiple timers
   // running simultaneously in a single event loop
-  EV_SET(&evt, timer_fd_, EVFILT_TIMER,
-          periodic ? flags : (flags | EV_ONESHOT),
-          0, interval / 1000, timer_channel_.get());
+  EV_SET(&evt, timer_fd_, EVFILT_TIMER, periodic ? flags : (flags | EV_ONESHOT),
+         0, interval / 1000, timer_channel_.get());
   loop_->UpdateEvent(&evt);
 #endif
 }
 
-uint64_t Timer::GetInterval() const {
-  return interval_;
-}
+uint64_t Timer::GetInterval() const { return interval_; }
 
 void Timer::OnTimer() {
 #ifdef __linux__
   uint64_t exp;
-  if(socket::read(timer_fd_, &exp, sizeof(exp)) < 0) {
+  if (socket::read(timer_fd_, &exp, sizeof(exp)) < 0) {
     EXIT("[Timer] read");
   }
 #endif
-  if(callback_) {
+  if (callback_) {
     callback_();
   }
 }
 
-} // namespace ladder
+}  // namespace ladder

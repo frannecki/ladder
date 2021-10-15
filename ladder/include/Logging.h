@@ -1,11 +1,11 @@
 #ifndef LADDER_LOGGER_H
 #define LADDER_LOGGER_H
 
-#include <mutex>
-#include <string>
-#include <queue>
-#include <thread>
 #include <condition_variable>
+#include <mutex>
+#include <queue>
+#include <string>
+#include <thread>
 
 #include <iostream>
 
@@ -27,31 +27,38 @@ enum LogLevel : int {
 #define LOG_WARNING(message) LOG_SEVERITY(message, LogLevel::kLogWarning)
 #define LOG_INFO(message) LOG_SEVERITY(message, LogLevel::kLogInfo)
 #ifdef DEBUG
-  #define LOG_DEBUG(message) LOG_SEVERITY(message, LogLevel::kLogDebug)
+#define LOG_DEBUG(message) LOG_SEVERITY(message, LogLevel::kLogDebug)
 #else
-  #define LOG_DEBUG(message)
+#define LOG_DEBUG(message)
 #endif
 #define LOG_TRACE(message) LOG_SEVERITY(message, LogLevel::kLogTrace)
-#define LOG_SEVERITY(message, severity) if(Logger::instance()) Logger::instance()->WriteLog(message, severity)
+#define LOG_SEVERITY(message, severity) \
+  if (Logger::instance()) Logger::instance()->WriteLog(message, severity)
 
 // for formatted logging
-#define LOGF_FATAL(fmt, ...) LOGF_SEVERITY(fmt, LogLevel::kLogFatal, __VA_ARGS__)
-#define LOGF_ERROR(fmt, ...) LOGF_SEVERITY(fmt, LogLevel::kLogError, __VA_ARGS__)
-#define LOGF_WARNING(fmt, ...) LOGF_SEVERITY(fmt, LogLevel::kLogWarning, __VA_ARGS__)
+#define LOGF_FATAL(fmt, ...) \
+  LOGF_SEVERITY(fmt, LogLevel::kLogFatal, __VA_ARGS__)
+#define LOGF_ERROR(fmt, ...) \
+  LOGF_SEVERITY(fmt, LogLevel::kLogError, __VA_ARGS__)
+#define LOGF_WARNING(fmt, ...) \
+  LOGF_SEVERITY(fmt, LogLevel::kLogWarning, __VA_ARGS__)
 #define LOGF_INFO(fmt, ...) LOGF_SEVERITY(fmt, LogLevel::kLogInfo, __VA_ARGS__)
 #ifdef DEBUG
-  #define LOGF_DEBUG(fmt, ...) LOGF_SEVERITY(fmt, LogLevel::kLogDebug, __VA_ARGS__)
+#define LOGF_DEBUG(fmt, ...) \
+  LOGF_SEVERITY(fmt, LogLevel::kLogDebug, __VA_ARGS__)
 #else
-  #define LOGF_DEBUG(fmt, ...)
+#define LOGF_DEBUG(fmt, ...)
 #endif
-#define LOGF_TRACE(fmt, ...) LOGF_SEVERITY(fmt, LogLevel::kLogTrace, __VA_ARGS__)
-#define LOGF_SEVERITY(fmt, severity, ...) if(Logger::instance()) Logger::instance()->WriteLogFmt(severity, fmt, __VA_ARGS__)
+#define LOGF_TRACE(fmt, ...) \
+  LOGF_SEVERITY(fmt, LogLevel::kLogTrace, __VA_ARGS__)
+#define LOGF_SEVERITY(fmt, severity, ...) \
+  if (Logger::instance())                 \
+  Logger::instance()->WriteLogFmt(severity, fmt, __VA_ARGS__)
 
 std::string GetCurrentDateTime();
 
 class Logger {
-
-public:
+ public:
   static Logger* instance();
   static Logger* create(std::string log_path = "",
                         int level = static_cast<int>(LogLevel::kLogDebug));
@@ -59,9 +66,10 @@ public:
 
   template <typename MessageType>
   void WriteLog(MessageType&& message, enum LogLevel severity) {
-    if(static_cast<int>(severity) < level_)  return;
-    std::string line = "[" + GetCurrentDateTime() + "][" + kLogLevels[static_cast<int>(severity)] + \
-                       "] " + std::forward<MessageType>(message) + "\n";
+    if (static_cast<int>(severity) < level_) return;
+    std::string line = "[" + GetCurrentDateTime() + "][" +
+                       kLogLevels[static_cast<int>(severity)] + "] " +
+                       std::forward<MessageType>(message) + "\n";
     {
       std::unique_lock<std::mutex> lock(mutex_);
       message_queue_.emplace(line);
@@ -71,7 +79,7 @@ public:
 
   void WriteLogFmt(enum LogLevel severity, const char* fmt, ...);
 
-private:
+ private:
   Logger(const char* filepath, int level);
   ~Logger();
   void ThreadFunc();
@@ -89,6 +97,6 @@ private:
   static const char* kLogLevels[];
 };
 
-} // namespace ladder
+}  // namespace ladder
 
 #endif

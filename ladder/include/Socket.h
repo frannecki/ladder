@@ -1,11 +1,11 @@
 #ifndef LADDER_SOCKET_ADDR_H
 #define LADDER_SOCKET_ADDR_H
 
+#include <arpa/inet.h>
+#include <fcntl.h>
+#include <netinet/in.h>
 #include <stdint.h>
 #include <sys/socket.h>
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <fcntl.h>
 
 #include <string>
 
@@ -19,18 +19,17 @@ typedef union {
 } sockaddr_t;
 
 class SocketAddr {
-public:
-  SocketAddr(bool ipv6=true);
-  SocketAddr(sockaddr_t* addr, bool ipv6=true);
-  SocketAddr(const std::string& ip,
-             uint16_t port, bool ipv6=true);
+ public:
+  SocketAddr(bool ipv6 = true);
+  SocketAddr(sockaddr_t* addr, bool ipv6 = true);
+  SocketAddr(const std::string& ip, uint16_t port, bool ipv6 = true);
   void Bind(int fd);
   std::string ip() const;
   uint16_t port() const;
   bool ipv6() const;
   const sockaddr_t* addr() const;
 
-private:
+ private:
   std::string ip_;
   uint16_t port_;
   sockaddr_t sa_;
@@ -52,8 +51,8 @@ int close(int fd);
 int getsockname(int fd, sockaddr_t* addr, socklen_t* addr_len);
 int getsockerropt(int fd);
 
-} // namespace socket
+}  // namespace socket
 
-} // namespace ladder
+}  // namespace ladder
 
 #endif

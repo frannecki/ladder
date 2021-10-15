@@ -1,8 +1,8 @@
 #ifndef LADDER_EXAMPLE_HTTP_SERVER_H
 #define LADDER_EXAMPLE_HTTP_SERVER_H
 
-#include <map>
 #include <functional>
+#include <map>
 
 #include <TcpServer.h>
 
@@ -15,27 +15,24 @@ namespace http {
 class HttpCodec;
 
 class HttpServer : public TcpServer {
+  using RequestCallback =
+      std::function<void(struct HttpContext* ctx1, struct HttpContext* cxt2)>;
 
-using RequestCallback = std::function<
-  void(struct HttpContext* ctx1, struct HttpContext* cxt2)>;
-
-public:
+ public:
   HttpServer(const SocketAddr& addr);
   ~HttpServer();
   void RegisterCallback(enum kHttpRequestMethod,
                         const RequestCallback& callback);
 
-private:
-  void OnMessage(struct HttpContext* ctx1,
-                 struct HttpContext* cxt2);
+ private:
+  void OnMessage(struct HttpContext* ctx1, struct HttpContext* cxt2);
 
   HttpCodec* codec_;
 
   std::map<enum kHttpRequestMethod, RequestCallback> callbacks_;
-
 };
 
-} // namespace http
-} // namespace ladder
+}  // namespace http
+}  // namespace ladder
 
 #endif

@@ -1,11 +1,11 @@
-#include <string>
 #include <functional>
+#include <string>
 
-#include <TcpServer.h>
 #include <Buffer.h>
-#include <Socket.h>
 #include <Connection.h>
 #include <Logging.h>
+#include <Socket.h>
+#include <TcpServer.h>
 
 using namespace ladder;
 using namespace std::placeholders;
@@ -20,7 +20,8 @@ void OnMessage(const ConnectionPtr& conn, Buffer* buffer) {
 
 void OnConnection(const ConnectionPtr& conn) {
   LOGF_INFO("Current number of clients connected: %d", ++count);
-  conn->SendFile("First paragraph of Charles Dickens' A Tale of Two Cities: ", "./test.txt");
+  conn->SendFile("First paragraph of Charles Dickens' A Tale of Two Cities: ",
+                 "./test.txt");
 }
 
 int main(int argc, char** argv) {

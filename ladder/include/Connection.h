@@ -6,14 +6,12 @@
 
 #include <Base.h>
 
-namespace ladder
-{
+namespace ladder {
 
 class FileBuffer;
 
 class Connection : public std::enable_shared_from_this<Connection> {
-
-public:
+ public:
   Connection(const EventLoopPtr& loop, int fd, bool send_file = false);
   ~Connection();
   void Init();
@@ -30,7 +28,7 @@ public:
   void SetCloseCallback(const ConnectCloseCallback& callback);
   ChannelPtr channel() const;
 
-private:
+ private:
   void EnableWrite(int ret);
 
   std::mutex mutex_;
@@ -40,17 +38,17 @@ private:
   WriteEvtCallback write_callback_;
   ConnectCloseCallback close_callback_;
   Buffer* read_buffer_;
-  
+
   IBuffer* write_buffer_;
   Buffer* write_plain_buffer_;
   FileBuffer* write_file_buffer_;
 
-  // buffer for writing file, taking advantage of the `sendfile` linux/bsd system call
+  // buffer for writing file, taking advantage of the `sendfile` linux/bsd
+  // system call
   bool shut_down_;
   bool send_file_;
 };
 
-} // namespace ladder
-
+}  // namespace ladder
 
 #endif

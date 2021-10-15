@@ -5,7 +5,6 @@
 #define private public
 #include <Buffer.h>
 
-
 TEST(TestBuffer, test_Write) {
   ladder::Buffer buffer;
   std::string str = "areyouokbro?";
@@ -21,7 +20,7 @@ TEST(TestBuffer, test_Read) {
   ladder::Buffer buffer;
   std::string str = "areyouokbro?howareyou?";
   buffer.Write(str);
-  
+
   uint32_t read_size = 6;
   std::string read_result = "areyou";
   std::string remains = "okbro?howareyou?";
@@ -30,7 +29,7 @@ TEST(TestBuffer, test_Read) {
   EXPECT_EQ(buffer.ReadableBytes(), str.size() - read_size);
   EXPECT_EQ(buffer.read_index_, read_size);
   EXPECT_EQ(buffer.write_index_, str.size());
-  
+
   EXPECT_EQ(buffer.ReadAll(), remains);
   EXPECT_EQ(buffer.ReadableBytes(), 0);
   EXPECT_EQ(buffer.read_index_, 0);
@@ -41,7 +40,7 @@ TEST(TestBuffer, test_Peek) {
   ladder::Buffer buffer;
   std::string str = "areyouokbro?howareyou?";
   buffer.Write(str);
-  
+
   uint32_t read_size = 6;
   std::string read_result = "areyou";
   std::string remains = "okbro?howareyou?";

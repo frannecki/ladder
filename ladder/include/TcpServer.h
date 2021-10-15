@@ -1,13 +1,13 @@
 #ifndef LADDER_TCP_SERVER_H
 #define LADDER_TCP_SERVER_H
 
-#include <memory>
 #include <map>
+#include <memory>
 #include <mutex>
 
-#include <utils.h>
 #include <Base.h>
 #include <Socket.h>
+#include <utils.h>
 
 namespace ladder {
 
@@ -15,11 +15,9 @@ class Channel;
 class SocketAddr;
 
 class TcpServer {
-public:
-  TcpServer(const SocketAddr& addr,
-            bool send_file = false,
-            size_t loop_thread_num=8,
-            size_t working_thread_num=8);
+ public:
+  TcpServer(const SocketAddr& addr, bool send_file = false,
+            size_t loop_thread_num = 8, size_t working_thread_num = 8);
   ~TcpServer();
   void Start();
   const Channel* channel() const;
@@ -29,7 +27,7 @@ public:
   EventLoopPtr loop() const;
   EventLoopThreadPoolPtr loop_threads() const;
 
-private:
+ private:
   void OnNewConnectionCallback(int fd, SocketAddr&&);
   void OnNewConnection(int fd, const SocketAddr&);
   void OnCloseConnectionCallback(int fd);
@@ -49,9 +47,8 @@ private:
   ReadEvtCallback read_callback_;
   WriteEvtCallback write_callback_;
   ConnectionEvtCallback connection_callback_;
-
 };
 
-};
+};  // namespace ladder
 
 #endif
