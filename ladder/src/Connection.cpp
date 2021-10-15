@@ -139,16 +139,14 @@ void Connection::SetCloseCallback(const ConnectCloseCallback& callback) {
 ChannelPtr Connection::channel() const { return channel_; }
 
 void Connection::EnableWrite(int ret) {
-  // if(ret < 0) {
-  //   // reached EAGAIN / EWOULDBLOCK,
-  //   // output buffer unavaiable to write
-  //   channel_->EnableWrite();
-  // }
-  // else {
-  //   // output buffer currently available for write
-  //   // channel_->EnableWrite(false);
-  //   channel_->EnableWrite();
-  // }
+  if (ret < 0) {
+    // reached EAGAIN / EWOULDBLOCK,
+    // output buffer unavaiable to write
+    channel_->EnableWrite();
+  } else {
+    // output buffer currently available for write
+    channel_->EnableWrite(false);
+  }
 }
 
 }  // namespace ladder
