@@ -20,6 +20,8 @@ class Buffer;
 class FileBuffer : public IBuffer {
  public:
   FileBuffer();
+  FileBuffer(const FileBuffer&) = delete;
+  FileBuffer& operator = (const FileBuffer&) = delete;
   ~FileBuffer();
   void AddFile(std::string&& header, const std::string& filename);
   void Write(const std::string& content) override;

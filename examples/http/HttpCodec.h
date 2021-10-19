@@ -27,6 +27,8 @@ struct HttpContext {
 class HttpMessage {
  public:
   HttpMessage();
+  HttpMessage(const HttpMessage&) = delete;
+  HttpMessage& operator = (const HttpMessage&) = delete;
   virtual ~HttpMessage();
   bool ComposeHeaders(std::string& message);
   int ParseMessage(const std::string& message, int& length);

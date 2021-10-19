@@ -15,6 +15,8 @@ struct MemoryBlock {
 
 class MemoryPoolImpl {
  public:
+  MemoryPoolImpl(const MemoryPoolImpl&) = delete;
+  MemoryPoolImpl& operator = (const MemoryPoolImpl&) = delete;
   static MemoryPoolImpl* instance();
   static void release();
   static MemoryPoolImpl* create(size_t num_blocks = 256,

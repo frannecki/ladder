@@ -13,6 +13,8 @@ class FileBuffer;
 class Connection : public std::enable_shared_from_this<Connection> {
  public:
   Connection(const EventLoopPtr& loop, int fd, bool send_file = false);
+  Connection(const Connection&) = delete;
+  Connection& operator = (const Connection&) = delete;
   ~Connection();
   void Init();
   void SetChannelCallbacks();
