@@ -11,10 +11,10 @@ namespace ladder {
 
 Acceptor::Acceptor(const ChannelPtr& channel, bool ipv6)
     : channel_(channel), ipv6_(ipv6) {
-  channel->SetReadCallback(std::bind(&Acceptor::HandleAcceptCallback, this));
+  channel->set_read_callback(std::bind(&Acceptor::HandleAcceptCallback, this));
 }
 
-void Acceptor::SetNewConnectionCallback(const NewConnectionCallback& callback) {
+void Acceptor::set_new_connection_callback(const NewConnectionCallback& callback) {
   new_connection_callback_ = callback;
 }
 

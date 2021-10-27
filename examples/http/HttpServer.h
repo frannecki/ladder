@@ -4,6 +4,8 @@
 #include <functional>
 #include <map>
 
+#include <openssl/ssl.h>
+
 #include <TcpServer.h>
 
 #include "HttpCodec.h"
@@ -19,7 +21,10 @@ class HttpServer : public TcpServer {
       std::function<void(struct HttpContext* ctx1, struct HttpContext* cxt2)>;
 
  public:
-  HttpServer(const SocketAddr& addr);
+  HttpServer(const SocketAddr& addr, const char* cert_path,
+             const char* key_path);
+  HttpServer(const HttpServer&) = delete;
+  HttpServer& operator=(const HttpServer&) = delete;
   ~HttpServer();
   void RegisterCallback(enum kHttpRequestMethod,
                         const RequestCallback& callback);

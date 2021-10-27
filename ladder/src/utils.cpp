@@ -1,3 +1,4 @@
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -6,9 +7,17 @@
 #include <utils.h>
 namespace ladder {
 
-void exit_fatal(const char* msg) {
+static const int kFileBufferSize = 1024;
+static const int kMaxMessageLength = 1024;
+
+void exit_fatal(const char* fmt, ...) {
+  va_list args;
+  va_start(args, fmt);
+  char msg[kMaxMessageLength];
+  vsnprintf(msg, sizeof(msg), fmt, args);
+  va_end(args);
   perror(msg);
-  exit(-1);
+  exit(EXIT_FAILURE);
 }
 
 std::vector<int> FindSubstr(const std::string& str, const std::string& pat) {
@@ -62,6 +71,67 @@ int GetFileSize(const std::string& path) {
   fseek(fp, 0, SEEK_SET);
   fclose(fp);
   return size;
+}
+
+std::string ReadFileAsString(const std::string& path) {
+  std::string result;
+  FILE* fp = fopen(path.c_str(), "rb");
+  if (fp == nullptr) {
+    return result;
+  }
+
+  unsigned char in_buf[kFileBufferSize] = {0};
+
+  while (!feof(fp)) {
+    int len = fread(in_buf, 1, kFileBufferSize, fp);
+    result += std::string(in_buf, in_buf + len);
+  }
+  fclose(fp);
+
+  return result;
+}
+
+void SslInit() {
+  SSL_library_init();
+  OpenSSL_add_ssl_algorithms();
+  SSL_load_error_strings();
+  ERR_load_BIO_strings();
+  ERR_load_crypto_strings();
+}
+
+SSL_CTX* CreateSslContext(bool server) {
+  SSL_CTX* ctx;
+
+  if (server)
+    ctx = SSL_CTX_new(SSLv23_server_method());
+  else
+    ctx = SSL_CTX_new(SSLv23_client_method());
+
+  if (!ctx) {
+    perror("Unable to create SSL context");
+    ERR_print_errors_fp(stderr);
+    EXIT("SSL_CTX_new");
+  }
+
+  return ctx;
+}
+
+void ConfigureSslContext(SSL_CTX* ctx, const char* cert_path,
+                         const char* key_path) {
+  SSL_CTX_set_ecdh_auto(ctx, 1);
+
+  /* Set the key and cert */
+  if (SSL_CTX_use_certificate_file(ctx, cert_path, SSL_FILETYPE_PEM) <= 0) {
+    ERR_print_errors_fp(stderr);
+    EXIT("SSL_CTX_use_certificate_file");
+  }
+
+  if (SSL_CTX_use_PrivateKey_file(ctx, key_path, SSL_FILETYPE_PEM) <= 0) {
+    ERR_print_errors_fp(stderr);
+    EXIT("SSL_CTX_use_PrivateKey_file");
+  }
+
+  SSL_CTX_set_options(ctx, SSL_OP_ALL | SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3);
 }
 
 }  // namespace ladder

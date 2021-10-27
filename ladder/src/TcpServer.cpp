@@ -10,6 +10,7 @@
 #include <EventLoopThreadPool.h>
 #include <TcpServer.h>
 #include <ThreadPool.h>
+#include <TlsConnection.h>
 
 #include <Base.h>
 #include <Logging.h>
@@ -28,12 +29,19 @@ using TcpConnectionCloseCallback =
     std::unique_ptr<std::function<void(TcpServer*, int)>>;
 
 TcpServer::TcpServer(const SocketAddr& addr, bool send_file,
+                     const char* cert_path, const char* key_path,
                      size_t loop_thread_num, size_t working_thread_num)
     : addr_(addr),
       send_file_(send_file),
       loop_thread_num_(loop_thread_num),
-      working_thread_num_(working_thread_num) {
+      working_thread_num_(working_thread_num),
+      ssl_ctx_(nullptr) {
   signal(SIGPIPE, signal_handler);
+  if (cert_path != nullptr && key_path != nullptr) {
+    ssl_ctx_ = CreateSslContext(true);
+    ConfigureSslContext(ssl_ctx_, cert_path, key_path);
+    send_file_ = false;
+  }
 }
 
 TcpServer::~TcpServer() {
@@ -50,7 +58,7 @@ void TcpServer::Start() {
   channel_.reset(new Channel(loop_, fd));
   channel_->UpdateToLoop();
   acceptor_.reset(new Acceptor(channel_, addr_.ipv6()));
-  acceptor_->SetNewConnectionCallback(
+  acceptor_->set_new_connection_callback(
       std::bind(&TcpServer::OnNewConnectionCallback, this,
                 std::placeholders::_1, std::placeholders::_2));
   LOGF_INFO("Listening on fd = %d %s:%u", fd, addr_.ip().c_str(), addr_.port());
@@ -58,15 +66,15 @@ void TcpServer::Start() {
   loop_->StartLoop();
 }
 
-void TcpServer::SetReadCallback(const ReadEvtCallback& callback) {
+void TcpServer::set_read_callback(const ReadEvtCallback& callback) {
   read_callback_ = callback;
 }
 
-void TcpServer::SetWriteCallback(const WriteEvtCallback& callback) {
+void TcpServer::set_write_callback(const WriteEvtCallback& callback) {
   write_callback_ = callback;
 }
 
-void TcpServer::SetConnectionCallback(const ConnectionEvtCallback& callback) {
+void TcpServer::set_connection_callback(const ConnectionEvtCallback& callback) {
   connection_callback_ = callback;
 }
 
@@ -77,10 +85,14 @@ void TcpServer::OnNewConnectionCallback(int fd, SocketAddr&& addr) {
 
 void TcpServer::OnNewConnection(int fd, const SocketAddr& addr) {
   EventLoopPtr loop = loop_threads_->GetNextLoop();
-  ConnectionPtr connection = std::make_shared<Connection>(loop, fd, send_file_);
-  connection->SetReadCallback(read_callback_);
-  connection->SetWriteCallback(write_callback_);
-  connection->SetCloseCallback(
+  ConnectionPtr connection;
+  if (ssl_ctx_)
+    connection = std::make_shared<TlsConnection>(loop, fd, ssl_ctx_, true);
+  else
+    connection = std::make_shared<Connection>(loop, fd, send_file_);
+  connection->set_read_callback(read_callback_);
+  connection->set_write_callback(write_callback_);
+  connection->set_close_callback(
       std::bind(&TcpServer::OnCloseConnectionCallback, this, fd));
   connection->Init();
   {

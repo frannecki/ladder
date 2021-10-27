@@ -8,15 +8,20 @@ find_package(Threads REQUIRED)
 find_package(Protobuf REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(GTest REQUIRED)
+find_package(OpenSSL REQUIRED)
 
 file(GLOB LADDER_SOURCES ladder/src/*.cpp ladder/src/*/*.cpp)
 add_library(ladder SHARED ${LADDER_SOURCES})
 target_include_directories(ladder PUBLIC ${Protobuf_INCLUDE_DIRS} ladder/include)
-target_link_libraries(ladder ${Protobuf_LIBRARIES} ${ZLIB_LIBRARIES} Threads::Threads)
+target_link_libraries(ladder
+  ${Protobuf_LIBRARIES} ${ZLIB_LIBRARIES}
+  Threads::Threads
+  ${OPENSSL_LIBRARIES}
+)
 
 file(GLOB LADDER_CLIENT_SOURCES ladder_client/src/*.cpp)
 add_library(ladder_client SHARED ${LADDER_CLIENT_SOURCES})
-target_include_directories(ladder_client PUBLIC 
+target_include_directories(ladder_client PUBLIC
   ladder/include
   ladder_client/include
 )
@@ -39,7 +44,7 @@ if(GTest_FOUND)
     )
 endif()
 
-list(APPEND TESTS_EXECUTABLES "logger" "server" "proto_server" "event_poller")
+list(APPEND TESTS_EXECUTABLES "logger" "server" "proto_server" "file_server" "ssl_server" "event_poller")
 foreach(child ${TESTS_EXECUTABLES})
     file(GLOB CUR_SOURCES tests/${child}/*.cpp tests/proto/*.pb.cc)
     add_executable(test_${child} ${CUR_SOURCES})
@@ -48,7 +53,7 @@ foreach(child ${TESTS_EXECUTABLES})
     target_link_libraries(test_${child} ladder)
 endforeach()
 
-list(APPEND TESTS_CLIENT_EXECUTABLES "timer" "client" "tcp_client" "mass_clients" "event_loop_thread")
+list(APPEND TESTS_CLIENT_EXECUTABLES "timer" "client" "tcp_client" "ssl_client" "mass_clients" "event_loop_thread")
 foreach(child ${TESTS_CLIENT_EXECUTABLES})
     file(GLOB CUR_SOURCES tests_client/${child}/*.cpp)
     add_executable(test_client_${child} ${CUR_SOURCES})

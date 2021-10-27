@@ -27,7 +27,7 @@ Timer::Timer(const EventLoopPtr& loop) : loop_(loop) {
   timer_fd_ = 1;
   timer_channel_ = std::make_shared<Channel>(loop, timer_fd_);
 #endif
-  timer_channel_->SetReadCallback(std::bind(&Timer::OnTimer, this));
+  timer_channel_->set_read_callback(std::bind(&Timer::OnTimer, this));
 }
 
 Timer::~Timer() {
@@ -40,11 +40,11 @@ Timer::~Timer() {
 #endif
 }
 
-void Timer::SetTimerEventCallback(const TimerEventCallback& callback) {
+void Timer::set_timer_event_callback(const TimerEventCallback& callback) {
   callback_ = callback;
 }
 
-void Timer::SetInterval(uint64_t interval, bool periodic) {
+void Timer::set_interval(uint64_t interval, bool periodic) {
 #ifdef __linux
   struct itimerspec value;
   bzero(&value, sizeof(value));

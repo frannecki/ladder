@@ -2,50 +2,47 @@
 
 #include <Channel.h>
 #include <EventLoop.h>
+#include <Logging.h>
 #include <Socket.h>
 #include <utils.h>
-
-#include <Logging.h>
 
 namespace ladder {
 
 Channel::Channel(EventLoopPtr loop, int fd)
     : fd_(fd),
       loop_(loop),
-      events_(0),
+      revents_(0),
 // POLL_OUT set initially
 #ifdef __linux__
-      event_mask_(kPollEvent::kPollIn | kPollEvent::kPollRdHup |
-                  kPollEvent::kPollOut)
+      events_(kPollEvent::kPollIn | kPollEvent::kPollRdHup |
+              kPollEvent::kPollOut)
 #elif defined(__FreeBSD__)
-      event_mask_(kPollEvent::kPollIn)
+      events_(kPollEvent::kPollIn)
 #endif
 {
 }
 
 Channel::~Channel() { LOGF_DEBUG("Destroying channel fd = %d", fd_); }
 
-void Channel::SetReadCallback(const std::function<void()>& callback) {
+void Channel::set_read_callback(const std::function<void()>& callback) {
   read_callback_ = callback;
 }
 
-void Channel::SetWriteCallback(const std::function<void()>& callback) {
+void Channel::set_write_callback(const std::function<void()>& callback) {
   write_callback_ = callback;
 }
 
-void Channel::SetCloseCallback(const std::function<void()>& callback) {
+void Channel::set_close_callback(const std::function<void()>& callback) {
   close_callback_ = callback;
 }
 
-void Channel::SetErrorCallback(const std::function<void()>& callback) {
+void Channel::set_error_callback(const std::function<void()>& callback) {
   error_callback_ = callback;
 }
 
-void Channel::SetEvents(uint32_t events) { events_ |= events; }
+void Channel::set_revents(uint32_t events) { revents_ |= events; }
 
 uint32_t Channel::events() const { return events_; }
-
-uint32_t Channel::event_mask() const { return event_mask_; }
 
 #ifdef __linux__
 void Channel::SetEpollEdgeTriggered(bool edge_triggered) {
@@ -53,9 +50,9 @@ void Channel::SetEpollEdgeTriggered(bool edge_triggered) {
   // Since the socket is writable most of the time, almost
   // every trigger will set this flag.
   if (edge_triggered) {
-    event_mask_ |= kPollEvent::kPollEt;
+    events_ |= kPollEvent::kPollEt;
   } else {
-    event_mask_ &= (~kPollEvent::kPollEt);
+    events_ &= (~kPollEvent::kPollEt);
   }
 }
 #endif
@@ -63,21 +60,21 @@ void Channel::SetEpollEdgeTriggered(bool edge_triggered) {
 void Channel::EnableWrite(bool enable) {
 #ifdef __linux__
   if (enable) {
-    event_mask_ |= kPollEvent::kPollOut;
+    events_ |= kPollEvent::kPollOut;
   } else {
-    event_mask_ &= (~kPollEvent::kPollOut);
+    events_ &= (~kPollEvent::kPollOut);
   }
   UpdateToLoop(EPOLL_CTL_MOD);
 #elif defined(__FreeBSD__)
-  event_mask_ = kPollEvent::kPollOut;
+  events_ = kPollEvent::kPollOut;
   // UpdateToLoop(enable ? (EV_ADD | EV_ENABLE | EV_CLEAR) : EV_DISABLE);
   UpdateToLoop(enable ? (EV_ADD | EV_ENABLE) : EV_DISABLE);
 #endif
 }
 
 void Channel::HandleEvents() {
-  uint32_t evts = events_;
-  events_ = 0;
+  uint32_t evts = revents_;
+  revents_ = 0;
 #ifdef __linux__
   if (evts & kPollEvent::kPollHup) {
     // normally POLL_HUP is not generated.
@@ -104,7 +101,7 @@ void Channel::HandleEvents() {
     // Handling read event could cause this channel to deconstruct
 #ifdef __linux__
   if (evts &
-      (kPollEvent::kPollIn | kPollEvent::kPollOut | kPollEvent::kPollRdHup)) {
+      (kPollEvent::kPollIn | kPollEvent::kPollRdHup)) {
 #elif defined(__FreeBSD__)
   if (evts & kPollEvent::kPollIn) {
 #endif

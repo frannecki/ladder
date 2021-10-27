@@ -48,7 +48,7 @@ class EventPoller {
 #endif
   void RemoveChannel(int fd);
   void Wakeup();
-  void SetWakeupCallback(const std::function<void()>& callback);
+  void set_wakeup_callback(const std::function<void()>& callback);
 
  private:
   int poll_fd_;
@@ -66,7 +66,7 @@ class Pipe {
   ~Pipe();
   void Wakeup();
   Channel* channel() const;
-  void SetWakeupCallback(const std::function<void()>& callback);
+  void set_wakeup_callback(const std::function<void()>& callback);
 
  private:
   void ReadCallback();

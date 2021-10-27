@@ -15,23 +15,23 @@ Connector::Connector(const ChannelPtr& channel, int max_retry,
       timer_(new Timer(channel->loop())),
       ipv6_(addr.ipv6()),
       addr_(addr) {
-  timer_->SetTimerEventCallback(std::bind(&Connector::Start, this));
+  timer_->set_timer_event_callback(std::bind(&Connector::Start, this));
 }
 
-void Connector::SetConnectionCallback(const ConnectionCallback& callback) {
+void Connector::set_connection_callback(const ConnectionCallback& callback) {
   connection_callback_ = callback;
 }
 
-void Connector::SetConnectionFailureCallback(
+void Connector::set_connection_failure_callback(
     const ConnectionFailureCallback& callback) {
   connection_failure_callback_ = callback;
 }
 
 void Connector::Start() {
-  channel_->SetWriteCallback(std::bind(&Connector::HandleConnect, this));
-  channel_->SetErrorCallback(std::bind(&Connector::Retry, this));
-  channel_->SetCloseCallback(std::bind(&Connector::Retry, this));
-  channel_->SetReadCallback(nullptr);
+  channel_->set_write_callback(std::bind(&Connector::HandleConnect, this));
+  channel_->set_error_callback(std::bind(&Connector::Retry, this));
+  channel_->set_close_callback(std::bind(&Connector::Retry, this));
+  channel_->set_read_callback(nullptr);
   channel_->EnableWrite(true);
   const sockaddr_t* sa = addr_.addr();
   int ret = socket::connect(channel_->fd(), sa,
@@ -92,7 +92,7 @@ void Connector::Retry() {
     LOG_DEBUG("Connect failed. Trying again after " +
               std::to_string(retry_timeout_) + " ms.");
     // TODO: retry connect
-    timer_->SetInterval(retry_timeout_ * 1000, false);
+    timer_->set_interval(retry_timeout_ * 1000, false);
     retry_timeout_ <<= 1;
   } else {
     if (connection_failure_callback_) {

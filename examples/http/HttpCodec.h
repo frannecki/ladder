@@ -28,7 +28,7 @@ class HttpMessage {
  public:
   HttpMessage();
   HttpMessage(const HttpMessage&) = delete;
-  HttpMessage& operator = (const HttpMessage&) = delete;
+  HttpMessage& operator=(const HttpMessage&) = delete;
   virtual ~HttpMessage();
   bool ComposeHeaders(std::string& message);
   int ParseMessage(const std::string& message, int& length);
@@ -60,10 +60,10 @@ class HttpCodec {
       std::function<void(struct HttpContext*, struct HttpContext*)>;
 
  public:
-  HttpCodec();
+  HttpCodec(bool send_file = true);
   ~HttpCodec();
   void OnClientMessage(const ConnectionPtr& conn, Buffer* buffer);
-  void SetClientMessageCallback(const HttpCodecMessageCallback& callback);
+  void set_client_message_callback(const HttpCodecMessageCallback& callback);
   void ParseRequest();
   void ParseResponse();
 
@@ -71,6 +71,7 @@ class HttpCodec {
   HttpMessage* request_;
   HttpMessage* response_;
   HttpCodecMessageCallback server_callback_;
+  bool send_file_;
 };
 
 }  // namespace http

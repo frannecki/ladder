@@ -16,7 +16,7 @@ struct MemoryBlock {
 class MemoryPoolImpl {
  public:
   MemoryPoolImpl(const MemoryPoolImpl&) = delete;
-  MemoryPoolImpl& operator = (const MemoryPoolImpl&) = delete;
+  MemoryPoolImpl& operator=(const MemoryPoolImpl&) = delete;
   static MemoryPoolImpl* instance();
   static void release();
   static MemoryPoolImpl* create(size_t num_blocks = 256,
@@ -75,9 +75,9 @@ class MemoryPool {
     if (instance) {
       instance->free(memory);
     } else if (!is_array) {
-      delete memory;
+      if (memory) delete memory;
     } else {
-      delete[] memory;
+      if (memory) delete[] memory;
     }
   }
 };

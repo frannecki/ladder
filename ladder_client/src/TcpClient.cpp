@@ -4,18 +4,21 @@
 #include <Socket.h>
 #include <TcpClient.h>
 #include <Timer.h>
+#include <TlsConnection.h>
 
 #include <Logging.h>
 
 namespace ladder {
 
 TcpClient::TcpClient(const SocketAddr& target_addr, const EventLoopPtr& loop,
-                     uint16_t retry_initial_timeout, int max_retry)
+                     uint16_t retry_initial_timeout, bool use_ssl,
+                     int max_retry)
     : max_retry_(max_retry),
       status_(TcpConnectionStatus::kDisconnected),
       target_addr_(target_addr),
       loop_(loop),
-      retry_initial_timeout_(retry_initial_timeout) {}
+      retry_initial_timeout_(retry_initial_timeout),
+      ssl_ctx_(use_ssl ? CreateSslContext(false) : nullptr) {}
 
 TcpClient::~TcpClient() {
   Disconnect();
@@ -32,15 +35,18 @@ void TcpClient::Connect() {
     status_ = TcpConnectionStatus::kConnecting;
   }
   int fd = socket::socket(true, target_addr_.ipv6());
-  conn_.reset(new Connection(loop_, fd));
-  conn_->SetReadCallback(read_callback_);
-  conn_->SetCloseCallback(
+  if (!ssl_ctx_)
+    conn_.reset(new Connection(loop_, fd));
+  else
+    conn_.reset(new TlsConnection(loop_, fd, ssl_ctx_, false));
+  conn_->set_read_callback(read_callback_);
+  conn_->set_close_callback(
       std::bind(&TcpClient::OnCloseConnectionCallback, this, fd));
   connector_.reset(new Connector(conn_->channel(), max_retry_, target_addr_,
                                  retry_initial_timeout_));
-  connector_->SetConnectionCallback(
+  connector_->set_connection_callback(
       std::bind(&TcpClient::OnConnectionCallback, this, std::placeholders::_1));
-  connector_->SetConnectionFailureCallback(
+  connector_->set_connection_failure_callback(
       std::bind(&TcpClient::OnConnectionFailureCallback, this));
   LOGF_INFO("Trying to establish connection to target. fd = %d", fd);
   conn_->Init();
@@ -60,15 +66,15 @@ void TcpClient::Disconnect() {
   conn_->channel()->ShutDownWrite();
 }
 
-void TcpClient::SetReadCallback(const ReadEvtCallback& callback) {
+void TcpClient::set_read_callback(const ReadEvtCallback& callback) {
   read_callback_ = callback;
 }
 
-void TcpClient::SetWriteCallback(const WriteEvtCallback& callback) {
+void TcpClient::set_write_callback(const WriteEvtCallback& callback) {
   write_callback_ = callback;
 }
 
-void TcpClient::SetConnectionCallback(const ConnectionEvtCallback& callback) {
+void TcpClient::set_connection_callback(const ConnectionEvtCallback& callback) {
   connection_callback_ = callback;
 }
 

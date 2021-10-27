@@ -27,7 +27,7 @@ Connection::Connection(const EventLoopPtr& loop, int fd, bool send_file)
 
 void Connection::Init() {
 // do not call shared_from_this() in constructor
-#ifdef __linux
+#ifdef __linux__
   channel_->SetEpollEdgeTriggered();
 #endif
   channel_->UpdateToLoop();
@@ -35,24 +35,23 @@ void Connection::Init() {
 }
 
 void Connection::SetChannelCallbacks() {
-  channel_->SetReadCallback(std::bind(&Connection::OnReadCallback, this));
-  channel_->SetWriteCallback(std::bind(&Connection::OnWriteCallback, this));
-  channel_->SetCloseCallback(std::bind(&Connection::OnCloseCallback, this));
-  channel_->SetErrorCallback(std::bind(&Connection::OnCloseCallback, this));
+  channel_->set_read_callback(std::bind(&Connection::OnReadCallback, this));
+  channel_->set_write_callback(std::bind(&Connection::OnWriteCallback, this));
+  channel_->set_close_callback(std::bind(&Connection::OnCloseCallback, this));
+  channel_->set_error_callback(std::bind(&Connection::OnCloseCallback, this));
 }
 
 Connection::~Connection() {
   socket::close(channel_->fd());
-  delete read_buffer_;
-  delete write_buffer_;
+  if (read_buffer_) delete read_buffer_;
+  if (write_buffer_) delete write_buffer_;
 }
 
 void Connection::Send(const std::string& buf) {
   if (shut_down_) return;
   write_buffer_->Write(buf);
 
-  int ret = write_buffer_->WriteBufferToFd(channel_->fd());
-  EnableWrite(ret);
+  EnableWrite(WriteBuffer());
 }
 
 void Connection::ShutDownWrite() { channel_->ShutDownWrite(); }
@@ -66,13 +65,12 @@ void Connection::SendFile(std::string&& header, const std::string& filename) {
   if (shut_down_ || !send_file_) return;
   write_file_buffer_->AddFile(std::move(header), filename);
 
-  int ret = write_buffer_->WriteBufferToFd(channel_->fd());
-  EnableWrite(ret);
+  EnableWrite(WriteBuffer());
 }
 
 void Connection::OnReadCallback() {
   if (shut_down_) return;
-  int ret = read_buffer_->ReadBufferFromFd(channel_->fd());
+  int ret = ReadBuffer();
   if (ret == 0) {
     // FIN received
     shut_down_ = true;
@@ -92,6 +90,9 @@ void Connection::OnReadCallback() {
       default:
         break;
     }
+  } else if (ret < 0) {
+    // error: some negative value other than -1
+    shut_down_ = true;
   }
 
   if (read_callback_ && !read_buffer_->Empty()) {
@@ -104,7 +105,7 @@ void Connection::OnReadCallback() {
 }
 
 void Connection::OnWriteCallback() {
-  int ret = write_buffer_->WriteBufferToFd(channel_->fd());
+  int ret = WriteBuffer();
   if (write_callback_) {
     write_callback_(write_buffer_);
   }
@@ -124,19 +125,27 @@ void Connection::OnCloseCallback() {
   }
 }
 
-void Connection::SetReadCallback(const ReadEvtCallback& callback) {
+void Connection::set_read_callback(const ReadEvtCallback& callback) {
   read_callback_ = callback;
 }
 
-void Connection::SetWriteCallback(const WriteEvtCallback& callback) {
+void Connection::set_write_callback(const WriteEvtCallback& callback) {
   write_callback_ = callback;
 }
 
-void Connection::SetCloseCallback(const ConnectCloseCallback& callback) {
+void Connection::set_close_callback(const ConnectCloseCallback& callback) {
   close_callback_ = callback;
 }
 
 ChannelPtr Connection::channel() const { return channel_; }
+
+int Connection::ReadBuffer() {
+  return read_buffer_->ReadBufferFromFd(channel_->fd());
+}
+
+int Connection::WriteBuffer() {
+  return write_buffer_->WriteBufferToFd(channel_->fd());
+}
 
 void Connection::EnableWrite(int ret) {
   if (ret < 0) {

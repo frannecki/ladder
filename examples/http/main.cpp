@@ -1,5 +1,8 @@
 #include <unordered_map>
 
+#include <openssl/err.h>
+#include <openssl/ssl.h>
+
 #include <Logging.h>
 #include <utils.h>
 
@@ -134,15 +137,59 @@ void HandleHttpGet(struct HttpContext* ctx1, struct HttpContext* ctx2) {
   }
 }
 
+static SSL_CTX* create_context() {
+  const SSL_METHOD* method;
+  SSL_CTX* ctx;
+
+  method = SSLv23_server_method();
+
+  ctx = SSL_CTX_new(method);
+  if (!ctx) {
+    perror("Unable to create SSL context");
+    ERR_print_errors_fp(stderr);
+    exit(EXIT_FAILURE);
+  }
+
+  return ctx;
+}
+
+void configure_context(SSL_CTX* ctx, const std::string& ssl_cert_dir) {
+  SSL_CTX_set_ecdh_auto(ctx, 1);
+
+  /* Set the key and cert */
+  if (SSL_CTX_use_certificate_file(ctx,
+                                   (ssl_cert_dir + "/" + "cert.pem").c_str(),
+                                   SSL_FILETYPE_PEM) <= 0) {
+    ERR_print_errors_fp(stderr);
+    exit(EXIT_FAILURE);
+  }
+
+  if (SSL_CTX_use_PrivateKey_file(ctx, (ssl_cert_dir + "/" + "key.pem").c_str(),
+                                  SSL_FILETYPE_PEM) <= 0) {
+    ERR_print_errors_fp(stderr);
+    exit(EXIT_FAILURE);
+  }
+}
+
 int main(int argc, char** argv) {
-  if (argc > 1) {
-    kResourceRoot = std::string(argv[1]);
+  if (argc < 2) {
+    fprintf(stderr, "Usage: %s $ResourceRoot[ $CertPath $KeyPath]\n", argv[0]);
+    return EXIT_FAILURE;
+  }
+  kResourceRoot = std::string(argv[1]);
+  std::string ssl_cert_dir = "ssl";
+  if (argc > 2) {
+    ssl_cert_dir = std::string(argv[2]);
   }
   Logger::create("./test_http_server.log");
   SocketAddr addr("0.0.0.0", 8070, false);
-  HttpServer server(addr);
+
+  SslInit();
+  HttpServer server(addr, (argc > 2) ? argv[2] : nullptr,
+                    (argc > 3) ? argv[3] : nullptr);
   server.RegisterCallback(kHttpRequestMethod::kHttpGet, HandleHttpGet);
   server.Start();
   Logger::release();
-  return 0;
+  EVP_cleanup();
+  return EXIT_SUCCESS;
 }

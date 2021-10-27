@@ -54,8 +54,8 @@ int main(int argc, char** argv) {
   codec.RegisterMessageCallback<ladder::TestMessage1>(
       std::bind(OnMessage, _1, _2, codec));
   codec.RegisterDefaultMessageCallback(std::bind(OnDefaultMessage, _1, _2));
-  server.SetConnectionCallback(std::bind(OnConnection, _1, codec));
-  server.SetReadCallback(std::bind(&ProtobufCodec::OnMessage, &codec, _1, _2));
+  server.set_connection_callback(std::bind(OnConnection, _1, codec));
+  server.set_read_callback(std::bind(&ProtobufCodec::OnMessage, &codec, _1, _2));
   server.Start();
   return 0;
 }

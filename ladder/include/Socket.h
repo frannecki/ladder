@@ -9,6 +9,8 @@
 
 #include <string>
 
+#include <openssl/ssl.h>
+
 #include <utils.h>
 
 namespace ladder {

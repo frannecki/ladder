@@ -241,15 +241,17 @@ bool HttpResponse::PrepareMessage() {
   return true;
 }
 
-HttpCodec::HttpCodec()
-    : request_(new HttpRequest), response_(new HttpResponse) {}
+HttpCodec::HttpCodec(bool send_file)
+    : request_(new HttpRequest),
+      response_(new HttpResponse),
+      send_file_(send_file) {}
 
 HttpCodec::~HttpCodec() {
-  delete request_;
-  delete response_;
+  if (request_) delete request_;
+  if (response_) delete response_;
 }
 
-void HttpCodec::SetClientMessageCallback(
+void HttpCodec::set_client_message_callback(
     const HttpCodecMessageCallback& callback) {
   server_callback_ = callback;
 }
@@ -274,11 +276,17 @@ void HttpCodec::OnClientMessage(const ConnectionPtr& conn, Buffer* buffer) {
   std::string headers;
 
   if (response_->context()->status_code_ == kHttpStatusCode::kOk) {
-    if (request_->context()->content_encoding_ == kGzip) {
-      std::string filebuf = GZipper::DeflateFile(response_->context()->uri_);
+    if (!send_file_ || request_->context()->content_encoding_ == kGzip) {
+      std::string filebuf;
+      if (request_->context()->content_encoding_ == kGzip) {
+        filebuf = GZipper::DeflateFile(response_->context()->uri_);
+        response_->context()->headers_[kHttpHeaderField::kContentEncoding] =
+            "gzip";
+      } else {
+        filebuf = ReadFileAsString(response_->context()->uri_);
+      }
       response_->context()->content_length_ = filebuf.size();
-      response_->context()->headers_[kHttpHeaderField::kContentEncoding] =
-          "gzip";
+
       response_->ComposeHeaders(headers);
       conn->Send(std::move(headers) + std::move(filebuf));
     } else {

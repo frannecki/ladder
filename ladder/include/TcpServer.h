@@ -5,6 +5,8 @@
 #include <memory>
 #include <mutex>
 
+#include <openssl/ssl.h>
+
 #include <Base.h>
 #include <Socket.h>
 #include <utils.h>
@@ -17,13 +19,14 @@ class SocketAddr;
 class TcpServer {
  public:
   TcpServer(const SocketAddr& addr, bool send_file = false,
+            const char* cert_path = nullptr, const char* key_path = nullptr,
             size_t loop_thread_num = 8, size_t working_thread_num = 8);
   ~TcpServer();
   void Start();
   const Channel* channel() const;
-  void SetReadCallback(const ReadEvtCallback& callback);
-  void SetWriteCallback(const WriteEvtCallback& callback);
-  void SetConnectionCallback(const ConnectionEvtCallback& callback);
+  void set_read_callback(const ReadEvtCallback& callback);
+  void set_write_callback(const WriteEvtCallback& callback);
+  void set_connection_callback(const ConnectionEvtCallback& callback);
   EventLoopPtr loop() const;
   EventLoopThreadPoolPtr loop_threads() const;
 
@@ -47,6 +50,8 @@ class TcpServer {
   ReadEvtCallback read_callback_;
   WriteEvtCallback write_callback_;
   ConnectionEvtCallback connection_callback_;
+
+  SSL_CTX* ssl_ctx_;
 };
 
 };  // namespace ladder

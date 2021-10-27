@@ -20,8 +20,8 @@ class Connector {
  public:
   Connector(const ChannelPtr&, int max_retry, const SocketAddr& addr,
             uint16_t retry_initial_timeout = kMinRetryInitialTimeout * 2);
-  void SetConnectionCallback(const ConnectionCallback& callback);
-  void SetConnectionFailureCallback(const ConnectionFailureCallback& callback);
+  void set_connection_callback(const ConnectionCallback& callback);
+  void set_connection_failure_callback(const ConnectionFailureCallback& callback);
   void Start();
 
  private:

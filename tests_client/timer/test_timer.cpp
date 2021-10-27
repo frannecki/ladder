@@ -22,12 +22,12 @@ int main(int argc, char **argv) {
   ladder::EventLoop loop;
   ladder::Timer *timer = new ladder::Timer(ladder::EventLoopPtr(&loop));
   ladder::Timer *timer1 = new ladder::Timer(ladder::EventLoopPtr(&loop));
-  timer->SetTimerEventCallback(std::bind(PrintTick, &tick_));
-  timer1->SetTimerEventCallback(std::bind(PrintTick1, &tick1_));
+  timer->set_timer_event_callback(std::bind(PrintTick, &tick_));
+  timer1->set_timer_event_callback(std::bind(PrintTick1, &tick1_));
 #ifndef __FreeBSD__
-  timer->SetInterval(1000000);  // triggered once
+  timer->set_interval(1000000);  // triggered once
 #endif
-  timer1->SetInterval(1000000, true);  // triggered periodically
+  timer1->set_interval(1000000, true);  // triggered periodically
   loop.StartLoop();
   return 0;
 }

@@ -18,18 +18,16 @@ void OnMessage(const ConnectionPtr& conn, Buffer* buffer) {
   conn->Send("Hello~ " + message);
 }
 
-void OnConnection(const ConnectionPtr& conn) {
-  LOGF_INFO("Current number of clients connected: %d", ++count);
-  conn->SendFile("First paragraph of Charles Dickens' A Tale of Two Cities: ",
-                 "./test.txt");
-}
-
 int main(int argc, char** argv) {
-  Logger::create("./test_file_server.log");
-  SocketAddr addr("0.0.0.0", 8070, false);
-  TcpServer server(addr, true);
-  server.set_connection_callback(std::bind(OnConnection, _1));
+  if (argc < 3) {
+    fprintf(stderr, "Usage: %s $CertPath $KeyPath\n", argv[0]);
+    return EXIT_FAILURE;
+  }
+  Logger::create("./test_ssl_server.log");
+  SocketAddr addr("0.0.0.0", 8080, false);
+  SslInit();
+  TcpServer server(addr, false, argv[1], argv[2]);
   server.set_read_callback(std::bind(OnMessage, _1, _2));
   server.Start();
-  return 0;
+  return EXIT_SUCCESS;
 }

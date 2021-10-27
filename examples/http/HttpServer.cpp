@@ -8,11 +8,13 @@ using namespace std::placeholders;
 namespace ladder {
 namespace http {
 
-HttpServer::HttpServer(const SocketAddr& addr)
-    : TcpServer(addr, true), codec_(new HttpCodec) {
-  codec_->SetClientMessageCallback(
+HttpServer::HttpServer(const SocketAddr& addr, const char* cert_path,
+                       const char* key_path)
+    : TcpServer(addr, true, cert_path, key_path),
+      codec_(new HttpCodec(cert_path == nullptr || key_path == nullptr)) {
+  codec_->set_client_message_callback(
       std::bind(&HttpServer::OnMessage, this, _1, _2));
-  SetReadCallback(std::bind(&HttpCodec::OnClientMessage, codec_, _1, _2));
+  set_read_callback(std::bind(&HttpCodec::OnClientMessage, codec_, _1, _2));
 }
 
 HttpServer::~HttpServer() { delete codec_; }

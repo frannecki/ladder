@@ -22,15 +22,15 @@ using ConnectorPtr = std::unique_ptr<Connector>;
 class TcpClient {
  public:
   TcpClient(const SocketAddr& target_addr, const EventLoopPtr& loop,
-            uint16_t retry_initial_timeout, int max_retry = 10);
+            uint16_t retry_initial_timeout, bool use_ssl = false, int max_retry = 10);
   ~TcpClient();
 
   void Connect();
   void Disconnect();
 
-  void SetReadCallback(const ReadEvtCallback& callback);
-  void SetWriteCallback(const WriteEvtCallback& callback);
-  void SetConnectionCallback(const ConnectionEvtCallback& callback);
+  void set_read_callback(const ReadEvtCallback& callback);
+  void set_write_callback(const WriteEvtCallback& callback);
+  void set_connection_callback(const ConnectionEvtCallback& callback);
   EventLoopPtr loop() const;
 
  private:
@@ -50,6 +50,8 @@ class TcpClient {
   ReadEvtCallback read_callback_;
   WriteEvtCallback write_callback_;
   ConnectionEvtCallback connection_callback_;
+
+  SSL_CTX* ssl_ctx_;
 };
 
 }  // namespace ladder

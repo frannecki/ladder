@@ -22,15 +22,14 @@ class Channel {
   Channel(EventLoopPtr loop, int fd);
   ~Channel();
   int fd() const;
-  void SetReadCallback(const std::function<void()>& callback);
-  void SetWriteCallback(const std::function<void()>& callback);
-  void SetCloseCallback(const std::function<void()>& callback);
-  void SetErrorCallback(const std::function<void()>& callback);
-  void SetEvents(uint32_t events);
+  void set_read_callback(const std::function<void()>& callback);
+  void set_write_callback(const std::function<void()>& callback);
+  void set_close_callback(const std::function<void()>& callback);
+  void set_error_callback(const std::function<void()>& callback);
+  void set_revents(uint32_t events);
   void EnableWrite(bool enable = true);
   uint32_t events() const;
   void HandleEvents();
-  uint32_t event_mask() const;
 #ifdef __linux__
   void UpdateToLoop(int op = EPOLL_CTL_ADD);
   void SetEpollEdgeTriggered(bool edge_triggered = true);
@@ -49,8 +48,8 @@ class Channel {
 
   int fd_;
   EventLoopPtr loop_;
+  uint32_t revents_;
   uint32_t events_;
-  uint32_t event_mask_;
   std::function<void()> read_callback_;
   std::function<void()> write_callback_;
   std::function<void()> close_callback_;

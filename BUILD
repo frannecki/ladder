@@ -9,7 +9,8 @@ cc_library(
     hdrs = glob(["ladder/include/*.h", "ladder/include/codec/*.h"]),
     includes = ["ladder/include", "ladder/include/codec"],
     deps = ["@com_google_protobuf//:protobuf",
-            "@zlib//:zlib"
+            "@zlib//:zlib",
+            "@openssl//:openssl"
     ],
     linkopts = ["-lpthread"],
     visibility = ["//visibility:public"],

@@ -14,23 +14,25 @@ class Connection : public std::enable_shared_from_this<Connection> {
  public:
   Connection(const EventLoopPtr& loop, int fd, bool send_file = false);
   Connection(const Connection&) = delete;
-  Connection& operator = (const Connection&) = delete;
-  ~Connection();
-  void Init();
+  Connection& operator=(const Connection&) = delete;
+  virtual ~Connection();
+  virtual void Init();
   void SetChannelCallbacks();
-  void Send(const std::string& buf);
+  virtual void Send(const std::string& buf);
   void ShutDownWrite();
   void Close();
   void SendFile(std::string&& header, const std::string& filename = "");
   void OnReadCallback();
   void OnWriteCallback();
   void OnCloseCallback();
-  void SetReadCallback(const ReadEvtCallback& callback);
-  void SetWriteCallback(const WriteEvtCallback& callback);
-  void SetCloseCallback(const ConnectCloseCallback& callback);
+  void set_read_callback(const ReadEvtCallback& callback);
+  void set_write_callback(const WriteEvtCallback& callback);
+  void set_close_callback(const ConnectCloseCallback& callback);
   ChannelPtr channel() const;
 
- private:
+ protected:
+  virtual int ReadBuffer();
+  virtual int WriteBuffer();
   void EnableWrite(int ret);
 
   std::mutex mutex_;

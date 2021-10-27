@@ -10,7 +10,7 @@ FileBuffer::FileBuffer()
     : buffer_(new Buffer), bytes_sent_(0), bytes_pending_(0), fd_(-1) {}
 
 FileBuffer::~FileBuffer() {
-  delete buffer_;
+  if (buffer_) delete buffer_;
   buffer_ = nullptr;
   if (fd_ != -1) {
     socket::close(fd_);

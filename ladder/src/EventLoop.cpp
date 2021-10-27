@@ -41,8 +41,8 @@ void EventLoop::QueueInLoop(std::function<void()>&& task) {
   pending_tasks_.emplace_back(task);
 }
 
-void EventLoop::SetWakeupCallback(const std::function<void()>& callback) {
-  poller_->SetWakeupCallback(callback);
+void EventLoop::set_wakeup_callback(const std::function<void()>& callback) {
+  poller_->set_wakeup_callback(callback);
 }
 
 #ifdef __FreeBSD__

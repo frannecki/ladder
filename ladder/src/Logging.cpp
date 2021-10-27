@@ -31,9 +31,7 @@ Logger* Logger::create(std::string log_path, int level) {
 }
 
 void Logger::release() {
-  if (instance_) {
-    delete instance_;
-  }
+  if (instance_) delete instance_;
 }
 
 Logger* Logger::instance_ = nullptr;

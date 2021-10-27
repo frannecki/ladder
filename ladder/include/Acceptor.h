@@ -16,7 +16,7 @@ using NewConnectionCallback = std::function<void(int, SocketAddr&&)>;
 class Acceptor {
  public:
   Acceptor(const ChannelPtr&, bool ipv6);
-  void SetNewConnectionCallback(const NewConnectionCallback& callback);
+  void set_new_connection_callback(const NewConnectionCallback& callback);
 
  private:
   void HandleAcceptCallback();

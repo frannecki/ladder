@@ -107,6 +107,7 @@ std::string GZipper::DeflateFile(const std::string& filename) {
                      Z_DEFAULT_STRATEGY);
 
   if (ret != Z_OK) {
+    fclose(fp);
     return result;
   }
 
@@ -114,6 +115,7 @@ std::string GZipper::DeflateFile(const std::string& filename) {
     strm.avail_in = fread(in_buf, 1, kGZipFileBufferSize, fp);
     if (ferror(fp)) {
       deflateEnd(&strm);
+      fclose(fp);
       return std::string();
     }
     flush = feof(fp) ? Z_FINISH : Z_NO_FLUSH;
@@ -129,6 +131,7 @@ std::string GZipper::DeflateFile(const std::string& filename) {
     }
   }
   deflateEnd(&strm);
+  fclose(fp);
 
   return result;
 }
