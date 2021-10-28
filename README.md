@@ -3,6 +3,7 @@
 ## Prerequisites
 * protobuf 3.x
 * zlib
+* OpenSSL
 * googletest 1.10.x (optional, for unit tests)
 
 ## Supported Platforms
@@ -51,4 +52,6 @@
   ```
 
 ### Usage
-Please refer to the [test demo](tests/server) for more details.
+To use the ladder library, please refer to the [test demo](tests/server) for more details.
+
+> Note: To run the http/https server demo `test_http_server` in https mode, directories to ssl certificate and key should be specified. i.e. `./test_http_server $IndexPath $CertPath $KeyPath`

@@ -31,13 +31,3 @@ http_archive(
         "https://github.com/google/googletest/archive/release-1.10.0.tar.gz",
     ],
 )
-
-http_archive(
-    name = "openssl",
-    sha256 = "b39653402e398a2b89c3f1779f09fe273fda6b6d7873d2816b954b949a185b83",
-    strip_prefix = "openssl-openssl-3.0.0",
-    urls = [
-        "https://github.com/openssl/openssl/archive/refs/tags/openssl-3.0.0.tar.gz",
-    ],
-    build_file = "@//:openssl.BUILD",
-)
