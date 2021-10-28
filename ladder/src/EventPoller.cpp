@@ -129,7 +129,7 @@ void EventPoller::UpdateChannel(Channel* channel, int op) {
   }
 #elif defined(__FreeBSD__)
   int ret = -1;
-  uint32_t event_mask = channel->events_();
+  uint32_t event_mask = channel->events();
   while (event_mask) {
     uint32_t status = event_mask & (-event_mask);
     event_mask ^= status;

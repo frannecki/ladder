@@ -44,7 +44,9 @@ void TlsConnection::Init() {
   Connection::Init();
   if (!is_server_) {
     // ssl clients need to send client hello on connection
+#ifdef __linux__
     channel_->SetEpollEdgeTriggered(false);
+#endif
     channel_->EnableWrite();
   }
 }
