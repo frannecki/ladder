@@ -23,6 +23,10 @@ TcpClient::TcpClient(const SocketAddr& target_addr, const EventLoopPtr& loop,
 TcpClient::~TcpClient() {
   Disconnect();
   LOG_DEBUG("Releasing tcp client...");
+  if (ssl_ctx_) {
+    SSL_CTX_free(ssl_ctx_);
+    ssl_ctx_ = nullptr;
+  }
 }
 
 void TcpClient::Connect() {

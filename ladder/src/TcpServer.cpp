@@ -47,6 +47,10 @@ TcpServer::TcpServer(const SocketAddr& addr, bool send_file,
 TcpServer::~TcpServer() {
   socket::close(channel_->fd());
   channel_->RemoveFromLoop();
+  if (ssl_ctx_) {
+    SSL_CTX_free(ssl_ctx_);
+    ssl_ctx_ = nullptr;
+  }
 }
 
 void TcpServer::Start() {
