@@ -36,6 +36,7 @@ class Channel {
 #elif defined(__FreeBSD__)
   void UpdateToLoop(int op = EV_ADD | EV_ENABLE);  // | EV_CLEAR);
 #endif
+  void UpdateToLoop(int op = 0);
   void RemoveFromLoop();
 
   void ShutDownWrite();

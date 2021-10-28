@@ -31,7 +31,7 @@ Timer::Timer(const EventLoopPtr& loop) : loop_(loop) {
 }
 
 Timer::~Timer() {
-#ifdef __linux__
+#ifdef __unix__
   socket::close(timer_fd_);
 #elif defined(__FreeBSD__)
   struct kevent evt;

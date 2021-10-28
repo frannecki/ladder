@@ -1,7 +1,11 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
+#ifdef __unix__
 #include <unistd.h>
+#elif defined(_MSC_VER)
+#include <windows.h>
+#endif
 
 #include <MemoryPool.h>
 #include <utils.h>
@@ -58,7 +62,14 @@ std::vector<int> FindSubstr(const std::string& str, const std::string& pat) {
 }
 
 bool CheckIfFileExists(const std::string& path) {
+#ifdef __unix__
   return access(path.c_str(), F_OK | R_OK) == 0;
+#elif defined(_MSC_VER)
+  if (INVALID_FILE_ATTRIBUTES == GetFileAttributes((LPCWSTR)(path.c_str())) && GetLastError() == ERROR_FILE_NOT_FOUND) {
+    return false;
+  }
+  return true;
+#endif
 }
 
 int GetFileSize(const std::string& path) {

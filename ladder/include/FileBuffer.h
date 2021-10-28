@@ -34,7 +34,11 @@ class FileBuffer : public IBuffer {
   Buffer* buffer_;
   int bytes_sent_;
   int bytes_pending_;
+#ifdef __unix__
   int fd_;
+#elif defined(_MSC_VER)
+  void* fd_;
+#endif
 };
 
 }  // namespace ladder

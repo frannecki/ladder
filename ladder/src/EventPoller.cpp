@@ -1,6 +1,11 @@
+#ifdef __unix__
+#include <unistd.h>
+#endif
+#ifdef __linux__
+#include <sys/epoll.h>
+#endif
 #include <fcntl.h>
 #include <string.h>
-#include <unistd.h>
 
 #include <Channel.h>
 #include <EventPoller.h>
@@ -62,9 +67,11 @@ EventPoller::EventPoller() : cur_poll_size_(0) {
 EventPoller::~EventPoller() {}
 
 void EventPoller::Poll(std::vector<Channel*>& active_channels) {
+  int ret = 0;
 #ifdef __linux__
   memset(poll_evts, 0, kPollLimit * sizeof(epoll_event));
-  int ret = epoll_wait(poll_fd_, poll_evts, kPollLimit, kPollTimeoutMs / 10);
+  ret = epoll_wait(poll_fd_, poll_evts, kPollLimit,
+                       kPollTimeoutMs / 10);
   if (ret == -1) {
     switch (errno) {
       case EINTR:
@@ -76,7 +83,7 @@ void EventPoller::Poll(std::vector<Channel*>& active_channels) {
 #elif defined(__FreeBSD__)
   // TODO: set kevent timeout
   memset(poll_evts, 0, kPollLimit * sizeof(struct kevent));
-  int ret = kevent(poll_fd_, NULL, 0, poll_evts, kPollLimit, NULL);
+  ret = kevent(poll_fd_, NULL, 0, poll_evts, kPollLimit, NULL);
   if (ret == -1) {
     switch (errno) {
       case EINTR:
@@ -88,13 +95,13 @@ void EventPoller::Poll(std::vector<Channel*>& active_channels) {
 #endif
 
   for (int i = 0; i < ret; ++i) {
-#ifdef __linux__
-    uint32_t evt = poll_evts[i].events;
-    auto channel = reinterpret_cast<Channel*>(poll_evts[i].data.ptr);
-#elif defined(__FreeBSD__)
     uint32_t evt = 0;
+#ifdef __linux__
+    evt = poll_evts[i].events;
+    Channel* channel = reinterpret_cast<Channel*>(poll_evts[i].data.ptr);
+#elif defined(__FreeBSD__)
     short flt = poll_evts[i].filter;
-    auto channel = reinterpret_cast<Channel*>(poll_evts[i].udata);
+    Channel* channel = reinterpret_cast<Channel*>(poll_evts[i].udata);
     if (poll_evts[i].flags & EV_ERROR) {
       channel->set_revents(kPollEvent::kPollErr);
       continue;
@@ -104,7 +111,8 @@ void EventPoller::Poll(std::vector<Channel*>& active_channels) {
     if (iter != flt_2_stat_.end()) {
       evt = iter->second;
     }
-
+#else
+    Channel* channel = nullptr;
 #endif
     channel->set_revents(evt);
     active_channels.emplace_back(channel);
@@ -145,6 +153,9 @@ void EventPoller::UpdateChannel(Channel* channel, int op) {
   if (ret < 0) {
     // kevent failed
   }
+#else
+  if (1) {
+  }
 #endif
   else {
     cur_poll_size_ += 1;
@@ -179,6 +190,9 @@ void EventPoller::RemoveChannel(int fd) {
   if (ret < 0) {
     // no event deleted
   }
+#else
+  if (1) {
+  }
 #endif
   else {
     cur_poll_size_ -= 1;
@@ -209,6 +223,7 @@ std::unordered_map<uint32_t, short> EventPoller::stat_2_flt_ = {
 #endif
 
 Pipe::Pipe() {
+#ifdef __unix__
   if (::pipe2(fd_, O_NONBLOCK) < 0) {
     EXIT("pipe2");
   }

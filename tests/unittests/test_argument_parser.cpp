@@ -5,6 +5,13 @@
 
 #include <ArgumentParser.h>
 
+#ifdef _MSC_VER
+#pragma comment(lib, "Ws2_32.lib")
+#pragma comment(lib, "Mswsock.lib")
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#endif
+
 class ArgumentParserTest : public ladder::IArgumentParser {
  public:
   void DelegateToFake() {
@@ -59,3 +66,19 @@ TEST(TestArgParser, test_no_such_option) {
   parser.DelegateToFake();
   EXPECT_FALSE(parser.Init(4, const_cast<char**>(argv)));
 }
+
+
+#ifdef _MSC_VER
+int main(int argc, char** argv) {
+#ifdef _MSC_VER
+    WSADATA wsa_data;
+    int ret = 0;
+    if ((ret = WSAStartup(MAKEWORD(2, 2), &wsa_data)) != 0) {
+        perror("WSAStartup failed");
+        return -1;
+    }
+#endif
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+}
+#endif

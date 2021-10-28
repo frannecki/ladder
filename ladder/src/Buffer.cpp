@@ -1,4 +1,11 @@
+#ifdef __unix__
 #include <unistd.h>
+#endif
+#ifdef _MSC_VER
+#include <winsock2.h>
+#endif
+
+#include <iterator>
 
 #include <Buffer.h>
 #include <Socket.h>
@@ -19,7 +26,11 @@ std::string Buffer::Read(size_t n) {
 }
 
 uint32_t Buffer::Peek(size_t n, std::string& result) {
+#ifdef _MSC_VER
+  uint32_t readable = min(static_cast<uint32_t>(n), ReadableBytes());
+#else
   uint32_t readable = std::min(static_cast<uint32_t>(n), ReadableBytes());
+#endif
   result.assign(buffer_.begin() + read_index_,
                 buffer_.begin() + read_index_ + readable);
   return readable;
@@ -27,7 +38,11 @@ uint32_t Buffer::Peek(size_t n, std::string& result) {
 
 void Buffer::HaveRead(size_t n) {
   std::lock_guard<std::mutex> lock(mutex_);
+#ifdef _MSC_VER
+  read_index_ += min(static_cast<uint32_t>(n), ReadableBytes());
+#else
   read_index_ += std::min(static_cast<uint32_t>(n), ReadableBytes());
+#endif
   if (write_index_ == read_index_) {
     write_index_ = read_index_ = 0;
   }

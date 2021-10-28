@@ -1,4 +1,8 @@
+#ifdef __unix__
 #include <arpa/inet.h>
+#elif defined(_MSC_VER)
+#include <winsock.h>
+#endif
 #include <zlib.h>
 
 #include <Buffer.h>

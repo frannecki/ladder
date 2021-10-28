@@ -25,7 +25,7 @@ enum kPollEvent : uint32_t {
   kPollHup = EPOLLHUP,
   kPollErr = EPOLLERR,
   kPollEt = EPOLLET,
-#elif defined(__FreeBSD__)
+#else
   kPollIn = 1 << 0,
   kPollOut = 1 << 2,
   kPollErr = 1 << 3,

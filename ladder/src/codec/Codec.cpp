@@ -1,4 +1,8 @@
+#ifdef __unix__
 #include <arpa/inet.h>
+#elif defined(_MSC_VER)
+#include <winsock.h>
+#endif
 #include <zlib.h>
 
 #include <Buffer.h>
@@ -81,7 +85,7 @@ void Codec::ParseAndHandleMessage(const ConnectionPtr& conn,
                                   const std::string& packet) const {
   void* message = nullptr;
   if (ParseMessage(packet, message) && message != nullptr) {
-    // 'message' freed in HandleMessage
+    // `message` freed in HandleMessage
     HandleMessage(conn, message);
     message = nullptr;
   }

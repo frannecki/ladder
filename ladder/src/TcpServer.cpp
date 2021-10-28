@@ -1,29 +1,31 @@
-#include <fcntl.h>
+#ifdef __unix__
 #include <signal.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#endif
+#include <fcntl.h>
 
 #include <Acceptor.h>
+#include <Base.h>
 #include <Channel.h>
 #include <Connection.h>
 #include <EventLoop.h>
 #include <EventLoopThreadPool.h>
+#include <Logging.h>
 #include <TcpServer.h>
 #include <ThreadPool.h>
 #include <TlsConnection.h>
 
-#include <Base.h>
-#include <Logging.h>
-
 using namespace std::placeholders;
 
 namespace ladder {
-
+#ifdef __unix__
 void signal_handler(int signum) {
   if (signum == SIGPIPE) {
     LOG_FATAL("SIGPIPE ignored");
   }
 }
+#endif
 
 using TcpConnectionCloseCallback =
     std::unique_ptr<std::function<void(TcpServer*, int)>>;
@@ -36,7 +38,9 @@ TcpServer::TcpServer(const SocketAddr& addr, bool send_file,
       loop_thread_num_(loop_thread_num),
       working_thread_num_(working_thread_num),
       ssl_ctx_(nullptr) {
+#ifdef __unix__
   signal(SIGPIPE, signal_handler);
+#endif
   if (cert_path != nullptr && key_path != nullptr) {
     ssl_ctx_ = CreateSslContext(true);
     ConfigureSslContext(ssl_ctx_, cert_path, key_path);

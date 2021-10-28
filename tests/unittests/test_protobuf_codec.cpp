@@ -2,16 +2,35 @@
 
 #include <Buffer.h>
 
-#include "proto/tests.pb.h"
-
-#define private public
-#define protected public
+#include <codec/Codec.h>
 #include <codec/ProtobufCodec.h>
+
+#ifdef _MSC_VER
+#include "proto/tests.pb.cc"
+#else
+#include "proto/tests.pb.h"
+#endif
+
+#ifdef _MSC_VER
+
+class Connection;
+using ConnectionPtr = std::shared_ptr<Connection>;
+
+class DerivedProtobufCodec : public ladder::ProtobufCodec {
+    void Send(const ConnectionPtr& conn, google::protobuf::Message* message) {}
+};
+#endif
 
 class ProtobufCodecTest : public testing::Test {
  protected:
-  void SetUp() override { codec = new ladder::ProtobufCodec; }
-
+  void SetUp() override {
+#ifdef _MSC_VER
+    codec = new DerivedProtobufCodec;
+#else
+    codec = new ladder::ProtobufCodec;
+#endif
+  }
+  
   void TearDown() override {
     if (codec) {
       delete codec;

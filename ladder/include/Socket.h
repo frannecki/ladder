@@ -1,11 +1,18 @@
 #ifndef LADDER_SOCKET_ADDR_H
 #define LADDER_SOCKET_ADDR_H
 
-#include <arpa/inet.h>
-#include <fcntl.h>
-#include <netinet/in.h>
 #include <stdint.h>
+#ifdef __unix__
+#include <arpa/inet.h>
+#include <netinet/in.h>
 #include <sys/socket.h>
+#endif
+#ifdef _MSC_VER
+#include <Winsock2.h>
+#include <ws2ipdef.h>
+#include <WS2tcpip.h>
+#endif
+#include <fcntl.h>
 
 #include <string>
 
@@ -46,7 +53,11 @@ int accept(int fd, sockaddr_t* addr, socklen_t* addr_len);
 int connect(int fd, const sockaddr_t* addr, socklen_t addr_len);
 int write(int fd, const void* buf, size_t len);
 int read(int fd, void* buf, size_t len);
+#ifdef __unix__
 int sendfile(int out_fd, int in_fd, off_t* offset, size_t count);
+#elif defined(_MSC_VER)
+int sendfile(int out_fd, HANDLE in_fd, off_t* offset, size_t count);
+#endif
 int shutdown_write(int fd);
 int shutdown_read(int fd);
 int close(int fd);

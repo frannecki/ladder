@@ -1,7 +1,13 @@
+#ifdef __unix__
 #include <unistd.h>
+#endif
+#ifdef __linux__
+#include <sys/epoll.h>
+#endif
 
 #include <Channel.h>
 #include <EventLoop.h>
+#include <EventPoller.h>
 #include <Logging.h>
 #include <Socket.h>
 #include <utils.h>
@@ -16,7 +22,7 @@ Channel::Channel(EventLoopPtr loop, int fd)
 #ifdef __linux__
       events_(kPollEvent::kPollIn | kPollEvent::kPollRdHup |
               kPollEvent::kPollOut)
-#elif defined(__FreeBSD__)
+#else
       events_(kPollEvent::kPollIn)
 #endif
 {
@@ -102,7 +108,7 @@ void Channel::HandleEvents() {
 #ifdef __linux__
   if (evts &
       (kPollEvent::kPollIn | kPollEvent::kPollRdHup)) {
-#elif defined(__FreeBSD__)
+#else
   if (evts & kPollEvent::kPollIn) {
 #endif
     if (read_callback_) {
@@ -138,7 +144,7 @@ bool Channel::Iswriting() const { return events_ & kPollEvent::kPollOut; }
 bool Channel::IsReading() const {
 #ifdef __linux__
   return events_ & (kPollEvent::kPollIn | kPollEvent::kPollPri);
-#elif defined(__FreeBSD__)
+#else
   return events_ & kPollEvent::kPollIn;
 #endif
 }

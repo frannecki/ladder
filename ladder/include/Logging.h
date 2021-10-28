@@ -59,8 +59,6 @@ std::string GetCurrentDateTime();
 
 class Logger {
  public:
-  Logger(const Logger&) = delete;
-  Logger& operator = (const Logger&) = delete;
   static Logger* instance();
   static Logger* create(std::string log_path = "",
                         int level = static_cast<int>(LogLevel::kLogDebug));
@@ -85,8 +83,7 @@ class Logger {
   Logger(const char* filepath, int level);
   ~Logger();
   void ThreadFunc();
-
-  int fd_;
+  FILE* fp_;
   bool running_;
   int level_;
   // std::mutex mutex_;
