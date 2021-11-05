@@ -24,7 +24,9 @@ class EventLoop : public std::enable_shared_from_this<EventLoop> {
   void UpdateChannel(Channel* channel, int op);
   void RemoveChannel(int fd);
   void QueueInLoop(std::function<void()>&& task);
+#ifdef __unix__
   void set_wakeup_callback(const std::function<void()>& callback);
+#endif
   // TODO: wake up poller for urgent tasks
 #ifdef __FreeBSD__
   int UpdateEvent(const struct kevent* evt);

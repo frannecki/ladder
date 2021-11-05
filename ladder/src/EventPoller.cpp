@@ -47,7 +47,9 @@ static int kqueue_ctl(int kq, uintptr_t ident, short filter, u_short flags,
 #endif
 
 EventPoller::EventPoller() : cur_poll_size_(0) {
+#ifdef __unix__
   pipe_.reset(new Pipe);
+#endif
 #ifdef __linux__
   poll_fd_ = epoll_create1(0);
   if (poll_fd_ < 0) {
@@ -199,11 +201,13 @@ void EventPoller::RemoveChannel(int fd) {
   }
 }
 
+#ifdef __unix__
 void EventPoller::Wakeup() { pipe_->Wakeup(); }
 
 void EventPoller::set_wakeup_callback(const std::function<void()>& callback) {
   pipe_->set_wakeup_callback(callback);
 }
+#endif
 
 #ifdef __FreeBSD__
 
@@ -222,8 +226,8 @@ std::unordered_map<uint32_t, short> EventPoller::stat_2_flt_ = {
     {kPollEvent::kPollErr, EVFILT_USER}};
 #endif
 
-Pipe::Pipe() {
 #ifdef __unix__
+Pipe::Pipe() {
   if (::pipe2(fd_, O_NONBLOCK) < 0) {
     EXIT("pipe2");
   }
@@ -255,5 +259,6 @@ void Pipe::ReadCallback() {
     wakeup_callback_();
   }
 }
+#endif
 
 }  // namespace ladder

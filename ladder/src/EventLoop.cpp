@@ -41,9 +41,11 @@ void EventLoop::QueueInLoop(std::function<void()>&& task) {
   pending_tasks_.emplace_back(task);
 }
 
+#ifdef __unix__
 void EventLoop::set_wakeup_callback(const std::function<void()>& callback) {
   poller_->set_wakeup_callback(callback);
 }
+#endif
 
 #ifdef __FreeBSD__
 int EventLoop::UpdateEvent(const struct kevent* evt) {
