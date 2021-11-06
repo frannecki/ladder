@@ -116,7 +116,7 @@ int TlsConnection::Decrypt() {
   while (1) {
     n_read = SSL_read(ssl_engine_->ssl_, ssl_buffer, kMaxBufferSize);
     if (n_read <= 0) break;
-    read_buffer_->Write(std::string(ssl_buffer, n_read));
+    read_buffer_->Write(ssl_buffer, n_read);
   }
   return n_read;
 }

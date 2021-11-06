@@ -64,11 +64,19 @@ void Buffer::Write(const std::string& content) {
   }
 }
 
+void Buffer::Write(const char* src, size_t len) {
+  std::copy(src, src + len,
+            std::inserter(buffer_, buffer_.begin() + write_index_));
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    write_index_ += len;
+  }
+}
+
 void Buffer::WriteUInt32(uint32_t number) {
   char buf_str[sizeof(number)];
   memcpy(buf_str, &number, sizeof(number));
-  std::string buf(buf_str, sizeof(number));
-  Write(buf);
+  Write(buf_str, sizeof(number));
 }
 
 int Buffer::ReadBufferFromFd(int fd) {
@@ -88,7 +96,7 @@ int Buffer::ReadBufferFromFd(int fd) {
           EXIT("[Buffer] read");
       }
     } else {
-      Write(std::string(buf, buf + ret));
+      Write(buf, ret);
     }
     if (ret <= 0) {
       break;

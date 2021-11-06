@@ -31,6 +31,7 @@ using ConnectionEvtCallback = std::function<void(const ConnectionPtr&)>;
 class IBuffer {
  public:
   virtual void Write(const std::string& buf) = 0;
+  virtual void Write(const char* src, size_t len) = 0;
   virtual int WriteBufferToFd(int fd) = 0;
   virtual bool Empty() const = 0;
   virtual ~IBuffer();

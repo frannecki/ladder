@@ -16,6 +16,14 @@ TEST(TestBuffer, test_Write) {
   EXPECT_EQ(buffer.ReadAll(), str);
 }
 
+TEST(TestBuffer, test_Write_char) {
+  ladder::Buffer buffer;
+  const char* str = "areyouokbro?";
+  buffer.Write(str, strlen(str));
+  EXPECT_EQ(buffer.buffer_.size(), strlen(str));
+  EXPECT_EQ(buffer.ReadAll(), std::string(str, strlen(str)));
+}
+
 TEST(TestBuffer, test_Read) {
   ladder::Buffer buffer;
   std::string str = "areyouokbro?howareyou?";

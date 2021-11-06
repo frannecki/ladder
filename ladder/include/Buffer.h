@@ -19,6 +19,7 @@ class Buffer : public IBuffer {
   std::string Read(size_t n);
   std::string ReadAll();
   void Write(const std::string& content) override;
+  void Write(const char* src, size_t len) override;
   uint32_t ReadUInt32();
   uint32_t PeekUInt32();
   void WriteUInt32(uint32_t number);

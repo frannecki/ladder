@@ -25,6 +25,7 @@ class FileBuffer : public IBuffer {
   ~FileBuffer();
   void AddFile(std::string&& header, const std::string& filename);
   void Write(const std::string& content) override;
+  void Write(const char* src, size_t len) override;
   int WriteBufferToFd(int fd) override;
   bool Empty() const override;
 

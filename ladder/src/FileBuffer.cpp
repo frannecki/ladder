@@ -26,6 +26,10 @@ void FileBuffer::Write(const std::string& content) {
   AddFile(std::string(content), "");
 }
 
+void FileBuffer::Write(const char* src, size_t len) {
+  AddFile(std::string(src, len), "");
+}
+
 int FileBuffer::WriteBufferToFd(int fd) {
   int ret = buffer_->WriteBufferToFd(fd);
   if (ret < 0) {
