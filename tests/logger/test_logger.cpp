@@ -1,8 +1,7 @@
 #ifdef __unix__
 #include <unistd.h>
-#endif
-#ifdef _MSC_VER
-#include <Windows.h>
+#elif defined(_MSC_VER)
+#include <windows.h>
 #endif
 
 #include <Logging.h>

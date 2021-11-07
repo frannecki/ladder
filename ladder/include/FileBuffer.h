@@ -26,8 +26,12 @@ class FileBuffer : public IBuffer {
   void AddFile(std::string&& header, const std::string& filename);
   void Write(const std::string& content) override;
   void Write(const char* src, size_t len) override;
+#ifndef _MSC_VER
   int WriteBufferToFd(int fd) override;
+#endif
+  uint32_t Peek(char* dst, size_t len) override;
   bool Empty() const override;
+  void HaveRead(size_t n) override;
 
  private:
   std::queue<FileInfo> pending_files_;

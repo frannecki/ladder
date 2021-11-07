@@ -26,23 +26,21 @@ std::string Buffer::Read(size_t n) {
 }
 
 uint32_t Buffer::Peek(size_t n, std::string& result) {
-#ifdef _MSC_VER
-  uint32_t readable = min(static_cast<uint32_t>(n), ReadableBytes());
-#else
-  uint32_t readable = std::min(static_cast<uint32_t>(n), ReadableBytes());
-#endif
+  uint32_t readable = (std::min)(static_cast<uint32_t>(n), ReadableBytes());
   result.assign(buffer_.begin() + read_index_,
                 buffer_.begin() + read_index_ + readable);
   return readable;
 }
 
+uint32_t Buffer::Peek(char* dst, size_t n) {
+  uint32_t readable = (std::min)(static_cast<uint32_t>(n), ReadableBytes());
+  memcpy(dst, buffer_.data() + read_index_, readable);
+  return readable;
+}
+
 void Buffer::HaveRead(size_t n) {
   std::lock_guard<std::mutex> lock(mutex_);
-#ifdef _MSC_VER
-  read_index_ += min(static_cast<uint32_t>(n), ReadableBytes());
-#else
-  read_index_ += std::min(static_cast<uint32_t>(n), ReadableBytes());
-#endif
+  read_index_ += (std::min)(static_cast<uint32_t>(n), ReadableBytes());
   if (write_index_ == read_index_) {
     write_index_ = read_index_ = 0;
   }
@@ -70,22 +68,17 @@ uint32_t Buffer::PeekUInt32() {
 bool Buffer::Empty() const { return read_index_ == write_index_; }
 
 void Buffer::Write(const std::string& content) {
+  std::lock_guard<std::mutex> lock(mutex_);
   std::copy(content.begin(), content.end(),
-            // std::back_inserter(buffer_));
             std::inserter(buffer_, buffer_.begin() + write_index_));
-  {
-    std::lock_guard<std::mutex> lock(mutex_);
-    write_index_ += content.size();
-  }
+  write_index_ += content.size();
 }
 
 void Buffer::Write(const char* src, size_t len) {
+  std::lock_guard<std::mutex> lock(mutex_);
   std::copy(src, src + len,
             std::inserter(buffer_, buffer_.begin() + write_index_));
-  {
-    std::lock_guard<std::mutex> lock(mutex_);
-    write_index_ += len;
-  }
+  write_index_ += len;
 }
 
 void Buffer::WriteUInt32(uint32_t number) {
@@ -94,6 +87,7 @@ void Buffer::WriteUInt32(uint32_t number) {
   Write(buf_str, sizeof(number));
 }
 
+#ifndef _MSC_VER
 int Buffer::ReadBufferFromFd(int fd) {
   int ret = 0;
   char buf[kReadBufferSize];
@@ -146,5 +140,6 @@ int Buffer::WriteBufferToFd(int fd) {
   }
   return 0;
 }
+#endif
 
 }  // namespace ladder

@@ -1,7 +1,7 @@
 #ifdef __unix__
 #include <arpa/inet.h>
 #elif defined(_MSC_VER)
-#include <winsock.h>
+#include <winsock2.h>
 #endif
 #include <zlib.h>
 

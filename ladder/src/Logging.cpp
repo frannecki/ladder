@@ -12,6 +12,7 @@
 #include <chrono>
 #include <ctime>
 
+#include <Base.h>
 #include <Logging.h>
 #include <utils.h>
 
@@ -52,13 +53,15 @@ void Logger::release() {
   if (instance_) delete instance_;
 }
 
-Logger* Logger::instance_ = nullptr;
-
 Logger::Logger(const char* filename, int level)
     : running_(true), level_(level) {
   if (strlen(filename) == 0) {
     char log_path[20] = {0};
+#ifdef _MSC_VER
+    snprintf(log_path, sizeof(log_path), "ladder.%d.log", _getpid());
+#else
     snprintf(log_path, sizeof(log_path), "ladder.%d.log", getpid());
+#endif
     filename = log_path;
   }
   fp_ = fopen(filename, "a");
@@ -108,13 +111,14 @@ void Logger::ThreadFunc() {
       msg = message_queue_.front();
       message_queue_.pop();
     }
-    std::string msg = message_queue_.front();
     int ret = fprintf(fp_, msg.c_str(), msg.size());
     if (ret < 0) {
       // TODO: handle write error
     }
   }
 }
+
+Logger* Logger::instance_ = nullptr;
 
 const char* Logger::kLogLevels[] = {"TRACE",   "DEBUG", "INFO",
                                     "WARNING", "ERROR", "FATAL"};

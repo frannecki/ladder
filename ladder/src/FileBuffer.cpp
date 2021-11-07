@@ -34,6 +34,7 @@ void FileBuffer::Write(const char* src, size_t len) {
   AddFile(std::string(src, len), "");
 }
 
+#ifndef _MSC_VER
 int FileBuffer::WriteBufferToFd(int fd) {
   int ret = buffer_->WriteBufferToFd(fd);
   if (ret < 0) {
@@ -112,7 +113,12 @@ int FileBuffer::WriteBufferToFd(int fd) {
 
   return 0;
 }
+#endif
+
+uint32_t FileBuffer::Peek(char* dst, size_t len) { return buffer_->Peek(dst, len); }
 
 bool FileBuffer::Empty() const { return pending_files_.empty(); }
+
+void FileBuffer::HaveRead(size_t n) {}
 
 }  // namespace ladder

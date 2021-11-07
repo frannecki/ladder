@@ -7,15 +7,17 @@
 
 namespace ladder {
 
-const size_t kMinEventLoopThreadNum = 4;
-
 class ThreadPool;
 class EventLoop;
 using EventLoopPtr = std::shared_ptr<EventLoop>;
 
-class EventLoopThreadPool {
+class LADDER_API EventLoopThreadPool {
  public:
+#ifdef _MSC_VER
+  EventLoopThreadPool(HANDLE iocp_port, size_t capacity);
+#else
   EventLoopThreadPool(size_t capacity);
+#endif
   ~EventLoopThreadPool();
   EventLoopPtr GetNextLoop();
 

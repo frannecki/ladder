@@ -8,9 +8,11 @@
 #include <sys/socket.h>
 #endif
 #ifdef _MSC_VER
-#include <Winsock2.h>
+#include <winsock2.h>
 #include <ws2ipdef.h>
-#include <WS2tcpip.h>
+#include <ws2tcpip.h>
+// mswsock.h should be included after winsock2.h
+#include <mswsock.h>
 #endif
 #include <fcntl.h>
 
@@ -18,16 +20,42 @@
 
 #include <openssl/ssl.h>
 
-#include <utils.h>
+#include <Base.h>
 
 namespace ladder {
+
+enum kPollEvent : uint32_t {
+#ifdef __linux__
+  kPollIn = EPOLLIN,
+  kPollOut = EPOLLOUT,
+  kPollPri = EPOLLPRI,
+  kPollRdHup = EPOLLRDHUP,
+  kPollHup = EPOLLHUP,
+  kPollErr = EPOLLERR,
+  kPollEt = EPOLLET,
+#else
+  kPollIn = 1 << 0,
+  kPollOut = 1 << 2,
+  kPollErr = 1 << 3,
+#endif
+};
+
+#ifdef _MSC_VER
+struct SocketIocpStatus {
+  WSAOVERLAPPED overlapped_;
+  int status_;
+
+  SocketIocpStatus(int status = 0) : status_(status) { Reset(); };
+  void Reset() { memset(&overlapped_, 0, sizeof(overlapped_)); }
+};
+#endif
 
 typedef union {
   struct sockaddr_in addr_;
   struct sockaddr_in6 addr6_;
 } sockaddr_t;
 
-class SocketAddr {
+class LADDER_API SocketAddr {
  public:
   SocketAddr(bool ipv6 = true);
   SocketAddr(sockaddr_t* addr, bool ipv6 = true);
@@ -49,10 +77,22 @@ namespace socket {
 
 int socket(bool tcp = true, bool ipv6 = true);
 int listen(int fd);
+#ifdef _MSC_VER
+int accept(int fd, char* buffer, LPFN_ACCEPTEX fn_acceptex,
+           SocketIocpStatus* status, bool ipv6 = false);
+#else
 int accept(int fd, sockaddr_t* addr, socklen_t* addr_len);
+#endif
 int connect(int fd, const sockaddr_t* addr, socklen_t addr_len);
+
+#ifdef _MSC_VER
+int write(int fd, LPWSABUF buf, SocketIocpStatus* status);
+int read(int fd, LPWSABUF buf, SocketIocpStatus* status);
+#else
 int write(int fd, const void* buf, size_t len);
 int read(int fd, void* buf, size_t len);
+#endif
+
 #ifdef __unix__
 int sendfile(int out_fd, int in_fd, off_t* offset, size_t count);
 #elif defined(_MSC_VER)

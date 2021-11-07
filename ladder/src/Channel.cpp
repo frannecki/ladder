@@ -7,34 +7,36 @@
 
 #include <Channel.h>
 #include <EventLoop.h>
-#include <EventPoller.h>
 #include <Logging.h>
 #include <Socket.h>
-#include <utils.h>
 
 namespace ladder {
 
-Channel::Channel(EventLoopPtr loop, int fd)
-    : fd_(fd),
-      loop_(loop),
-      revents_(0),
-// POLL_OUT set initially
-#ifdef __linux__
-      events_(kPollEvent::kPollIn | kPollEvent::kPollRdHup |
-              kPollEvent::kPollOut)
+#ifdef _MSC_VER
+Channel::Channel(int fd) :
 #else
-      events_(kPollEvent::kPollIn)
+Channel::Channel(EventLoopPtr loop, int fd) :
+    loop_(loop),
+    revents_(0),
+// kPollOut set initially
+#ifdef __linux__
+    events_(kPollEvent::kPollIn | kPollEvent::kPollRdHup |
+            kPollEvent::kPollOut),
+#else
+    events_(kPollEvent::kPollIn),
 #endif
+#endif
+    fd_(fd)
 {
 }
 
 Channel::~Channel() { LOGF_DEBUG("Destroying channel fd = %d", fd_); }
 
-void Channel::set_read_callback(const std::function<void()>& callback) {
+void Channel::set_read_callback(const EventCallback& callback) {
   read_callback_ = callback;
 }
 
-void Channel::set_write_callback(const std::function<void()>& callback) {
+void Channel::set_write_callback(const EventCallback& callback) {
   write_callback_ = callback;
 }
 
@@ -46,9 +48,11 @@ void Channel::set_error_callback(const std::function<void()>& callback) {
   error_callback_ = callback;
 }
 
+#ifndef _MSC_VER
 void Channel::set_revents(uint32_t events) { revents_ |= events; }
 
 uint32_t Channel::events() const { return events_; }
+#endif
 
 #ifdef __linux__
 void Channel::SetEpollEdgeTriggered(bool edge_triggered) {
@@ -78,6 +82,20 @@ void Channel::EnableWrite(bool enable) {
 #endif
 }
 
+#ifdef _MSC_VER
+void Channel::HandleEvents(int evts, int io_size) {
+  if (evts & kPollEvent::kPollOut) {
+    if (write_callback_) {
+      write_callback_(io_size);
+    }
+  }
+  if (evts & kPollEvent::kPollIn) {
+    if (read_callback_) {
+      read_callback_(io_size);
+    }
+  }
+}
+#else
 void Channel::HandleEvents() {
   uint32_t evts = revents_;
   revents_ = 0;
@@ -116,8 +134,25 @@ void Channel::HandleEvents() {
     }
   }
 }
+#endif
 
 int Channel::fd() const { return fd_; }
+
+void Channel::ShutDownWrite() {
+#ifndef _MSC_VER
+  if (!IsWriting())
+#endif
+    socket::shutdown_write(fd_);
+}
+
+void Channel::ShutDownRead() {
+#ifndef _MSC_VER
+  if (!IsReading())
+#endif
+    socket::shutdown_read(fd_);
+}
+
+#ifndef _MSC_VER
 
 void Channel::UpdateToLoop(int op) { loop_->UpdateChannel(this, op); }
 
@@ -127,19 +162,7 @@ void Channel::RemoveFromLoop() {
   }
 }
 
-void Channel::ShutDownWrite() {
-  if (!Iswriting()) {
-    socket::shutdown_write(fd_);
-  }
-}
-
-void Channel::ShutDownRead() {
-  if (!IsReading()) {
-    socket::shutdown_read(fd_);
-  }
-}
-
-bool Channel::Iswriting() const { return events_ & kPollEvent::kPollOut; }
+bool Channel::IsWriting() const { return events_ & kPollEvent::kPollOut; }
 
 bool Channel::IsReading() const {
 #ifdef __linux__
@@ -150,5 +173,6 @@ bool Channel::IsReading() const {
 }
 
 EventLoopPtr Channel::loop() const { return loop_; }
+#endif
 
 }  // namespace ladder

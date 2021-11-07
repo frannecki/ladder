@@ -5,8 +5,7 @@
 #include <sys/sendfile.h>
 #endif
 #ifdef _MSC_VER
-#include <winsock2.h>
-#include <mswsock.h>
+#pragma comment(lib, "mswsock.lib")
 #endif
 
 #include <mutex>
@@ -54,12 +53,7 @@ SocketAddr::SocketAddr(const std::string& ip, uint16_t port, bool ipv6)
 }
 
 void SocketAddr::Bind(int fd) {
-  socklen_t sa_len;
-  if (ipv6_) {
-    sa_len = sizeof(sa_.addr6_);
-  } else {
-    sa_len = sizeof(sa_.addr_);
-  }
+  socklen_t sa_len = ipv6_ ? sizeof(sa_.addr6_) : sizeof(sa_.addr_);
   int ret = ::bind(fd, (struct sockaddr*)&sa_, sa_len);
   if (ret < 0) {
     EXIT("bind");
@@ -83,20 +77,22 @@ int socket(bool tcp, bool ipv6) {
   if (fd < 0) {
 #endif
 #ifdef _MSC_VER
-  int fd = ::socket(ipv6 ? AF_INET6 : AF_INET,
-                    tcp ? SOCK_STREAM : SOCK_DGRAM,
-                    tcp ? IPPROTO_TCP : IPPROTO_UDP);
+    int fd = WSASocket(ipv6 ? AF_INET6 : AF_INET,
+                       tcp ? SOCK_STREAM : SOCK_DGRAM,
+                       IPPROTO_IP,
+                       NULL,
+                       0,
+                       WSA_FLAG_OVERLAPPED);
   if (fd == INVALID_SOCKET) {
 #endif
-    EXIT("socket");
+    EXIT("socket error: %d", WSAGetLastError());
   }
 #ifdef __unix__
   int enable = kEnableOption;
   if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable))) {
-#endif
-#ifdef _MSC_VER
-  u_long enabled = static_cast<u_long>(kEnableOption);
-  if (ioctlsocket(fd, FIONBIO, &enabled) != NO_ERROR) {
+#elif defined _MSC_VER
+  int zero = 0;
+  if (setsockopt(fd, SOL_SOCKET, SO_SNDBUF, (char*)&zero, sizeof(zero)) == SOCKET_ERROR) {
 #endif
     EXIT("setsockopt");
   }
@@ -104,13 +100,41 @@ int socket(bool tcp, bool ipv6) {
 }
 
 int listen(int fd) {
+#ifdef _MSC_VER
+  int ret = ::listen(fd, SOMAXCONN);
+  if (ret < 0) {
+    EXIT("listen error: %d", WSAGetLastError());
+  }
+#else
   int ret = ::listen(fd, 0);
   if (ret < 0) {
     EXIT("listen");
   }
+#endif
   return ret;
 }
 
+#ifdef _MSC_VER
+int accept(int fd, char* buffer, LPFN_ACCEPTEX fn_acceptex,
+           SocketIocpStatus* status, bool ipv6) {
+  int ret;
+  int acceptfd = socket(true, ipv6);
+  if (acceptfd == -1) return -1;
+
+  DWORD bytes_recved = 0;
+
+  socklen_t sa_len = ipv6 ? sizeof(sockaddr_in6) : sizeof(sockaddr_in);
+  ret = fn_acceptex(fd, acceptfd, (LPVOID)buffer,
+                    kMaxIocpRecvSize - 2 * (sa_len + 16),
+                    sa_len + 16, sa_len + 16,
+                    &bytes_recved, (LPOVERLAPPED)status);
+  if (ret == SOCKET_ERROR && ERROR_IO_PENDING != WSAGetLastError()) {
+    EXIT("AcceptEx error: %d", WSAGetLastError());
+  }
+
+  return acceptfd;
+}
+#else
 int accept(int fd, sockaddr_t* addr, socklen_t* addr_len) {
 #ifdef __linux
   int accepted = ::accept4(fd, (struct sockaddr*)addr, addr_len, SOCK_NONBLOCK);
@@ -129,29 +153,52 @@ int accept(int fd, sockaddr_t* addr, socklen_t* addr_len) {
 #endif
   return accepted;
 }
+#endif
 
 int connect(int fd, const sockaddr_t* addr, socklen_t addr_len) {
   int ret = ::connect(fd, (const struct sockaddr*)addr, addr_len);
   return ret;
 }
 
-int write(int fd, const void* buf, size_t len) {
-#ifdef __unix__
-  return ::write(fd, buf, len);
-#elif defined(_MSC_VER)
-  return ::send(fd, static_cast<const char*>(buf), len, 0);
-#endif
-  return 0;
-}
+#ifdef _MSC_VER
+int write(int fd, LPWSABUF buf, SocketIocpStatus* status) {
+  DWORD bytes_sent = 0;
+  
+  int ret = WSASend(fd, buf, 1, &bytes_sent, 0, (LPWSAOVERLAPPED)status, NULL);
 
-int read(int fd, void* buf, size_t len) {
-#ifdef __unix__
-  return ::read(fd, buf, len);
-#elif defined(_MSC_VER)
-  return ::recv(fd, static_cast<char*>(buf), len, 0);
-#endif
-  return 0;
+  if (ret == SOCKET_ERROR &&
+      ERROR_IO_PENDING != WSAGetLastError()) {
+    EXIT("WSASend");
+  }
+
+  return ret;
 }
+#else
+int write(int fd, const void* buf, size_t len) {
+  return ::write(fd, buf, len);
+}
+#endif
+
+#ifdef _MSC_VER
+int read(int fd, LPWSABUF buf, SocketIocpStatus* status) {
+  DWORD bytes_recved = 0;
+  DWORD flags = 0;
+  buf->len = kMaxIocpRecvSize;
+
+  int ret =
+      WSARecv(fd, buf, 1, &bytes_recved, &flags, (LPWSAOVERLAPPED)status, NULL);
+
+  if (ret == SOCKET_ERROR && (ERROR_IO_PENDING != WSAGetLastError())) {
+    EXIT("WSARecv error: %d", WSAGetLastError());
+  }
+
+  return ret;
+}
+#else
+int read(int fd, void* buf, size_t len) {
+  return ::read(fd, buf, len);
+}
+#endif
 
 #ifdef __unix__
 int sendfile(int out_fd, int in_fd, off_t* offset, size_t count) {
@@ -167,7 +214,7 @@ int sendfile(int out_fd, int in_fd, off_t* offset, size_t count) {
 #elif defined(_MSC_VER)
 int sendfile(int out_fd, HANDLE in_fd, off_t* offset, size_t count) {
   // TODO: asynchronous send with iocp
-  bool success = TransmitFile(out_fd, in_fd, 0, 0, 0, NULL, 0);
+  // bool success = TransmitFile(out_fd, in_fd, 0, 0, 0, NULL, 0);
   return -1;
 }
 #endif
@@ -220,9 +267,13 @@ int close(int fd) {
 }
 
 int getsockname(int fd, sockaddr_t* addr, socklen_t* addr_len) {
-  int ret = ::getsockname(fd, (struct sockaddr*)addr, addr_len);
+  int ret = ::getpeername(fd, (struct sockaddr*)addr, addr_len);
   if (ret < 0) {
+#ifdef _MSC_VER
+    EXIT("getsockname error: %d", WSAGetLastError());
+#else
     EXIT("getsockname");
+#endif
   }
   return ret;
 }

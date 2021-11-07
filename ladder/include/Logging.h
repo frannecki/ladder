@@ -7,13 +7,13 @@
 #include <string>
 #include <thread>
 
-#include <iostream>
+#include <Base.h>
 
 namespace ladder {
 
 const int kMaxMessageLength = 1024;
 
-enum LogLevel : int {
+enum LADDER_API LogLevel : int {
   kLogTrace = 0,
   kLogDebug,
   kLogInfo,
@@ -55,9 +55,9 @@ enum LogLevel : int {
   if (Logger::instance())                 \
   Logger::instance()->WriteLogFmt(severity, fmt, __VA_ARGS__)
 
-std::string GetCurrentDateTime();
+LADDER_API std::string GetCurrentDateTime();
 
-class Logger {
+class LADDER_API Logger {
  public:
   static Logger* instance();
   static Logger* create(std::string log_path = "",

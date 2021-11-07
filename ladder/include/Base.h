@@ -5,6 +5,16 @@
 #include <memory>
 #include <string>
 
+#ifdef _MSC_VER
+#ifdef _WINDLL
+#define LADDER_API __declspec(dllexport)
+#else
+#define LADDER_API __declspec(dllimport)
+#endif
+#else
+#define LADDER_API
+#endif
+
 namespace ladder {
 
 class Connection;
@@ -28,13 +38,17 @@ using WriteEvtCallback = std::function<void(IBuffer*)>;
 using ConnectCloseCallback = std::function<void()>;
 using ConnectionEvtCallback = std::function<void(const ConnectionPtr&)>;
 
-class IBuffer {
+class LADDER_API IBuffer {
  public:
+  virtual ~IBuffer();
   virtual void Write(const std::string& buf) = 0;
   virtual void Write(const char* src, size_t len) = 0;
+#ifndef _MSC_VER
   virtual int WriteBufferToFd(int fd) = 0;
+#endif
+  virtual uint32_t Peek(char* dst, size_t len) = 0;
   virtual bool Empty() const = 0;
-  virtual ~IBuffer();
+  virtual void HaveRead(size_t) = 0;
 };
 
 }  // namespace ladder

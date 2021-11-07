@@ -20,24 +20,30 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\ladder\include\Acceptor.h" />
-    <ClInclude Include="..\..\ladder\include\Aliases.h" />
     <ClInclude Include="..\..\ladder\include\ArgumentParser.h" />
+    <ClInclude Include="..\..\ladder\include\Base.h" />
     <ClInclude Include="..\..\ladder\include\Buffer.h" />
     <ClInclude Include="..\..\ladder\include\Channel.h" />
+    <ClInclude Include="..\..\ladder\include\codec\Codec.h" />
+    <ClInclude Include="..\..\ladder\include\codec\ProtobufCodec.h" />
     <ClInclude Include="..\..\ladder\include\Connection.h" />
     <ClInclude Include="..\..\ladder\include\EventLoop.h" />
     <ClInclude Include="..\..\ladder\include\EventLoopThreadPool.h" />
     <ClInclude Include="..\..\ladder\include\EventPoller.h" />
-    <ClInclude Include="..\..\ladder\include\Logger.h" />
-    <ClInclude Include="..\..\ladder\include\ProtobufCodec.h" />
+    <ClInclude Include="..\..\ladder\include\FileBuffer.h" />
+    <ClInclude Include="..\..\ladder\include\GZip.h" />
+    <ClInclude Include="..\..\ladder\include\Logging.h" />
+    <ClInclude Include="..\..\ladder\include\MemoryPool.h" />
     <ClInclude Include="..\..\ladder\include\Socket.h" />
     <ClInclude Include="..\..\ladder\include\TcpServer.h" />
     <ClInclude Include="..\..\ladder\include\ThreadPool.h" />
+    <ClInclude Include="..\..\ladder\include\TlsConnection.h" />
     <ClInclude Include="..\..\ladder\include\utils.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\ladder\src\Acceptor.cpp" />
     <ClCompile Include="..\..\ladder\src\ArgumentParser.cpp" />
+    <ClCompile Include="..\..\ladder\src\Base.cpp" />
     <ClCompile Include="..\..\ladder\src\Buffer.cpp" />
     <ClCompile Include="..\..\ladder\src\Channel.cpp" />
     <ClCompile Include="..\..\ladder\src\codec\Codec.cpp" />
@@ -46,11 +52,18 @@
     <ClCompile Include="..\..\ladder\src\EventLoop.cpp" />
     <ClCompile Include="..\..\ladder\src\EventLoopThreadPool.cpp" />
     <ClCompile Include="..\..\ladder\src\EventPoller.cpp" />
-    <ClCompile Include="..\..\ladder\src\Logger.cpp" />
+    <ClCompile Include="..\..\ladder\src\FileBuffer.cpp" />
+    <ClCompile Include="..\..\ladder\src\GZip.cpp" />
+    <ClCompile Include="..\..\ladder\src\Logging.cpp" />
+    <ClCompile Include="..\..\ladder\src\MemoryPool.cpp" />
     <ClCompile Include="..\..\ladder\src\Socket.cpp" />
     <ClCompile Include="..\..\ladder\src\TcpServer.cpp" />
     <ClCompile Include="..\..\ladder\src\ThreadPool.cpp" />
+    <ClCompile Include="..\..\ladder\src\TlsConnection.cpp" />
     <ClCompile Include="..\..\ladder\src\utils.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ladder.def" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -131,6 +144,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
+      <ModuleDefinitionFile>ladder.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -150,15 +164,16 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
+      <ModuleDefinitionFile>ladder.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>false</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;LADDER_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;LADDER_EXPORTS;_WINDOWS;_USRDLL;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
@@ -166,6 +181,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <AdditionalDependencies>libprotobufd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ModuleDefinitionFile>ladder.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -185,6 +201,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
+      <ModuleDefinitionFile>ladder.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

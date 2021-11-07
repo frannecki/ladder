@@ -11,7 +11,6 @@
 #include <EventLoop.h>
 #include <Socket.h>
 #include <Timer.h>
-#include <utils.h>
 
 namespace ladder {
 

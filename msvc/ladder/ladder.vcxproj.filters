@@ -18,9 +18,6 @@
     <ClInclude Include="..\..\ladder\include\Acceptor.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ladder\include\Aliases.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\ladder\include\ArgumentParser.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -42,12 +39,6 @@
     <ClInclude Include="..\..\ladder\include\EventPoller.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ladder\include\Logger.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\ladder\include\ProtobufCodec.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\ladder\include\Socket.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -58,6 +49,30 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="..\..\ladder\include\utils.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ladder\include\Base.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ladder\include\FileBuffer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ladder\include\GZip.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ladder\include\Logging.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ladder\include\MemoryPool.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ladder\include\TlsConnection.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ladder\include\codec\Codec.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ladder\include\codec\ProtobufCodec.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -86,9 +101,6 @@
     <ClCompile Include="..\..\ladder\src\EventPoller.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ladder\src\Logger.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\ladder\src\Socket.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -107,5 +119,28 @@
     <ClCompile Include="..\..\ladder\src\codec\ProtobufCodec.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\ladder\src\FileBuffer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ladder\src\GZip.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ladder\src\Logging.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ladder\src\TlsConnection.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ladder\src\Base.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ladder\src\MemoryPool.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ladder.def">
+      <Filter>源文件</Filter>
+    </None>
   </ItemGroup>
 </Project>

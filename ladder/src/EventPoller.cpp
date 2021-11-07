@@ -1,3 +1,4 @@
+#ifndef _MSC_VER
 #ifdef __unix__
 #include <unistd.h>
 #endif
@@ -11,7 +12,6 @@
 #include <EventPoller.h>
 #include <MemoryPool.h>
 #include <Socket.h>
-#include <utils.h>
 
 namespace ladder {
 
@@ -262,3 +262,5 @@ void Pipe::ReadCallback() {
 #endif
 
 }  // namespace ladder
+
+#endif

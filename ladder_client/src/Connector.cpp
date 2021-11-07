@@ -11,7 +11,7 @@ Connector::Connector(const ChannelPtr& channel, int max_retry,
     : channel_(channel),
       retry_(0),
       max_retry_(max_retry),
-      retry_timeout_(std::max(retry_initial_timeout, kMinRetryInitialTimeout)),
+      retry_timeout_((std::max)(retry_initial_timeout, kMinRetryInitialTimeout)),
       timer_(new Timer(channel->loop())),
       ipv6_(addr.ipv6()),
       addr_(addr) {

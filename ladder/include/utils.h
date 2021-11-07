@@ -9,6 +9,10 @@
 #include <openssl/err.h>
 #include <openssl/ssl.h>
 
+#ifdef _MSC_VER
+#include <winsock2.h>
+#endif
+
 namespace ladder {
 
 const int kEnableOption = 1;
@@ -33,6 +37,14 @@ SSL_CTX* CreateSslContext(bool server = true);
 
 void ConfigureSslContext(SSL_CTX* ctx, const char* cert_path,
                          const char* key_path);
+
+#ifdef _MSC_VER
+const int kMaxIocpRecvSize = 1024;
+
+class Channel;
+HANDLE UpdateIocpPort(HANDLE port, const Channel* channel);
+
+#endif
 
 }  // namespace ladder
 

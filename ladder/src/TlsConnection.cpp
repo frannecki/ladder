@@ -27,9 +27,14 @@ Ssl::~Ssl() {
   rbio_ = wbio_ = nullptr;
 }
 
+#ifdef _MSC_VER
+TlsConnection::TlsConnection(int fd, SSL_CTX* ssl_ctx, bool server)
+    : Connection(fd, false),
+#else
 TlsConnection::TlsConnection(const EventLoopPtr& loop, int fd, SSL_CTX* ssl_ctx,
                              bool server)
     : Connection(loop, fd, false),
+#endif
       ssl_engine_(new Ssl(ssl_ctx, server)),
       accepted_(false),
       is_server_(server),
@@ -40,8 +45,13 @@ TlsConnection::~TlsConnection() {
   if (ssl_engine_) delete ssl_engine_;
 }
 
+#ifdef _MSC_VER
+void TlsConnection::Init(HANDLE iocp_port, char* buffer, int io_size) {
+  Connection::Init(iocp_port, buffer, io_size);
+#else
 void TlsConnection::Init() {
   Connection::Init();
+#endif
   if (!is_server_) {
     // ssl clients need to send client hello on connection
 #ifdef __linux__
@@ -70,10 +80,38 @@ void TlsConnection::Send(const std::string& buf) {
       break;
     }
   }
-
+#ifndef _MSC_VER
   EnableWrite(Connection::WriteBuffer());
+#endif
 }
 
+#ifdef _MSC_VER
+int TlsConnection::ReadBuffer(int io_size) {
+  Buffer buffer;
+  if (io_size > 0) {
+    buffer.Write(read_wsa_buf_->buf, read_wsa_buf_->len = io_size);
+    std::string str = buffer.ReadAll();
+    if (ReadFromBuffer(str.c_str(), str.size()) < 0) {
+      return -2;
+    }
+  }
+  return io_size;
+}
+
+int TlsConnection::WriteBuffer(int io_size) {
+  if (!is_server_) {
+    // client hello shoube be sent once connection is established
+    if (!SSL_is_init_finished(ssl_engine_->ssl_)) {
+      int n_ssl_connect = SSL_do_handshake(ssl_engine_->ssl_);
+      if (n_ssl_connect > 0)
+        OnSslHandshakeFinished();
+      else
+        HandleSslError(n_ssl_connect);
+    }
+  }
+  return Connection::WriteBuffer(io_size);
+}
+#else
 int TlsConnection::ReadBuffer() {
   Buffer buffer;
   int ret = buffer.ReadBufferFromFd(channel_->fd());
@@ -97,13 +135,14 @@ int TlsConnection::WriteBuffer() {
   }
   return Connection::WriteBuffer();
 }
+#endif
 
 void TlsConnection::Encrypt() {
   char ssl_buffer[kMaxBufferSize];
   while (1) {
     int n_ssl_read = BIO_read(ssl_engine_->wbio_, ssl_buffer, kMaxBufferSize);
     if (n_ssl_read > 0) {
-      write_buffer_->Write(std::string(ssl_buffer, n_ssl_read));
+      write_buffer_->Write(ssl_buffer, n_ssl_read);
     } else {
       break;
     }
@@ -163,7 +202,9 @@ int TlsConnection::HandleSslError(int n) {
     case SSL_ERROR_WANT_WRITE:
     case SSL_ERROR_WANT_READ:
       this->Encrypt();
+#ifndef _MSC_VER
       EnableWrite(Connection::WriteBuffer());
+#endif
       break;
     default:
       return -1;

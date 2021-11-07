@@ -1,6 +1,8 @@
 #ifndef LADDER_EVENT_POLLER_H
 #define LADDER_EVENT_POLLER_H
 
+#ifndef _MSC_VER
+
 #ifdef __linux__
 #include <sys/epoll.h>
 #elif defined(__FreeBSD__)
@@ -15,22 +17,6 @@
 #include <vector>
 
 namespace ladder {
-
-enum kPollEvent : uint32_t {
-#ifdef __linux__
-  kPollIn = EPOLLIN,
-  kPollOut = EPOLLOUT,
-  kPollPri = EPOLLPRI,
-  kPollRdHup = EPOLLRDHUP,
-  kPollHup = EPOLLHUP,
-  kPollErr = EPOLLERR,
-  kPollEt = EPOLLET,
-#else
-  kPollIn = 1 << 0,
-  kPollOut = 1 << 2,
-  kPollErr = 1 << 3,
-#endif
-};
 
 class Channel;
 
@@ -81,5 +67,7 @@ class EventPoller {
 };
 
 }  // namespace ladder
+
+#endif
 
 #endif

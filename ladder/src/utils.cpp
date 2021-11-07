@@ -4,11 +4,11 @@
 #ifdef __unix__
 #include <unistd.h>
 #elif defined(_MSC_VER)
-#include <windows.h>
+#include <Channel.h>
 #endif
-
 #include <MemoryPool.h>
 #include <utils.h>
+
 namespace ladder {
 
 static const int kFileBufferSize = 1024;
@@ -144,5 +144,16 @@ void ConfigureSslContext(SSL_CTX* ctx, const char* cert_path,
 
   SSL_CTX_set_options(ctx, SSL_OP_ALL | SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3);
 }
+
+#ifdef _MSC_VER
+HANDLE UpdateIocpPort(HANDLE port, const Channel* channel) {
+  HANDLE updated_port = CreateIoCompletionPort((HANDLE)(channel->fd()), port,
+                                               (DWORD_PTR)channel, 0);
+  if (updated_port == NULL) {
+    EXIT("CreateIoCompletionPort");
+  }
+  return updated_port;
+}
+#endif
 
 }  // namespace ladder

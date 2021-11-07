@@ -7,12 +7,22 @@
 
 namespace ladder {
 
+static const size_t kMinEventLoopThreadNum = 4;
+
+#ifdef _MSC_VER
+EventLoopThreadPool::EventLoopThreadPool(HANDLE iocp_port, size_t capacity)
+#else
 EventLoopThreadPool::EventLoopThreadPool(size_t capacity)
-    : capacity_(std::max(capacity, kMinEventLoopThreadNum)),
-      pool_(new ThreadPool(std::max(capacity, kMinEventLoopThreadNum))),
+#endif
+    : capacity_((std::max)(capacity, kMinEventLoopThreadNum)),
+      pool_(new ThreadPool((std::max)(capacity, kMinEventLoopThreadNum))),
       cur_idx_(0) {
   for (size_t i = 0; i < capacity_; ++i) {
+#ifdef _MSC_VER
+    loops_.emplace_back(std::make_shared<EventLoop>(iocp_port));
+#else
     loops_.emplace_back(std::make_shared<EventLoop>());
+#endif
   }
   Init();
 }
