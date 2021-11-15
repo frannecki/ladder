@@ -18,5 +18,8 @@
     <ClCompile Include="..\..\tests\proto_server\test_proto_server.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\tests\proto\tests.pb.cc">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

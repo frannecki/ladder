@@ -80,7 +80,7 @@ void Connector::HandleConnect() {
   }
   sockaddr_t addr;
   socklen_t addr_len = ipv6_ ? sizeof(addr.addr6_) : sizeof(addr.addr_);
-  socket::getsockname(channel_->fd(), &addr, &addr_len);
+  socket::getpeername(channel_->fd(), &addr, &addr_len);
   SocketAddr sock_addr(&addr, ipv6_);
   if (connection_callback_) {
     connection_callback_(std::move(sock_addr));

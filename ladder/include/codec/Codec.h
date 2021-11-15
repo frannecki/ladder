@@ -5,7 +5,7 @@
 
 namespace ladder {
 
-class Codec {
+class LADDER_API Codec {
  public:
   virtual ~Codec();
   void Send(const ConnectionPtr& conn, const void* message) const;

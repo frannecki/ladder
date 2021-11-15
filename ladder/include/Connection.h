@@ -83,6 +83,7 @@ class LADDER_API Connection : public std::enable_shared_from_this<Connection> {
   // buffer for writing file, taking advantage of the `sendfile` linux/bsd
   // system call
   bool shut_down_;
+  bool immediate_shut_down_;
   bool send_file_;
 };
 

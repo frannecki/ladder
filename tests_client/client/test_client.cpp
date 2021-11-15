@@ -20,7 +20,7 @@ int main(int argc, char** argv) {
     return -1;
   }
 #endif
-  char buffer[kBufferLen];
+  char buffer[kBufferLen] = "areyouokbro?";
   int sockfd;
   struct sockaddr_in addr;
   socklen_t addr_len;
@@ -43,6 +43,10 @@ int main(int argc, char** argv) {
     return -1;
   }
   fprintf(stdout, "Connected to server\n");
+
+#ifdef _MSC_VER
+  send(sockfd, buffer, strlen(buffer), 0);
+#endif
 
   while (count < 5) {
     ret = recv(sockfd, buffer, sizeof(buffer), 0);

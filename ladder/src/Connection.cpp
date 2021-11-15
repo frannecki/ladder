@@ -34,6 +34,7 @@ Connection::Connection(const EventLoopPtr& loop, int fd, bool send_file)
       first_sent_(false),
 #endif
       shut_down_(false),
+      immediate_shut_down_(false),
       send_file_(send_file) {
   if (send_file) {
     write_buffer_ = write_file_buffer_ = new FileBuffer;
@@ -153,30 +154,30 @@ void Connection::OnReadCallback() {
     // IMPORTANT: Cannot return here.
     // Even if ret == 0 there might be data read into buffer
     // return;
+#ifndef _MSC_VER
   } else if (ret == -1) {
     switch (errno) {
       case ECONNRESET:
-        // OnCloseCallback();
+        immediate_shut_down_ = true;
+        OnCloseCallback();
         return;
       default:
         break;
     }
+#endif
   } else if (ret < 0) {
     // error: some negative value other than -1
     shut_down_ = true;
   }
 
-  if (read_callback_ && !read_buffer_->Empty()) {
+  if ((read_callback_ && !read_buffer_->Empty())) {
     read_callback_(shared_from_this(), read_buffer_);
   }
 
 #ifdef _MSC_VER
   if (!shut_down_) PostRead();
+  if (immediate_shut_down_) OnCloseCallback();
 #endif
-
-  if (shut_down_ && write_buffer_->Empty()) {
-    OnCloseCallback();
-  }
 }
 
 #ifdef _MSC_VER
@@ -189,13 +190,15 @@ void Connection::OnWriteCallback() {
   if (write_callback_) {
     write_callback_(write_buffer_);
   }
-  if (shut_down_ && write_buffer_->Empty()) {
+  if (immediate_shut_down_ || (shut_down_ && write_buffer_->Empty())) {
     // channel_->ShutDownWrite();
     OnCloseCallback();
+    return;
   }
 
 #ifdef _MSC_VER
   if (!shut_down_) PostWrite();
+  if (immediate_shut_down_) OnCloseCallback();
 #else
   EnableWrite(ret);
 #endif
@@ -240,14 +243,20 @@ int Connection::WriteBuffer(int io_size) {
 
 void Connection::PostRead() {
   read_status_->Reset();
-  socket::read(channel_->fd(), read_wsa_buf_, read_status_);
+  if (socket::read(channel_->fd(), read_wsa_buf_, read_status_) ==
+      SOCKET_ERROR && WSAECONNRESET == WSAGetLastError()) {
+    immediate_shut_down_ = true;
+  }
 }
 
 void Connection::PostWrite() {
   int send_len = write_buffer_->Peek(write_wsa_buf_->buf, kMaxWsaBufSize);
   write_wsa_buf_->len = send_len;
   write_status_->Reset();
-  socket::write(channel_->fd(), write_wsa_buf_, write_status_);
+  if (socket::write(channel_->fd(), write_wsa_buf_, write_status_) ==
+      SOCKET_ERROR && WSAECONNRESET == WSAGetLastError()) {
+    immediate_shut_down_ = true;
+  }
 }
 #else
 int Connection::ReadBuffer() {

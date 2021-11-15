@@ -87,17 +87,23 @@ int socket(bool tcp, bool ipv6) {
 #endif
     EXIT("socket error: %d", WSAGetLastError());
   }
-#ifdef __unix__
   int enable = kEnableOption;
-  if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable))) {
-#elif defined _MSC_VER
-  int zero = 0;
-  if (setsockopt(fd, SOL_SOCKET, SO_SNDBUF, (char*)&zero, sizeof(zero)) == SOCKET_ERROR) {
-#endif
+#ifdef __unix__
+  if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable)) < 0) {
     EXIT("setsockopt");
   }
+#elif defined _MSC_VER
+  int zero = 0;
+  if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (char*)&enable, sizeof(enable)) ==
+      SOCKET_ERROR) {
+    EXIT("setsockopt SO_SNDBUG error: %d", WSAGetLastError());
+  }
+  if (setsockopt(fd, SOL_SOCKET, SO_SNDBUF, (char*)&zero, sizeof(zero)) == SOCKET_ERROR) {
+    EXIT("setsockopt SO_SNDBUG error: %d", WSAGetLastError());
+  }
+#endif
   return fd;
-}
+  }
 
 int listen(int fd) {
 #ifdef _MSC_VER
@@ -167,7 +173,7 @@ int write(int fd, LPWSABUF buf, SocketIocpStatus* status) {
   int ret = WSASend(fd, buf, 1, &bytes_sent, 0, (LPWSAOVERLAPPED)status, NULL);
 
   if (ret == SOCKET_ERROR &&
-      ERROR_IO_PENDING != WSAGetLastError()) {
+      ERROR_IO_PENDING != WSAGetLastError() && WSAECONNRESET != WSAGetLastError()) {
     EXIT("WSASend");
   }
 
@@ -188,7 +194,8 @@ int read(int fd, LPWSABUF buf, SocketIocpStatus* status) {
   int ret =
       WSARecv(fd, buf, 1, &bytes_recved, &flags, (LPWSAOVERLAPPED)status, NULL);
 
-  if (ret == SOCKET_ERROR && (ERROR_IO_PENDING != WSAGetLastError())) {
+  if (ret == SOCKET_ERROR && ERROR_IO_PENDING != WSAGetLastError() &&
+      WSAECONNRESET != WSAGetLastError()) {
     EXIT("WSARecv error: %d", WSAGetLastError());
   }
 
@@ -266,13 +273,13 @@ int close(int fd) {
   return ret;
 }
 
-int getsockname(int fd, sockaddr_t* addr, socklen_t* addr_len) {
+int getpeername(int fd, sockaddr_t* addr, socklen_t* addr_len) {
   int ret = ::getpeername(fd, (struct sockaddr*)addr, addr_len);
   if (ret < 0) {
 #ifdef _MSC_VER
-    EXIT("getsockname error: %d", WSAGetLastError());
+    EXIT("getpeername error: %d", WSAGetLastError());
 #else
-    EXIT("getsockname");
+    EXIT("getpeername");
 #endif
   }
   return ret;

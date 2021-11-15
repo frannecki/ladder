@@ -101,7 +101,7 @@ int sendfile(int out_fd, HANDLE in_fd, off_t* offset, size_t count);
 int shutdown_write(int fd);
 int shutdown_read(int fd);
 int close(int fd);
-int getsockname(int fd, sockaddr_t* addr, socklen_t* addr_len);
+int getpeername(int fd, sockaddr_t* addr, socklen_t* addr_len);
 int getsockerropt(int fd);
 
 }  // namespace socket

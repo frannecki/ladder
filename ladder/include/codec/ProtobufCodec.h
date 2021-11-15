@@ -37,7 +37,7 @@ class CallbackT : public Callback {
   ProtobufMessageCallbackT callback_;
 };
 
-class ProtobufCodec : public Codec {
+class LADDER_API ProtobufCodec : public Codec {
   using CallbackPtr = std::shared_ptr<Callback>;
 
  public:
