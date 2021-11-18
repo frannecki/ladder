@@ -34,9 +34,9 @@ std::string GetCurrentDateTime() {
   std::time_t cur_time_t = std::chrono::system_clock::to_time_t(current);
   std::tm* cur_tm = std::localtime(&cur_time_t);
   std::strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S.", cur_tm);
+  snprintf(minor_buf, sizeof(minor_buf), "%06u",
+           static_cast<uint32_t>(cur_ms.count()));
 #endif
-  int ret = snprintf(minor_buf, sizeof(minor_buf), "%06u",
-                      static_cast<uint32_t>(cur_ms.count()));
   strncat(buf, minor_buf, sizeof(buf)-strlen(buf)-1);
 
   return std::string(buf);

@@ -6,6 +6,7 @@
 #include <Logging.h>
 #include <Socket.h>
 #include <TcpServer.h>
+#include <utils.h>
 
 using namespace ladder;
 using namespace std::placeholders;

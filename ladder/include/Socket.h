@@ -6,6 +6,9 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
+#ifdef __linux__
+#include <sys/epoll.h>
+#endif
 #endif
 #ifdef _MSC_VER
 #include <winsock2.h>

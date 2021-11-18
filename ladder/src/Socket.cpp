@@ -7,6 +7,7 @@
 #ifdef _MSC_VER
 #pragma comment(lib, "mswsock.lib")
 #endif
+#include <string.h>
 
 #include <mutex>
 
@@ -86,7 +87,7 @@ int socket(bool tcp, bool ipv6) {
                        WSA_FLAG_OVERLAPPED);
   if (fd == INVALID_SOCKET) {
 #endif
-    EXIT("socket error: %d", WSAGetLastError());
+    EXIT("socket");
   }
   int enable = kEnableOption;
 #ifdef __unix__

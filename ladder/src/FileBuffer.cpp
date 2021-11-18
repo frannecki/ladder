@@ -1,8 +1,12 @@
 #include <fcntl.h>
+#ifdef __unix__
+#include <unistd.h>
+#endif
 
 #include <Buffer.h>
 #include <FileBuffer.h>
 #include <Socket.h>
+#include <utils.h>
 
 namespace ladder {
 

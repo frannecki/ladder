@@ -7,9 +7,9 @@
 
 namespace ladder {
 
+#ifdef _MSC_VER
 static thread_local LPFN_CONNECTEX fn_connectex = nullptr;
 
-#ifdef _MSC_VER
 Connector::Connector(const ChannelPtr& channel, int max_retry,
                      const SocketAddr& addr,
                      const SocketAddr& local_addr,

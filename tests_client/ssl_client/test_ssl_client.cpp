@@ -2,10 +2,12 @@
 
 #include <Buffer.h>
 #include <Connection.h>
+#include <Logging.h>
+#include <utils.h>
+
 #include <EventLoopThread.h>
 #include <TcpClient.h>
 
-#include <Logging.h>
 
 using namespace ladder;
 using namespace std::placeholders;

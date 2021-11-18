@@ -30,9 +30,9 @@ Timer::Timer()
       timer_queue_(CreateTimerQueue()),
 #else
 Timer::Timer(const EventLoopPtr& loop)
-  loop_(loop),
+    : loop_(loop),
 #endif
-    interval_(0) {
+      interval_(0) {
 #ifdef _MSC_VER
   if (!timer_queue_) {
     EXIT("CreateTimerQueue error: %d", GetLastError());

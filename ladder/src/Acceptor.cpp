@@ -13,7 +13,9 @@
 
 namespace ladder {
 
+#ifdef _MSC_VER
 static thread_local LPFN_ACCEPTEX fn_acceptex = nullptr;
+#endif
 
 Acceptor::Acceptor(const ChannelPtr& channel, bool ipv6)
     : channel_(channel), ipv6_(ipv6) {
@@ -29,8 +31,10 @@ Acceptor::Acceptor(const ChannelPtr& channel, bool ipv6)
 }
 
 Acceptor::~Acceptor() {
+#ifdef _MSC_VER
   delete status_;
   delete accept_buffer_;
+#endif
 }
 
 void Acceptor::Init() {

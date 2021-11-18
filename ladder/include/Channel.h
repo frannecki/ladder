@@ -55,16 +55,20 @@ class LADDER_API Channel {
   void ShutDownRead();
 #ifndef _MSC_VER
   EventLoopPtr loop() const;
-  void UpdateToLoop(int op = 0);
   void RemoveFromLoop();
 #endif
 
  private:
   int fd_;
-#ifndef _MSC_VER
-  EventLo bool IsWriting() const;
+#ifdef _MSC_VER
+  EventCallback read_callback_;
+  EventCallback write_callback_;
+  std::function<void()> close_callback_;
+  std::function<void()> error_callback_;
+#else
+  bool IsWriting() const;
   bool IsReading() const;
-  opPtr loop_;
+  EventLoopPtr loop_;
   uint32_t revents_;
   uint32_t events_;
 
@@ -73,10 +77,7 @@ class LADDER_API Channel {
   std::function<void()> close_callback_;
   std::function<void()> error_callback_;
 #endif
-  EventCallback read_callback_;
-  EventCallback write_callback_;
-  std::function<void()> close_callback_;
-  std::function<void()> error_callback_;
+
 };
 
 }  // namespace ladder
