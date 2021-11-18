@@ -1,1 +1,4 @@
 This is a brief implementation of http/https server based on ladder
+
+Note:
+To run the http/https server demo `test_http_server` in https mode, directories to ssl certificate and key should be specified. i.e. `./test_http_server $IndexPath $CertPath $KeyPath`

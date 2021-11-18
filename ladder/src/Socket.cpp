@@ -179,7 +179,9 @@ int write(int fd, LPWSABUF buf, SocketIocpStatus* status) {
   int ret = WSASend(fd, buf, 1, &bytes_sent, 0, (LPWSAOVERLAPPED)status, NULL);
 
   if (ret == SOCKET_ERROR &&
-      ERROR_IO_PENDING != WSAGetLastError() && WSAECONNRESET != WSAGetLastError()) {
+      ERROR_IO_PENDING != WSAGetLastError() &&
+      WSAECONNRESET != WSAGetLastError()  &&
+      WSAECONNABORTED != WSAGetLastError()) {
     EXIT("WSASend");
   }
 
@@ -201,7 +203,7 @@ int read(int fd, LPWSABUF buf, SocketIocpStatus* status) {
       WSARecv(fd, buf, 1, &bytes_recved, &flags, (LPWSAOVERLAPPED)status, NULL);
 
   if (ret == SOCKET_ERROR && ERROR_IO_PENDING != WSAGetLastError() &&
-      WSAECONNRESET != WSAGetLastError()) {
+      WSAECONNRESET != WSAGetLastError() && WSAECONNABORTED != WSAGetLastError()) {
     EXIT("WSARecv error: %d", WSAGetLastError());
   }
 

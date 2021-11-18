@@ -266,7 +266,7 @@ int Connection::WriteBuffer(int io_size) {
 void Connection::PostRead() {
   read_status_->Reset();
   if (socket::read(channel_->fd(), read_wsa_buf_, read_status_) ==
-      SOCKET_ERROR && WSAECONNRESET == WSAGetLastError()) {
+      SOCKET_ERROR && WSAECONNRESET == WSAGetLastError() && WSAECONNABORTED == WSAGetLastError()) {
     immediate_shut_down_ = true;
   }
 }
@@ -276,7 +276,7 @@ void Connection::PostWrite() {
   write_wsa_buf_->len = send_len;
   write_status_->Reset();
   if (socket::write(channel_->fd(), write_wsa_buf_, write_status_) ==
-      SOCKET_ERROR && WSAECONNRESET == WSAGetLastError()) {
+      SOCKET_ERROR && WSAECONNRESET == WSAGetLastError() && WSAECONNABORTED == WSAGetLastError()) {
     immediate_shut_down_ = true;
   }
 }

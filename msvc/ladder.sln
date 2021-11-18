@@ -19,8 +19,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ladder_tests_client_client"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ladder_tests_client_tcp_client", "ladder_tests_client_tcp_client\ladder_tests_client_tcp_client.vcxproj", "{3664DF6F-9429-45E1-A526-AA5F72595797}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ladder_tests_client_mass_clients", "ladder_tests_client_mass_clients\ladder_tests_client_mass_clients.vcxproj", "{C33495E2-DCB5-41B0-BE3D-066A84C97560}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ladder_tests_client_timer", "ladder_tests_client_timer\ladder_tests_client_timer.vcxproj", "{378A1B9C-30CA-4051-8D08-06EE02844D2D}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ladder_tests_client_event_loop_thread", "ladder_tests_client_event_loop_thread\ladder_tests_client_event_loop_thread.vcxproj", "{35EF8716-69ED-416C-8F60-A28B6B9BC62A}"
@@ -99,14 +97,6 @@ Global
 		{3664DF6F-9429-45E1-A526-AA5F72595797}.Release|x64.Build.0 = Release|x64
 		{3664DF6F-9429-45E1-A526-AA5F72595797}.Release|x86.ActiveCfg = Release|Win32
 		{3664DF6F-9429-45E1-A526-AA5F72595797}.Release|x86.Build.0 = Release|Win32
-		{C33495E2-DCB5-41B0-BE3D-066A84C97560}.Debug|x64.ActiveCfg = Debug|x64
-		{C33495E2-DCB5-41B0-BE3D-066A84C97560}.Debug|x64.Build.0 = Debug|x64
-		{C33495E2-DCB5-41B0-BE3D-066A84C97560}.Debug|x86.ActiveCfg = Debug|Win32
-		{C33495E2-DCB5-41B0-BE3D-066A84C97560}.Debug|x86.Build.0 = Debug|Win32
-		{C33495E2-DCB5-41B0-BE3D-066A84C97560}.Release|x64.ActiveCfg = Release|x64
-		{C33495E2-DCB5-41B0-BE3D-066A84C97560}.Release|x64.Build.0 = Release|x64
-		{C33495E2-DCB5-41B0-BE3D-066A84C97560}.Release|x86.ActiveCfg = Release|Win32
-		{C33495E2-DCB5-41B0-BE3D-066A84C97560}.Release|x86.Build.0 = Release|Win32
 		{378A1B9C-30CA-4051-8D08-06EE02844D2D}.Debug|x64.ActiveCfg = Debug|x64
 		{378A1B9C-30CA-4051-8D08-06EE02844D2D}.Debug|x64.Build.0 = Debug|x64
 		{378A1B9C-30CA-4051-8D08-06EE02844D2D}.Debug|x86.ActiveCfg = Debug|Win32
