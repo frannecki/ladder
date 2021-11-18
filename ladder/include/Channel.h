@@ -11,6 +11,8 @@
 #include <functional>
 #include <memory>
 
+#include <Base.h>
+
 namespace ladder {
 
 class EventLoop;
@@ -22,7 +24,7 @@ using EventCallback = std::function<void(int)>;
 using EventCallback = std::function<void()>;
 #endif
 
-class Channel {
+class LADDER_API Channel {
  public:
 #ifdef _MSC_VER
   Channel(int fd);

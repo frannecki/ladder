@@ -29,7 +29,6 @@
     <ClInclude Include="..\..\ladder\include\Connection.h" />
     <ClInclude Include="..\..\ladder\include\EventLoop.h" />
     <ClInclude Include="..\..\ladder\include\EventLoopThreadPool.h" />
-    <ClInclude Include="..\..\ladder\include\EventPoller.h" />
     <ClInclude Include="..\..\ladder\include\FileBuffer.h" />
     <ClInclude Include="..\..\ladder\include\GZip.h" />
     <ClInclude Include="..\..\ladder\include\Logging.h" />
@@ -51,7 +50,6 @@
     <ClCompile Include="..\..\ladder\src\Connection.cpp" />
     <ClCompile Include="..\..\ladder\src\EventLoop.cpp" />
     <ClCompile Include="..\..\ladder\src\EventLoopThreadPool.cpp" />
-    <ClCompile Include="..\..\ladder\src\EventPoller.cpp" />
     <ClCompile Include="..\..\ladder\src\FileBuffer.cpp" />
     <ClCompile Include="..\..\ladder\src\GZip.cpp" />
     <ClCompile Include="..\..\ladder\src\Logging.cpp" />
@@ -61,9 +59,6 @@
     <ClCompile Include="..\..\ladder\src\ThreadPool.cpp" />
     <ClCompile Include="..\..\ladder\src\TlsConnection.cpp" />
     <ClCompile Include="..\..\ladder\src\utils.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="ladder.def" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -144,7 +139,6 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <ModuleDefinitionFile>ladder.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -164,7 +158,6 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <ModuleDefinitionFile>ladder.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -181,7 +174,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <AdditionalDependencies>libprotobufd.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <ModuleDefinitionFile>ladder.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -201,7 +193,6 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <ModuleDefinitionFile>ladder.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

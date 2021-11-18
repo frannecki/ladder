@@ -9,6 +9,7 @@
 #include <Connection.h>
 #include <EventLoop.h>
 #include <FileBuffer.h>
+#include <Logging.h>
 #include <Socket.h>
 #include <utils.h>
 
@@ -36,22 +37,24 @@ Connection::Connection(const EventLoopPtr& loop, int fd, bool send_file)
       shut_down_(false),
       immediate_shut_down_(false),
       send_file_(send_file) {
+#ifdef _MSC_VER
+  read_wsa_buf_->buf = new char[kMaxWsaBufSize + 1];
+  write_wsa_buf_->buf = new char[kMaxWsaBufSize + 1];
+  write_buffer_ = write_plain_buffer_ = new Buffer;
+#else
   if (send_file) {
     write_buffer_ = write_file_buffer_ = new FileBuffer;
   } else {
     write_buffer_ = write_plain_buffer_ = new Buffer;
   }
-#ifdef _MSC_VER
-  read_wsa_buf_->buf = new char[kMaxWsaBufSize + 1];
-  write_wsa_buf_->buf = new char[kMaxWsaBufSize + 1];
 #endif
 }
 
 #ifdef _MSC_VER
 void Connection::Init(HANDLE iocp_port, char* buffer, int io_size) {
   SetChannelCallbacks();
-  UpdateIocpPort(iocp_port, channel_.get());
-#ifdef _MSC_VER
+  if (iocp_port)
+    UpdateIocpPort(iocp_port, channel_.get());
   // read from accepted buffer
   if (io_size > 0) {
     read_buffer_->Write(buffer, io_size);
@@ -60,9 +63,6 @@ void Connection::Init(HANDLE iocp_port, char* buffer, int io_size) {
     }
   }
   PostRead();
-#else
-  channel_->UpdateToLoop();
-#endif
 }
 #else
 void Connection::Init() {
@@ -125,9 +125,16 @@ void Connection::Close() {
 
 void Connection::SendFile(std::string&& header, const std::string& filename) {
   if (shut_down_ || !send_file_) return;
-  write_file_buffer_->AddFile(std::move(header), filename);
 #ifdef _MSC_VER
+  write_buffer_->Write(header);
+  std::string filebuf = ReadFileAsString(filename);
+  write_buffer_->Write(filebuf);
+  if (!first_sent_) {
+    PostWrite();
+    first_sent_ = true;
+  }
 #else
+  write_file_buffer_->AddFile(std::move(header), filename);
   EnableWrite(WriteBuffer());
 #endif
 }
@@ -174,9 +181,21 @@ void Connection::OnReadCallback() {
     read_callback_(shared_from_this(), read_buffer_);
   }
 
+  if (shut_down_ && write_buffer_->Empty()) {
+#ifdef _MSC_VER
+    OnCloseCallback();
+#else
+    Close();
+#endif
+    return;
+  }
+
 #ifdef _MSC_VER
   if (!shut_down_) PostRead();
-  if (immediate_shut_down_) OnCloseCallback();
+  if (immediate_shut_down_) {
+    LOGF_WARNING("Forcibly closing connection. fd = %d", channel_->fd());
+    OnCloseCallback();
+  }
 #endif
 }
 
@@ -198,7 +217,10 @@ void Connection::OnWriteCallback() {
 
 #ifdef _MSC_VER
   if (!shut_down_) PostWrite();
-  if (immediate_shut_down_) OnCloseCallback();
+  if (immediate_shut_down_) {
+    LOGF_WARNING("Forcibly closing connection. fd = %d", channel_->fd());
+    OnCloseCallback();
+  }
 #else
   EnableWrite(ret);
 #endif

@@ -68,7 +68,7 @@ void Acceptor::HandleAcceptCallback(int io_size) {
         WSAIoctl(channel_->fd(), SIO_GET_EXTENSION_FUNCTION_POINTER, &guid, sizeof(guid),
                  &fn_acceptex, sizeof(fn_acceptex), &bytes, NULL, NULL);
     if (ret == SOCKET_ERROR) {
-      EXIT("WSAIoctl");
+      EXIT("WSAIoctl error: %d", GetLastError());
     }
   }
   status_->Reset();

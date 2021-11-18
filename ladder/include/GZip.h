@@ -3,9 +3,11 @@
 
 #include <string>
 
+#include <Base.h>
+
 namespace ladder {
 
-class GZipper {
+class LADDER_API GZipper {
  public:
   static std::string Deflate(const std::string& buf);
   static std::string Inflate(const std::string& buf);

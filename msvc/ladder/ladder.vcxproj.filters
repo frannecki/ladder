@@ -36,9 +36,6 @@
     <ClInclude Include="..\..\ladder\include\EventLoopThreadPool.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ladder\include\EventPoller.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\ladder\include\Socket.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -98,9 +95,6 @@
     <ClCompile Include="..\..\ladder\src\EventLoopThreadPool.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ladder\src\EventPoller.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\ladder\src\Socket.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -137,10 +131,5 @@
     <ClCompile Include="..\..\ladder\src\MemoryPool.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="ladder.def">
-      <Filter>源文件</Filter>
-    </None>
   </ItemGroup>
 </Project>

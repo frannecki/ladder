@@ -20,7 +20,11 @@ void exit_fatal(const char* fmt, ...) {
   char msg[kMaxMessageLength];
   vsnprintf(msg, sizeof(msg), fmt, args);
   va_end(args);
+#ifdef _MSC_VER
+  fprintf(stderr, "%s %d\n", msg, GetLastError());
+#else
   perror(msg);
+#endif
   exit(EXIT_FAILURE);
 }
 

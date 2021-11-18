@@ -18,8 +18,17 @@ const uint16_t kMinRetryInitialTimeout = 5;
 
 class Connector {
  public:
+#ifdef _MSC_VER
+  Connector(const ChannelPtr&, int max_retry, const SocketAddr& addr,
+            const SocketAddr& local_addr,
+            uint16_t retry_initial_timeout = kMinRetryInitialTimeout * 2);
+#else
   Connector(const ChannelPtr&, int max_retry, const SocketAddr& addr,
             uint16_t retry_initial_timeout = kMinRetryInitialTimeout * 2);
+#endif
+  Connector(const Connector&) = delete;
+  Connector& operator=(const Connector&) = delete;
+  ~Connector();
   void set_connection_callback(const ConnectionCallback& callback);
   void set_connection_failure_callback(const ConnectionFailureCallback& callback);
   void Start();
@@ -32,11 +41,17 @@ class Connector {
   int retry_;
   int max_retry_;
   uint16_t retry_timeout_;
+#ifdef _MSC_VER
+  SocketIocpStatus* status_;
+#endif
   TimerPtr timer_;
   ConnectionCallback connection_callback_;
   ConnectionFailureCallback connection_failure_callback_;
   bool ipv6_;
   SocketAddr addr_;
+#ifdef _MSC_VER
+  SocketAddr local_addr_;
+#endif
 };
 
 }  // namespace ladder

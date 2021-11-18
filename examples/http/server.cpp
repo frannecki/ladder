@@ -9,6 +9,10 @@
 #include "HttpCodec.h"
 #include "HttpServer.h"
 
+#ifdef _MSC_VER
+#pragma comment(lib, "ws2_32.lib")
+#endif
+
 using namespace ladder;
 using namespace ladder::http;
 
@@ -138,6 +142,12 @@ void HandleHttpGet(struct HttpContext* ctx1, struct HttpContext* ctx2) {
 }
 
 int main(int argc, char** argv) {
+#ifdef _MSC_VER
+  WSADATA wsa_data;
+  if (WSAStartup(MAKEWORD(2, 2), &wsa_data) != NO_ERROR) {
+    return -1;
+  }
+#endif
   if (argc < 2) {
     fprintf(stderr, "Usage: %s $ResourceRoot[ $CertPath $KeyPath]\n", argv[0]);
     return EXIT_FAILURE;

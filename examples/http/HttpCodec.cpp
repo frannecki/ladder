@@ -260,6 +260,10 @@ void HttpCodec::OnClientMessage(const ConnectionPtr& conn, Buffer* buffer) {
   std::string message;
   int length = 0;
   buffer->Peek(buffer->ReadableBytes(), message);
+
+  // TODO: implement multi-threaded http server
+  std::lock_guard<std::mutex> lock(mutex_);
+
   int status = request_->ParseMessage(message, length);
   if (status == -1) {
     // message incomplete;
@@ -267,6 +271,7 @@ void HttpCodec::OnClientMessage(const ConnectionPtr& conn, Buffer* buffer) {
   }
 
   buffer->HaveRead(length);
+
   request_->context()->status_code_ = status;
 
   if (server_callback_) {

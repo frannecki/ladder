@@ -17,8 +17,9 @@ namespace ladder {
 
 SocketAddr::SocketAddr(bool ipv6) : ipv6_(ipv6) { ; }
 
-SocketAddr::SocketAddr(sockaddr_t* addr, bool ipv6) : ipv6_(ipv6) {
+SocketAddr::SocketAddr(const sockaddr_t* addr, bool ipv6) : ipv6_(ipv6) {
   char buf[50];
+  memcpy(&sa_, addr, sizeof(sa_));
   if (ipv6) {
     if (inet_ntop(AF_INET6, &(addr->addr6_.sin6_addr), buf, sizeof(buf)) ==
         NULL) {
@@ -140,31 +141,35 @@ int accept(int fd, char* buffer, LPFN_ACCEPTEX fn_acceptex,
 
   return acceptfd;
 }
+
+int connect(int fd, const sockaddr_t* addr, socklen_t addr_len,
+            const sockaddr_t* local_addr, LPFN_CONNECTEX fn_connectex,
+            SocketIocpStatus* status, bool ipv6) {
+  /* ConnectEx requires the socket to be initially bound. */
+  SocketAddr(local_addr, ipv6).Bind(fd);
+
+  DWORD bytes_sent = 0;
+  int ret = fn_connectex(fd, (const struct sockaddr*)addr, addr_len,
+                         NULL, 0, &bytes_sent, (LPOVERLAPPED)status);
+  if (ret == SOCKET_ERROR && ERROR_IO_PENDING != WSAGetLastError()) {
+    EXIT("AcceptEx error: %d", WSAGetLastError());
+  }
+  return ret;
+}
 #else
 int accept(int fd, sockaddr_t* addr, socklen_t* addr_len) {
-#ifdef __linux
   int accepted = ::accept4(fd, (struct sockaddr*)addr, addr_len, SOCK_NONBLOCK);
-#endif
-#ifdef _MSC_VER
-  int accepted = ::accept(fd, (struct sockaddr*)addr, addr_len);
-#endif
   if (accepted < 0) {
     EXIT("accept");
   }
-#ifdef _MSC_VER
-  u_long enabled = static_cast<u_long>(kEnableOption);
-  if (ioctlsocket(accepted, FIONBIO, &enabled) != NO_ERROR) {
-    EXIT("ioctlsocket");
-  }
-#endif
   return accepted;
 }
-#endif
 
 int connect(int fd, const sockaddr_t* addr, socklen_t addr_len) {
   int ret = ::connect(fd, (const struct sockaddr*)addr, addr_len);
   return ret;
 }
+#endif
 
 #ifdef _MSC_VER
 int write(int fd, LPWSABUF buf, SocketIocpStatus* status) {
@@ -269,6 +274,18 @@ int close(int fd) {
   if (ret == SOCKET_ERROR) {
 #endif
     EXIT("close");
+  }
+  return ret;
+}
+
+int getsockname(int fd, sockaddr_t* addr, socklen_t* addr_len) {
+  int ret = ::getsockname(fd, (struct sockaddr*)addr, addr_len);
+  if (ret < 0) {
+#ifdef _MSC_VER
+    EXIT("getsockname error: %d", WSAGetLastError());
+#else
+    EXIT("getsockname");
+#endif
   }
   return ret;
 }

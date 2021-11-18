@@ -7,7 +7,7 @@
 
 namespace ladder {
 
-class EventLoopThread {
+class LADDER_API EventLoopThread {
  public:
   EventLoopThread();
   ~EventLoopThread();

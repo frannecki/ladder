@@ -15,8 +15,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ladder_tests_server", "ladd
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ladder_tests_proto_server", "ladder_tests_proto_server\ladder_tests_proto_server.vcxproj", "{F7E3A194-F578-407B-8268-81852364CB86}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ladder_tests_event_poller", "ladder_tests_event_poller\ladder_tests_event_poller.vcxproj", "{1DF8F1ED-F03F-4BE8-980B-E99D14DCB74A}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ladder_tests_client_client", "ladder_tests_client_client\ladder_tests_client_client.vcxproj", "{61176D4A-F919-4BB8-A151-55F6E697617D}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ladder_tests_client_tcp_client", "ladder_tests_client_tcp_client\ladder_tests_client_tcp_client.vcxproj", "{3664DF6F-9429-45E1-A526-AA5F72595797}"
@@ -26,6 +24,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ladder_tests_client_timer", "ladder_tests_client_timer\ladder_tests_client_timer.vcxproj", "{378A1B9C-30CA-4051-8D08-06EE02844D2D}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ladder_tests_client_event_loop_thread", "ladder_tests_client_event_loop_thread\ladder_tests_client_event_loop_thread.vcxproj", "{35EF8716-69ED-416C-8F60-A28B6B9BC62A}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ladder_test_http_server", "ladder_test_http_server\ladder_test_http_server.vcxproj", "{AF456AD9-649A-483C-AEE8-A82460E43EAE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -83,14 +83,6 @@ Global
 		{F7E3A194-F578-407B-8268-81852364CB86}.Release|x64.Build.0 = Release|x64
 		{F7E3A194-F578-407B-8268-81852364CB86}.Release|x86.ActiveCfg = Release|Win32
 		{F7E3A194-F578-407B-8268-81852364CB86}.Release|x86.Build.0 = Release|Win32
-		{1DF8F1ED-F03F-4BE8-980B-E99D14DCB74A}.Debug|x64.ActiveCfg = Debug|x64
-		{1DF8F1ED-F03F-4BE8-980B-E99D14DCB74A}.Debug|x64.Build.0 = Debug|x64
-		{1DF8F1ED-F03F-4BE8-980B-E99D14DCB74A}.Debug|x86.ActiveCfg = Debug|Win32
-		{1DF8F1ED-F03F-4BE8-980B-E99D14DCB74A}.Debug|x86.Build.0 = Debug|Win32
-		{1DF8F1ED-F03F-4BE8-980B-E99D14DCB74A}.Release|x64.ActiveCfg = Release|x64
-		{1DF8F1ED-F03F-4BE8-980B-E99D14DCB74A}.Release|x64.Build.0 = Release|x64
-		{1DF8F1ED-F03F-4BE8-980B-E99D14DCB74A}.Release|x86.ActiveCfg = Release|Win32
-		{1DF8F1ED-F03F-4BE8-980B-E99D14DCB74A}.Release|x86.Build.0 = Release|Win32
 		{61176D4A-F919-4BB8-A151-55F6E697617D}.Debug|x64.ActiveCfg = Debug|x64
 		{61176D4A-F919-4BB8-A151-55F6E697617D}.Debug|x64.Build.0 = Debug|x64
 		{61176D4A-F919-4BB8-A151-55F6E697617D}.Debug|x86.ActiveCfg = Debug|Win32
@@ -131,6 +123,14 @@ Global
 		{35EF8716-69ED-416C-8F60-A28B6B9BC62A}.Release|x64.Build.0 = Release|x64
 		{35EF8716-69ED-416C-8F60-A28B6B9BC62A}.Release|x86.ActiveCfg = Release|Win32
 		{35EF8716-69ED-416C-8F60-A28B6B9BC62A}.Release|x86.Build.0 = Release|Win32
+		{AF456AD9-649A-483C-AEE8-A82460E43EAE}.Debug|x64.ActiveCfg = Debug|x64
+		{AF456AD9-649A-483C-AEE8-A82460E43EAE}.Debug|x64.Build.0 = Debug|x64
+		{AF456AD9-649A-483C-AEE8-A82460E43EAE}.Debug|x86.ActiveCfg = Debug|Win32
+		{AF456AD9-649A-483C-AEE8-A82460E43EAE}.Debug|x86.Build.0 = Debug|Win32
+		{AF456AD9-649A-483C-AEE8-A82460E43EAE}.Release|x64.ActiveCfg = Release|x64
+		{AF456AD9-649A-483C-AEE8-A82460E43EAE}.Release|x64.Build.0 = Release|x64
+		{AF456AD9-649A-483C-AEE8-A82460E43EAE}.Release|x86.ActiveCfg = Release|Win32
+		{AF456AD9-649A-483C-AEE8-A82460E43EAE}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

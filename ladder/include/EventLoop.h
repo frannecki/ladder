@@ -22,7 +22,8 @@ using EventPollerPtr = std::unique_ptr<EventPoller>;
 class LADDER_API EventLoop {
  public:
 #ifdef _MSC_VER
-  EventLoop(HANDLE iocp_port);
+  EventLoop(HANDLE iocp_port = nullptr);
+  void UpdateIocpPort(const Channel* channel);
 #else
   EventLoop();
   void UpdateChannel(Channel* channel, int op);

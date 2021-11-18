@@ -58,7 +58,7 @@ typedef union {
 class LADDER_API SocketAddr {
  public:
   SocketAddr(bool ipv6 = true);
-  SocketAddr(sockaddr_t* addr, bool ipv6 = true);
+  SocketAddr(const sockaddr_t* addr, bool ipv6 = true);
   SocketAddr(const std::string& ip, uint16_t port, bool ipv6 = true);
   void Bind(int fd);
   std::string ip() const;
@@ -80,10 +80,13 @@ int listen(int fd);
 #ifdef _MSC_VER
 int accept(int fd, char* buffer, LPFN_ACCEPTEX fn_acceptex,
            SocketIocpStatus* status, bool ipv6 = false);
+int connect(int fd, const sockaddr_t* addr, socklen_t addr_len,
+            const sockaddr_t* local_addr, LPFN_CONNECTEX fn_connectex,
+            SocketIocpStatus* status, bool ipv6);
 #else
 int accept(int fd, sockaddr_t* addr, socklen_t* addr_len);
-#endif
 int connect(int fd, const sockaddr_t* addr, socklen_t addr_len);
+#endif
 
 #ifdef _MSC_VER
 int write(int fd, LPWSABUF buf, SocketIocpStatus* status);
@@ -101,6 +104,7 @@ int sendfile(int out_fd, HANDLE in_fd, off_t* offset, size_t count);
 int shutdown_write(int fd);
 int shutdown_read(int fd);
 int close(int fd);
+int getsockname(int fd, sockaddr_t* addr, socklen_t* addr_len);
 int getpeername(int fd, sockaddr_t* addr, socklen_t* addr_len);
 int getsockerropt(int fd);
 
