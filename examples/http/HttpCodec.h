@@ -2,7 +2,6 @@
 #define LADDER_EXAMPLE_HTTP_CODEC_H
 
 #include <map>
-#include <mutex>
 #include <string>
 
 #include <Base.h>
@@ -62,18 +61,14 @@ class HttpCodec {
 
  public:
   HttpCodec(bool send_file = true);
-  ~HttpCodec();
   void OnClientMessage(const ConnectionPtr& conn, Buffer* buffer);
   void set_client_message_callback(const HttpCodecMessageCallback& callback);
   void ParseRequest();
   void ParseResponse();
 
  private:
-  HttpMessage* request_;
-  HttpMessage* response_;
   HttpCodecMessageCallback server_callback_;
   bool send_file_;
-  std::mutex mutex_;
 };
 
 }  // namespace http

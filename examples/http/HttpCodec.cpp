@@ -242,14 +242,7 @@ bool HttpResponse::PrepareMessage() {
 }
 
 HttpCodec::HttpCodec(bool send_file)
-    : request_(new HttpRequest),
-      response_(new HttpResponse),
-      send_file_(send_file) {}
-
-HttpCodec::~HttpCodec() {
-  if (request_) delete request_;
-  if (response_) delete response_;
-}
+    : send_file_(send_file) {}
 
 void HttpCodec::set_client_message_callback(
     const HttpCodecMessageCallback& callback) {
@@ -262,9 +255,11 @@ void HttpCodec::OnClientMessage(const ConnectionPtr& conn, Buffer* buffer) {
   buffer->Peek(buffer->ReadableBytes(), message);
 
   // TODO: implement multi-threaded http server
-  std::lock_guard<std::mutex> lock(mutex_);
 
-  int status = request_->ParseMessage(message, length);
+  HttpMessage* request = new HttpRequest;
+  HttpMessage* response = new HttpResponse;
+
+  int status = request->ParseMessage(message, length);
   if (status == -1) {
     // message incomplete;
     return;
@@ -272,36 +267,39 @@ void HttpCodec::OnClientMessage(const ConnectionPtr& conn, Buffer* buffer) {
 
   buffer->HaveRead(length);
 
-  request_->context()->status_code_ = status;
+  request->context()->status_code_ = status;
 
   if (server_callback_) {
-    server_callback_(request_->context(), response_->context());
+    server_callback_(request->context(), response->context());
   }
 
   std::string headers;
 
-  if (response_->context()->status_code_ == kHttpStatusCode::kOk) {
-    if (!send_file_ || request_->context()->content_encoding_ == kGzip) {
+  if (response->context()->status_code_ == kHttpStatusCode::kOk) {
+    if (!send_file_ || request->context()->content_encoding_ == kGzip) {
       std::string filebuf;
-      if (request_->context()->content_encoding_ == kGzip) {
-        filebuf = GZipper::DeflateFile(response_->context()->uri_);
-        response_->context()->headers_[kHttpHeaderField::kContentEncoding] =
+      if (request->context()->content_encoding_ == kGzip) {
+        filebuf = GZipper::DeflateFile(response->context()->uri_);
+        response->context()->headers_[kHttpHeaderField::kContentEncoding] =
             "gzip";
       } else {
-        filebuf = ReadFileAsString(response_->context()->uri_);
+        filebuf = ReadFileAsString(response->context()->uri_);
       }
-      response_->context()->content_length_ = filebuf.size();
+      response->context()->content_length_ = filebuf.size();
 
-      response_->ComposeHeaders(headers);
+      response->ComposeHeaders(headers);
       conn->Send(std::move(headers) + std::move(filebuf));
     } else {
-      response_->ComposeHeaders(headers);
-      conn->SendFile(std::move(headers), response_->context()->uri_);
+      response->ComposeHeaders(headers);
+      conn->SendFile(std::move(headers), response->context()->uri_);
     }
   } else {
-    response_->ComposeHeaders(headers);
+    response->ComposeHeaders(headers);
     conn->Send(std::move(headers));
   }
+
+  delete request;
+  delete response;
 }
 
 }  // namespace http
