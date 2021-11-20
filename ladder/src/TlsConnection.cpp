@@ -81,7 +81,9 @@ void TlsConnection::Send(const std::string& buf) {
     if (n > 0) {
       n_written += n;
       this->Encrypt();
+#ifdef _MSC_VER
       PostWrite();
+#endif
     } else {
       break;
     }
