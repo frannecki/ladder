@@ -128,6 +128,8 @@ int accept(int fd, char* buffer, LPFN_ACCEPTEX fn_acceptex,
   int ret;
   int acceptfd = socket(true, ipv6);
   if (acceptfd == -1) return -1;
+  
+  status->Reset();
 
   DWORD bytes_recved = 0;
 
@@ -174,17 +176,10 @@ int connect(int fd, const sockaddr_t* addr, socklen_t addr_len) {
 
 #ifdef _MSC_VER
 int write(int fd, LPWSABUF buf, SocketIocpStatus* status) {
+  status->Reset();
+  status->UpdateRefCount(true);
   DWORD bytes_sent = 0;
-  
   int ret = WSASend(fd, buf, 1, &bytes_sent, 0, (LPWSAOVERLAPPED)status, NULL);
-
-  if (ret == SOCKET_ERROR &&
-      ERROR_IO_PENDING != WSAGetLastError() &&
-      WSAECONNRESET != WSAGetLastError()  &&
-      WSAECONNABORTED != WSAGetLastError()) {
-    EXIT("WSASend");
-  }
-
   return ret;
 }
 #else
@@ -195,17 +190,14 @@ int write(int fd, const void* buf, size_t len) {
 
 #ifdef _MSC_VER
 int read(int fd, LPWSABUF buf, SocketIocpStatus* status) {
+  status->Reset();
+  status->UpdateRefCount(true);
   DWORD bytes_recved = 0;
   DWORD flags = 0;
   buf->len = kMaxIocpRecvSize;
 
   int ret =
       WSARecv(fd, buf, 1, &bytes_recved, &flags, (LPWSAOVERLAPPED)status, NULL);
-
-  if (ret == SOCKET_ERROR && ERROR_IO_PENDING != WSAGetLastError() &&
-      WSAECONNRESET != WSAGetLastError() && WSAECONNABORTED != WSAGetLastError()) {
-    EXIT("WSARecv error: %d", WSAGetLastError());
-  }
 
   return ret;
 }

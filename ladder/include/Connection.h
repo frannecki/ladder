@@ -60,7 +60,6 @@ class LADDER_API Connection : public std::enable_shared_from_this<Connection> {
 #endif
   void EnableWrite(int ret);
 
-  std::mutex mutex_;
   // cannot use raw pointer here, because Channel would call shared_from_this()
   ChannelPtr channel_;
   ReadEvtCallback read_callback_;
@@ -77,7 +76,7 @@ class LADDER_API Connection : public std::enable_shared_from_this<Connection> {
   LPWSABUF write_wsa_buf_;
   SocketIocpStatus* read_status_;
   SocketIocpStatus* write_status_;
-  bool first_sent_; // first bytes sent
+  bool write_pending_;  // iocp write operation pending
 #endif
 
   // buffer for writing file, taking advantage of the `sendfile` linux/bsd

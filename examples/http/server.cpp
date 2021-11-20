@@ -11,6 +11,11 @@
 
 #ifdef _MSC_VER
 #pragma comment(lib, "ws2_32.lib")
+#ifdef _DEBUG
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
+#endif
 #endif
 
 using namespace ladder;
@@ -164,6 +169,9 @@ int main(int argc, char** argv) {
   HttpServer server(addr, (argc > 2) ? argv[2] : nullptr,
                     (argc > 3) ? argv[3] : nullptr);
   server.RegisterCallback(kHttpRequestMethod::kHttpGet, HandleHttpGet);
+#if defined(_MSC_VER) && defined(_DEBUG)
+  _CrtDumpMemoryLeaks();
+#endif
   server.Start();
   Logger::release();
   EVP_cleanup();

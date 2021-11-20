@@ -47,17 +47,22 @@ TlsConnection::~TlsConnection() {
 
 #ifdef _MSC_VER
 void TlsConnection::Init(HANDLE iocp_port, char* buffer, int io_size) {
-  Connection::Init(iocp_port, buffer, io_size);
+  Connection::Init(iocp_port, NULL, 0);
+  ReadFromBuffer(buffer, io_size);
 #else
 void TlsConnection::Init() {
   Connection::Init();
 #endif
   if (!is_server_) {
     // ssl clients need to send client hello on connection
+#ifdef _MSC_VER
+    WriteBuffer(0);
+#else
 #ifdef __linux__
     channel_->SetEpollEdgeTriggered(false);
 #endif
     channel_->EnableWrite();
+#endif
   }
 }
 
@@ -76,6 +81,7 @@ void TlsConnection::Send(const std::string& buf) {
     if (n > 0) {
       n_written += n;
       this->Encrypt();
+      PostWrite();
     } else {
       break;
     }
@@ -87,13 +93,8 @@ void TlsConnection::Send(const std::string& buf) {
 
 #ifdef _MSC_VER
 int TlsConnection::ReadBuffer(int io_size) {
-  Buffer buffer;
-  if (io_size > 0) {
-    buffer.Write(read_wsa_buf_->buf, read_wsa_buf_->len = io_size);
-    std::string str = buffer.ReadAll();
-    if (ReadFromBuffer(str.c_str(), str.size()) < 0) {
-      return -2;
-    }
+  if (ReadFromBuffer(read_wsa_buf_->buf, read_wsa_buf_->len = io_size) < 0) {
+    return -2;
   }
   return io_size;
 }
@@ -202,7 +203,9 @@ int TlsConnection::HandleSslError(int n) {
     case SSL_ERROR_WANT_WRITE:
     case SSL_ERROR_WANT_READ:
       this->Encrypt();
-#ifndef _MSC_VER
+#ifdef _MSC_VER
+      PostWrite();
+#else
       EnableWrite(Connection::WriteBuffer());
 #endif
       break;

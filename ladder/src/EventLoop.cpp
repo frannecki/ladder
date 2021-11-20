@@ -25,16 +25,21 @@ void EventLoop::StartLoop() {
 #ifdef _MSC_VER
   DWORD io_size = 0;
   Channel* channel = nullptr;
-  LPWSAOVERLAPPED overlapped = nullptr;
+  SocketIocpStatus* status = nullptr;
 #endif
   while (running_) {
 #ifdef _MSC_VER
     if (!iocp_port_) continue;
     bool ret =
         GetQueuedCompletionStatus(iocp_port_, &io_size, (PULONG_PTR)&channel,
-                                  (LPOVERLAPPED*)&overlapped, INFINITE);
+                                  (LPOVERLAPPED*)&status, INFINITE);
+    
+    if (status) {
+      status->UpdateRefCount(false);
+    }
+    
     if (!ret) {
-      if (!overlapped) {
+      if (!status) {
         EXIT("GetQueuedCompletionStatus port: %x error: %d",
              iocp_port_, WSAGetLastError());
       } else {
@@ -43,12 +48,13 @@ void EventLoop::StartLoop() {
       continue;
     }
 
-    if (channel == nullptr && overlapped == nullptr) {
+    if (channel == nullptr && status == nullptr) {
       continue;
     }
 
-    SocketIocpStatus* status = reinterpret_cast<SocketIocpStatus*>(overlapped);
-    channel->HandleEvents(status->status_, io_size);
+    if (status) {
+      channel->HandleEvents(status->status_, io_size);
+    }
 #else
     std::vector<Channel*> active_channels;
     poller_->Poll(active_channels);

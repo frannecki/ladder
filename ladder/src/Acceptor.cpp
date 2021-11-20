@@ -75,7 +75,6 @@ void Acceptor::HandleAcceptCallback(int io_size) {
       EXIT("WSAIoctl error: %d", GetLastError());
     }
   }
-  status_->Reset();
   cur_accept_fd_ = socket::accept(channel_->fd(), accept_buffer_, fn_acceptex, status_, ipv6_);
 }
 #else

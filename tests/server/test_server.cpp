@@ -1,15 +1,15 @@
 #include <functional>
 #include <string>
 
+#ifdef _MSC_VER
+#pragma comment(lib, "ws2_32.lib")
+#endif
+
 #include <Buffer.h>
 #include <Connection.h>
 #include <Logging.h>
 #include <Socket.h>
 #include <TcpServer.h>
-
-#ifdef _MSC_VER
-#pragma comment(lib, "ws2_32.lib")
-#endif
 
 using namespace ladder;
 using namespace std::placeholders;

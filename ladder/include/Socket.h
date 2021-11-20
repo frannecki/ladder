@@ -19,6 +19,7 @@
 #endif
 #include <fcntl.h>
 
+#include <mutex>
 #include <string>
 
 #include <openssl/ssl.h>
@@ -47,9 +48,19 @@ enum kPollEvent : uint32_t {
 struct SocketIocpStatus {
   WSAOVERLAPPED overlapped_;
   int status_;
+  int ref_count_;
+  std::mutex mutex_ref_count_;
 
-  SocketIocpStatus(int status = 0) : status_(status) { Reset(); };
+  SocketIocpStatus(int status = 0) : status_(status), ref_count_(0) { Reset(); };
   void Reset() { memset(&overlapped_, 0, sizeof(overlapped_)); }
+  void UpdateRefCount(bool increment = true) {
+    std::lock_guard<std::mutex> lock(mutex_ref_count_);
+    ref_count_ += increment ? 1 : (-1);
+  }
+  bool FreeOfRef() {
+    std::lock_guard<std::mutex> lock(mutex_ref_count_);
+    return ref_count_ == 0;
+  }
 };
 #endif
 

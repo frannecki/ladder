@@ -33,8 +33,7 @@ Connector::Connector(const ChannelPtr& channel, int max_retry,
       addr_(addr) {
 #ifdef _MSC_VER
   if (addr.ipv6() != local_addr.ipv6()) {
-    LOG_FATAL("Remote address and local address are not in the same communication domain!");
-    exit(-1);
+    EXIT("Remote address and local address are not in the same communication domain!");
   }
 #endif
   timer_->set_timer_event_callback(std::bind(&Connector::Start, this));
