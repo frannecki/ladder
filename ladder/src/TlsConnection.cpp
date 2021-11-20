@@ -1,9 +1,7 @@
 #include <Buffer.h>
-#include <TlsConnection.h>
-
-#include <Buffer.h>
 #include <Channel.h>
 #include <Socket.h>
+#include <TlsConnection.h>
 #include <utils.h>
 
 namespace ladder {

@@ -1,7 +1,6 @@
 #ifndef LADDER_CONNECTION_H
 #define LADDER_CONNECTION_H
 
-#include <mutex>
 #include <string>
 
 #ifdef _MSC_VER
