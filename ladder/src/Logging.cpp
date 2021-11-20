@@ -1,24 +1,43 @@
+#include <time.h>
+#ifdef __unix__
+#include <sys/time.h>
+#include <time.h>
+#include <unistd.h>
+#endif
 #include <fcntl.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
-#include <sys/time.h>
-#include <time.h>
-#include <unistd.h>
 
+#include <chrono>
+#include <ctime>
+
+#include <Base.h>
 #include <Logging.h>
 #include <utils.h>
 
 namespace ladder {
 
 std::string GetCurrentDateTime() {
+  char buf[40], minor_buf[10];
+#ifdef __unix__
   struct timeval tv;
   gettimeofday(&tv, NULL);
-  struct tm* current = localtime(&(tv.tv_sec));
-  char buf[40], minor_buf[10];
+  struct tm  *current = localtime(&(tv.tv_sec));
   strftime(buf, sizeof(buf), "%Y-%m-%d %X.", current);
   snprintf(minor_buf, sizeof(minor_buf), "%06ld", tv.tv_usec);
-  strncat(buf, minor_buf, sizeof(buf) - strlen(buf) - 1);
+#endif
+#ifdef _MSC_VER
+  auto current = std::chrono::system_clock::now();
+  auto cur_ms = std::chrono::duration_cast<std::chrono::microseconds>(
+      current.time_since_epoch()) % 1000000;
+  std::time_t cur_time_t = std::chrono::system_clock::to_time_t(current);
+  std::tm* cur_tm = std::localtime(&cur_time_t);
+  std::strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S.", cur_tm);
+  snprintf(minor_buf, sizeof(minor_buf), "%06u",
+           static_cast<uint32_t>(cur_ms.count()));
+#endif
+  strncat(buf, minor_buf, sizeof(buf)-strlen(buf)-1);
 
   return std::string(buf);
 }
@@ -34,18 +53,20 @@ void Logger::release() {
   if (instance_) delete instance_;
 }
 
-Logger* Logger::instance_ = nullptr;
-
 Logger::Logger(const char* filename, int level)
     : running_(true), level_(level) {
   if (strlen(filename) == 0) {
     char log_path[20] = {0};
+#ifdef _MSC_VER
+    snprintf(log_path, sizeof(log_path), "ladder.%d.log", _getpid());
+#else
     snprintf(log_path, sizeof(log_path), "ladder.%d.log", getpid());
+#endif
     filename = log_path;
   }
-  fd_ = ::open(filename, O_CREAT | O_WRONLY | O_APPEND);
-  if (fd_ < 0) {
-    EXIT("[Logger] open");
+  fp_ = fopen(filename, "a");
+  if (fp_ == NULL) {
+      EXIT("[Logger] open");
   }
   logging_thread_ = std::thread(&Logger::ThreadFunc, this);
 }
@@ -57,7 +78,7 @@ Logger::~Logger() {
   }
   condition_.notify_one();
   logging_thread_.join();
-  close(fd_);
+  fclose(fp_);
 }
 
 void Logger::WriteLogFmt(enum LogLevel severity, const char* fmt, ...) {
@@ -90,12 +111,14 @@ void Logger::ThreadFunc() {
       msg = message_queue_.front();
       message_queue_.pop();
     }
-    int ret = ::write(fd_, msg.c_str(), msg.size());
-    if (ret < -1) {
+    int ret = fprintf(fp_, msg.c_str(), msg.size());
+    if (ret < 0) {
       // TODO: handle write error
     }
   }
 }
+
+Logger* Logger::instance_ = nullptr;
 
 const char* Logger::kLogLevels[] = {"TRACE",   "DEBUG", "INFO",
                                     "WARNING", "ERROR", "FATAL"};

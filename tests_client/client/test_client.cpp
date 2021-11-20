@@ -1,14 +1,26 @@
-#include <arpa/inet.h>
-#include <netinet/in.h>
 #include <stdio.h>
 #include <string.h>
+#ifdef _MSC_VER
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#pragma comment(lib, "ws2_32.lib")
+#elif defined(__unix__)
+#include <arpa/inet.h>
+#include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#endif
 
 const int kBufferLen = 1024;
 
 int main(int argc, char** argv) {
-  char buffer[kBufferLen];
+#ifdef _MSC_VER
+  WSADATA wsa_data;
+  if (WSAStartup(MAKEWORD(2, 2), &wsa_data) != NO_ERROR) {
+    return -1;
+  }
+#endif
+  char buffer[kBufferLen] = "areyouokbro?";
   int sockfd;
   struct sockaddr_in addr;
   socklen_t addr_len;
@@ -32,8 +44,12 @@ int main(int argc, char** argv) {
   }
   fprintf(stdout, "Connected to server\n");
 
+#ifdef _MSC_VER
+  send(sockfd, buffer, strlen(buffer), 0);
+#endif
+
   while (count < 5) {
-    ret = read(sockfd, buffer, sizeof(buffer));
+    ret = recv(sockfd, buffer, sizeof(buffer), 0);
     if (ret < 0) {
       perror("read");
       break;
@@ -43,7 +59,7 @@ int main(int argc, char** argv) {
       buffer[ret] = 0;
       fprintf(stdout, "Received buffer of %d bytes from server: %s\n", ret,
               buffer);
-      ret = write(sockfd, buffer, ret);
+      ret = send(sockfd, buffer, ret, 0);
       if (ret < 0) {
         perror("write");
         break;
@@ -54,13 +70,16 @@ int main(int argc, char** argv) {
     }
     count += 1;
   }
-
+#ifdef _MSC_VER
+  if (shutdown(sockfd, SD_SEND) < 0) {
+#elif defined(__unix__)
   if (shutdown(sockfd, SHUT_WR) < 0) {
+#endif
     perror("shutdown write");
     return -1;
   }
 
-  while ((ret = read(sockfd, buffer, sizeof(buffer))) != 0) {
+  while ((ret = recv(sockfd, buffer, sizeof(buffer), 0)) != 0) {
     if (ret < 0) {
       perror("read");
     } else {
@@ -73,7 +92,11 @@ int main(int argc, char** argv) {
 
   fprintf(stdout, "connection closed\n");
 
+#ifdef _MSC_VER
+  if (closesocket(sockfd) < 0) {
+#else
   if (close(sockfd) < 0) {
+#endif
     perror("close");
     return -1;
   }

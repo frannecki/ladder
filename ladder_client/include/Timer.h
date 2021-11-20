@@ -16,7 +16,11 @@ using EventLoopPtr = std::shared_ptr<EventLoop>;
 
 class Timer {
  public:
+#ifdef _MSC_VER
+  Timer();
+#else
   Timer(const EventLoopPtr& loop);
+#endif
   ~Timer();
   void set_interval(uint64_t microseconds, bool periodic = false);
   void set_timer_event_callback(const TimerEventCallback& callback);
@@ -25,8 +29,13 @@ class Timer {
 
  private:
   ChannelPtr timer_channel_;
+#ifdef _MSC_VER
+  HANDLE timer_;
+  HANDLE timer_queue_;
+#else
   EventLoopPtr loop_;
   int timer_fd_;
+#endif
   TimerEventCallback callback_;
   uint64_t interval_;
 };

@@ -19,19 +19,26 @@ enum TcpConnectionStatus : int {
 class Connector;
 using ConnectorPtr = std::unique_ptr<Connector>;
 
-class TcpClient {
+class LADDER_API TcpClient {
  public:
   TcpClient(const SocketAddr& target_addr, const EventLoopPtr& loop,
-            uint16_t retry_initial_timeout, bool use_ssl = false, int max_retry = 10);
+            uint16_t retry_initial_timeout, bool use_ssl = false,
+            int max_retry = 10);
   ~TcpClient();
 
+#ifdef _MSC_VER
+  void Connect(const SocketAddr& local_addr);
+#else
   void Connect();
+#endif
   void Disconnect();
 
   void set_read_callback(const ReadEvtCallback& callback);
   void set_write_callback(const WriteEvtCallback& callback);
   void set_connection_callback(const ConnectionEvtCallback& callback);
+#ifndef _MSC_VER
   EventLoopPtr loop() const;
+#endif
 
  private:
   void OnConnectionCallback(SocketAddr&&);

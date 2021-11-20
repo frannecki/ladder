@@ -13,7 +13,7 @@
 
 namespace ladder {
 
-class Buffer : public IBuffer {
+class LADDER_API Buffer : public IBuffer {
  public:
   Buffer();
   std::string Read(size_t n);
@@ -24,13 +24,15 @@ class Buffer : public IBuffer {
   uint32_t PeekUInt32();
   void WriteUInt32(uint32_t number);
   uint32_t ReadableBytes() const;
-
+#ifndef _MSC_VER
   int ReadBufferFromFd(int fd);
   int WriteBufferToFd(int fd) override;
+#endif
   bool Empty() const override;
 
   uint32_t Peek(size_t n, std::string& result);
-  void HaveRead(size_t n);
+  uint32_t Peek(char* dst, size_t len) override;
+  void HaveRead(size_t n) override;
 
  private:
   uint32_t read_index_, write_index_;

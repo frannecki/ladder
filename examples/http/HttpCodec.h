@@ -2,6 +2,7 @@
 #define LADDER_EXAMPLE_HTTP_CODEC_H
 
 #include <map>
+#include <mutex>
 #include <string>
 
 #include <Base.h>
@@ -72,6 +73,7 @@ class HttpCodec {
   HttpMessage* response_;
   HttpCodecMessageCallback server_callback_;
   bool send_file_;
+  std::mutex mutex_;
 };
 
 }  // namespace http

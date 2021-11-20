@@ -1,5 +1,7 @@
 # Ladder: A Light-weight Event-driven Server
 
+Ladder is a light-weight web server framework developed for studying purposes. It conforms to the _Reactor_ design patterns and leverages Linux epoll / BSD kqueue / Windows IOCP for i/o multiplexing.
+
 ## Prerequisites
 * protobuf 3.x
 * zlib
@@ -9,9 +11,13 @@
 ## Supported Platforms
 * Linux
 * FreeBSD
+* Windows
 
 ## Usage
 ### Building
+
+Buiding scripts for cmake and bazel are provided. You can refer to [msvc](msvc) for its usage on Windows.
+
 * GNU make
 
   ```sh
@@ -53,5 +59,3 @@
 
 ### Usage
 To use the ladder library, please refer to the [test demo](tests/server) for more details.
-
-> Note: To run the http/https server demo `test_http_server` in https mode, directories to ssl certificate and key should be specified. i.e. `./test_http_server $IndexPath $CertPath $KeyPath`

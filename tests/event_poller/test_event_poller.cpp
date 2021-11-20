@@ -1,3 +1,4 @@
+#ifndef _MSC_VER
 #include <unistd.h>
 
 #include <thread>
@@ -27,3 +28,4 @@ int main(int argc, char** argv) {
   th.join();
   return 0;
 }
+#endif

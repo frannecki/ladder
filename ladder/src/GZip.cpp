@@ -30,7 +30,7 @@ std::string GZipper::Deflate(const std::string& buf) {
   }
 
   while (bytes_finished < bytes_total) {
-    strm.avail_in = std::min(bytes_total - bytes_finished, kGZipBufferSize);
+    strm.avail_in = (std::min)(bytes_total - bytes_finished, kGZipBufferSize);
     strm.next_in = reinterpret_cast<Bytef*>(
         const_cast<char*>(buf.c_str() + bytes_finished));
     bytes_finished += strm.avail_in;
@@ -69,7 +69,7 @@ std::string GZipper::Inflate(const std::string& buf) {
   }
 
   while (bytes_finished < bytes_total) {
-    strm.avail_in = std::min(bytes_total - bytes_finished, kGZipBufferSize);
+    strm.avail_in = (std::min)(bytes_total - bytes_finished, kGZipBufferSize);
     strm.next_in = reinterpret_cast<Bytef*>(
         const_cast<char*>(buf.c_str() + bytes_finished));
     bytes_finished += strm.avail_in;

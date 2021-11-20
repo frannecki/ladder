@@ -37,7 +37,7 @@ class CallbackT : public Callback {
   ProtobufMessageCallbackT callback_;
 };
 
-class ProtobufCodec : public Codec {
+class LADDER_API ProtobufCodec : public Codec {
   using CallbackPtr = std::shared_ptr<Callback>;
 
  public:
@@ -57,7 +57,7 @@ class ProtobufCodec : public Codec {
 
   static uint32_t kMinMessageLength;
 
- private:
+ // private:
   std::map<const google::protobuf::Descriptor*, CallbackPtr> callbacks_;
   std::function<void(const ConnectionPtr&, google::protobuf::Message*)>
       default_callback_;
