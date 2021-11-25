@@ -16,7 +16,7 @@ Ladder is a light-weight web server framework developed for studying purposes. I
 ## Usage
 ### Building
 
-Buiding scripts for cmake and bazel are provided. You can refer to [msvc](msvc) for its usage on Windows.
+Buiding scripts with cmake and bazel are provided for Linux/FreeBSD. You can refer to [msvc](msvc) for its usage on Windows.
 
 * GNU make
 

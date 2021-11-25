@@ -1,20 +1,19 @@
-cmake_minimum_required(VERSION 3.20.0)
+cmake_minimum_required(VERSION 3.10.0)
 project(ladder)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -lz -std=c++11")
 
 option(DEBUG OFF)
 
 find_package(Threads REQUIRED)
 find_package(Protobuf REQUIRED)
-find_package(ZLIB REQUIRED)
-find_package(GTest REQUIRED)
+find_package(GTest REQUIRED CONFIG)
 find_package(OpenSSL REQUIRED)
 
 file(GLOB LADDER_SOURCES ladder/src/*.cpp ladder/src/*/*.cpp)
 add_library(ladder SHARED ${LADDER_SOURCES})
 target_include_directories(ladder PUBLIC ${Protobuf_INCLUDE_DIRS} ladder/include)
 target_link_libraries(ladder
-  ${Protobuf_LIBRARIES} ${ZLIB_LIBRARIES}
+  ${Protobuf_LIBRARIES}
   Threads::Threads
   ${OPENSSL_LIBRARIES}
 )
@@ -79,7 +78,7 @@ if(DEBUG)
     endif()
 endif()
 
-install(TARGETS ladder)
+install(TARGETS ladder DESTINATION lib)
 install(DIRECTORY ladder/include/ DESTINATION include/ladder FILES_MATCHING PATTERN "*.h*")
-install(TARGETS ladder_client)
+install(TARGETS ladder_client DESTINATION lib)
 install(DIRECTORY ladder_client/include/ DESTINATION include/ladder_client FILES_MATCHING PATTERN "*.h*")
