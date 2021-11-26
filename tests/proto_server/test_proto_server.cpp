@@ -4,7 +4,6 @@
 #include <Buffer.h>
 #include <Connection.h>
 #include <Logging.h>
-#include <Socket.h>
 #include <TcpServer.h>
 #include <codec/ProtobufCodec.h>
 
@@ -27,7 +26,6 @@ static ProtobufCodec* p_codec = nullptr;
 void OnRawMessage(const ConnectionPtr& conn, Buffer* buffer) {
   std::string msg = buffer->ReadAll();
   LOG_INFO("Recv: " + msg);
-  // conn->Send("Recv~ " + msg);
   conn->set_read_callback(
       std::bind(&ProtobufCodec::OnMessage, p_codec, _1, _2));
 
@@ -77,7 +75,7 @@ int main(int argc, char** argv) {
     return -1;
   }
 #endif
-  Logger::create();
+  Logger::create("./test_proto_server.log");
   SocketAddr addr("0.0.0.0", 8070, false);
   TcpServer server(addr, false);
   ProtobufCodec codec;

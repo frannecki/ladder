@@ -4,7 +4,6 @@
 #include <Buffer.h>
 #include <Connection.h>
 #include <Logging.h>
-#include <Socket.h>
 #include <TcpServer.h>
 
 using namespace ladder;
