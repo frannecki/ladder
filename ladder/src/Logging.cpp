@@ -108,13 +108,11 @@ void Logger::ThreadFunc() {
       if (!running_ && message_queue_.empty()) {
         break;
       }
-      msg = message_queue_.front();
+      msg = std::move(message_queue_.front());
       message_queue_.pop();
     }
-    int ret = fprintf(fp_, msg.c_str(), msg.size());
-    if (ret < 0) {
-      // TODO: handle write error
-    }
+    fprintf(fp_, msg.c_str());
+    fflush(fp_);
   }
 }
 
