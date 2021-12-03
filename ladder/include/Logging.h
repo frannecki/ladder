@@ -1,5 +1,5 @@
-#ifndef LADDER_LOGGER_H
-#define LADDER_LOGGER_H
+#ifndef LADDER_LOGGING_H
+#define LADDER_LOGGING_H
 
 #include <condition_variable>
 #include <mutex>

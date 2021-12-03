@@ -33,14 +33,6 @@ class LADDER_API TcpServer {
   EventLoopThreadPoolPtr loop_threads() const;
 
  private:
-#ifdef _MSC_VER
-  void OnNewConnection(int fd, const SocketAddr&, char* buffer, int io_size);
-#else
-  void OnNewConnectionCallback(int fd, SocketAddr&&);
-  void OnNewConnection(int fd, const SocketAddr&);
-  ThreadPoolPtr working_threads_;
-  size_t working_thread_num_;
-#endif
   void OnCloseConnectionCallback(int fd);
 
   ChannelPtr channel_;
@@ -58,7 +50,13 @@ class LADDER_API TcpServer {
   ConnectionEvtCallback connection_callback_;
 
 #ifdef _MSC_VER
+  void OnNewConnection(int fd, const SocketAddr&, char* buffer, int io_size);
   HANDLE iocp_port_;
+#else
+  void OnNewConnectionCallback(int fd, SocketAddr&&);
+  void OnNewConnection(int fd, const SocketAddr&);
+  ThreadPoolPtr working_threads_;
+  size_t working_thread_num_;
 #endif
 
   SSL_CTX* ssl_ctx_;

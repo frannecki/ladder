@@ -1,5 +1,5 @@
-#ifndef LADDER_CALLBACKS_H
-#define LADDER_CALLBACKS_H
+#ifndef LADDER_BASE_H
+#define LADDER_BASE_H
 
 #include <functional>
 #include <memory>

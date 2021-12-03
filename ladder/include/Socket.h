@@ -1,5 +1,5 @@
-#ifndef LADDER_SOCKET_ADDR_H
-#define LADDER_SOCKET_ADDR_H
+#ifndef LADDER_SOCKET_H
+#define LADDER_SOCKET_H
 
 #include <stdint.h>
 #ifdef __unix__

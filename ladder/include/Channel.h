@@ -59,7 +59,6 @@ class LADDER_API Channel {
 #endif
 
  private:
-  int fd_;
 #ifdef _MSC_VER
   EventCallback read_callback_;
   EventCallback write_callback_;
@@ -77,7 +76,7 @@ class LADDER_API Channel {
   std::function<void()> close_callback_;
   std::function<void()> error_callback_;
 #endif
-
+  int fd_;
 };
 
 }  // namespace ladder
