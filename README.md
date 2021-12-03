@@ -96,9 +96,7 @@ int main(int argc, char** argv) {
 #endif
   SocketAddr addr("0.0.0.0", 8070, false);
   TcpServer server(addr, false);
-#ifndef _MSC_VER
   server.set_connection_callback(std::bind(OnConnection, _1));
-#endif
   server.set_read_callback(std::bind(OnMessage, _1, _2));
   server.Start();
 #ifdef _MSC_VER

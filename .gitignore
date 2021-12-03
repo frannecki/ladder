@@ -4,6 +4,7 @@
 
 # building
 build/
+/build-cmake
 *.o
 *.out
 *.pb.h

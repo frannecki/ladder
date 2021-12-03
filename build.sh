@@ -16,4 +16,3 @@ cd tests_client && ./build.sh && cd .. || exit 1
 
 ## build http server
 cd examples/http && make && cd .. || exit 1
-
