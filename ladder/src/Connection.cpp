@@ -33,7 +33,6 @@ Connection::Connection(const EventLoopPtr& loop, int fd, bool send_file)
       read_status_(new SocketIocpStatus(kPollIn)),
       write_status_(new SocketIocpStatus(kPollOut)),
       write_pending_(false),
-      immediate_shut_down_(false),
 #endif
       shut_down_(false),
       send_file_(send_file) {
@@ -181,10 +180,7 @@ void Connection::OnReadCallback() {
 
 #ifdef _MSC_VER
   PostRead();
-  if (immediate_shut_down_) {
-    LOGF_WARNING("Forcibly closing connection. fd = %d", channel_->fd());
-    OnCloseCallback();
-  }
+  if (shut_down_) OnCloseCallback();
 #endif
 }
 
@@ -211,10 +207,7 @@ void Connection::OnWriteCallback() {
 
 #ifdef _MSC_VER
   PostWrite();
-  if (immediate_shut_down_) {
-    LOGF_WARNING("Forcibly closing connection. fd = %d", channel_->fd());
-    OnCloseCallback();
-  }
+  if (shut_down_) OnCloseCallback();
 #else
   EnableWrite(ret);
 #endif
@@ -270,7 +263,7 @@ void Connection::PostRead() {
       case WSAECONNRESET:
       case WSAECONNABORTED:
       case WSAESHUTDOWN:
-        shut_down_ = immediate_shut_down_ = true;
+        shut_down_ = true;
         break;
       default:
         EXIT("socket::read");
@@ -293,7 +286,7 @@ void Connection::PostWrite() {
       case WSAECONNRESET:
       case WSAECONNABORTED:
       case WSAESHUTDOWN:
-        shut_down_ = immediate_shut_down_ = true;
+        shut_down_ = true;
         break;
       default:
         EXIT("socket::write");

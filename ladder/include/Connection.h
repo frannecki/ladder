@@ -76,7 +76,6 @@ class LADDER_API Connection : public std::enable_shared_from_this<Connection> {
   SocketIocpStatus* read_status_;
   SocketIocpStatus* write_status_;
   bool write_pending_;  // iocp write operation pending
-  bool immediate_shut_down_;
 #endif
 
   // buffer for writing file, taking advantage of the `sendfile` linux/bsd
