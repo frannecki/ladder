@@ -155,7 +155,7 @@ void Connection::OnReadCallback() {
   } else if (ret == -1) {
     switch (errno) {
       case ECONNRESET:
-        shut_down_ = immediate_shut_down_ = true;
+        shut_down_ = true;
         OnCloseCallback();
         return;
       default:
