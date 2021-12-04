@@ -58,7 +58,7 @@ TcpServer::TcpServer(const SocketAddr& addr, bool send_file,
 }
 
 TcpServer::~TcpServer() {
-  socket::close(channel_->fd());
+  if (channel_) socket::close(channel_->fd());
 #ifdef _MSC_VER
   if (iocp_port_) CloseHandle(iocp_port_);
 #else

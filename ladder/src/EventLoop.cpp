@@ -42,10 +42,7 @@ void EventLoop::StartLoop() {
       if (!status) {
         EXIT("GetQueuedCompletionStatus port: %x error: %d",
              iocp_port_, WSAGetLastError());
-      } else {
-        io_size = -1;
       }
-      continue;
     }
 
     if (channel == nullptr && status == nullptr) {

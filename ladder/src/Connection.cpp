@@ -33,9 +33,9 @@ Connection::Connection(const EventLoopPtr& loop, int fd, bool send_file)
       read_status_(new SocketIocpStatus(kPollIn)),
       write_status_(new SocketIocpStatus(kPollOut)),
       write_pending_(false),
+      immediate_shut_down_(false),
 #endif
       shut_down_(false),
-      immediate_shut_down_(false),
       send_file_(send_file) {
 #ifdef _MSC_VER
   read_wsa_buf_->buf = new char[kMaxWsaBufSize + 1];
@@ -135,13 +135,14 @@ void Connection::SendFile(std::string&& header, const std::string& filename) {
 
 #ifdef _MSC_VER
 void Connection::OnReadCallback(int io_size) {
-#else
-void Connection::OnReadCallback() {
-#endif
-  if (shut_down_) return;
-#ifdef _MSC_VER
+  if (shut_down_) {
+    OnCloseCallback();
+    return;
+  }
   int ret = ReadBuffer(io_size);
 #else
+void Connection::OnReadCallback() {
+  if (shut_down_) return;
   int ret = ReadBuffer();
 #endif
   if (ret == 0) {
@@ -150,11 +151,6 @@ void Connection::OnReadCallback() {
 
     // IMPORTANT: OnCloseCallback can only be called once
     // since the current connection would be destructed after the call
-    // OnCloseCallback();
-
-    // IMPORTANT: Cannot return here.
-    // Even if ret == 0 there might be data read into buffer
-    // return;
 #ifndef _MSC_VER
   } else if (ret == -1) {
     switch (errno) {
@@ -167,7 +163,6 @@ void Connection::OnReadCallback() {
     }
 #endif
   } else if (ret < 0) {
-    // error: some negative value other than -1
     shut_down_ = true;
   }
 
@@ -195,7 +190,10 @@ void Connection::OnReadCallback() {
 
 #ifdef _MSC_VER
 void Connection::OnWriteCallback(int io_size) {
-  if (shut_down_) return;
+  if (shut_down_) {
+    OnCloseCallback();
+    return;
+  }
   WriteBuffer(io_size);
   write_pending_ = false;
 #else
@@ -225,9 +223,7 @@ void Connection::OnWriteCallback() {
 void Connection::OnCloseCallback() {
   channel_->ShutDownWrite();
 #ifdef _MSC_VER
-  if (!read_status_->FreeOfRef() || !write_status_->FreeOfRef()) {
-    return;
-  }
+  if (!read_status_->FreeOfRef()) return;
 #else
   channel_->RemoveFromLoop();
 #endif
