@@ -38,17 +38,23 @@ proto_library(
     srcs = ["tests/proto/tests.proto"],
 )
 
+cc_library(
+    name = "ladtest",
+    srcs = glob(["tests/unittests/ladtest/*.cpp"]),
+    hdrs = glob(["tests/unittests/ladtest/*.h"]),
+    visibility = ["//visibility:public"],
+)
+
 cc_binary(
     name = "ladder_unit_tests",
-    srcs = glob(["tests/unittests/*.cpp"]),
+    srcs = glob(["tests/unittests/*.cpp", "tests/unittests/ladtest/*.cpp"]),
     includes = ["ladder/include",
                 "ladder/include/codec",
-                "tests"
+                "tests",
     ],
     deps = [":ladder",
+						":ladtest",
             ":tests_cc_proto",
-            "@com_google_googletest//:gtest",
-            "@com_google_googletest//:gtest_main",
     ],
 )
 

@@ -1,4 +1,4 @@
-#include <gtest/gtest.h>
+#include "ladtest/ladtest.h"
 
 #include <Buffer.h>
 
@@ -11,6 +11,8 @@
 #include "proto/tests.pb.h"
 #endif
 
+using namespace ladder;
+
 #ifdef _MSC_VER
 
 class Connection;
@@ -21,7 +23,7 @@ class DerivedProtobufCodec : public ladder::ProtobufCodec {
 };
 #endif
 
-class ProtobufCodecTest : public testing::Test {
+class ProtobufCodecTest : public Test {
  protected:
   void SetUp() override {
 #ifdef _MSC_VER

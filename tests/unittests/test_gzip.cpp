@@ -1,8 +1,10 @@
 #include <string>
 
-#include <gtest/gtest.h>
+#include "ladtest/ladtest.h"
 
 #include <GZip.h>
+
+using namespace ladder;
 
 TEST(TestGZipper, test_deflate_inflate) {
   std::string str =

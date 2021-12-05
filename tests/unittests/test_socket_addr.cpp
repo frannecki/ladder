@@ -1,9 +1,12 @@
 #include <string>
 
 #include <Socket.h>
-#include <gtest/gtest.h>
 
-class SocketAddrTest : public testing::Test {
+#include "ladtest/ladtest.h"
+
+using namespace ladder;
+
+class SocketAddrTest : public Test {
  public:
   static void SetUpTestSuite() {
     fd = ladder::socket::socket(true, false);
@@ -29,8 +32,6 @@ class SocketAddrTest : public testing::Test {
 ladder::SocketAddr* SocketAddrTest::addr = nullptr;
 ladder::SocketAddr* SocketAddrTest::addr6 = nullptr;
 int SocketAddrTest::fd = -1;
-
-TEST_F(SocketAddrTest, test_bind) { EXPECT_NO_FATAL_FAILURE(addr->Bind(fd)); }
 
 TEST_F(SocketAddrTest, test_ipv4) {
   EXPECT_EQ(addr->ip(), "127.0.0.1");

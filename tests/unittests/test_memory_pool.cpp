@@ -1,9 +1,11 @@
-#include <gtest/gtest.h>
+#include "ladtest/ladtest.h"
 
 #include <MemoryPool.h>
 
-class MemoryPoolTest : public testing::Test {
- protected:
+using namespace ladder;
+
+class MemoryPoolTest : public Test {
+ public:
   // MemoryPoolImpl instance should only be
   // created once and released once
   static void SetUpTestSuite() { pool_ = ladder::MemoryPoolImpl::instance(); }
@@ -15,6 +17,7 @@ class MemoryPoolTest : public testing::Test {
     }
   }
 
+ protected:
   static ladder::MemoryPoolImpl* pool_;
 };
 

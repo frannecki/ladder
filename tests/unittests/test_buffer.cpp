@@ -1,9 +1,11 @@
 #include <string>
 
-#include <gtest/gtest.h>
+#include "ladtest/ladtest.h"
 
 #define private public
 #include <Buffer.h>
+
+using namespace ladder;
 
 TEST(TestBuffer, test_Write) {
   ladder::Buffer buffer;

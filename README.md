@@ -2,11 +2,10 @@
 
 Ladder is a light-weight web server framework developed for studying purposes. It conforms to the _Reactor_ design patterns and leverages Linux epoll / BSD kqueue / Windows IOCP for I/O multiplexing or asynchronous IO.
 
-## Prerequisites
+## Required Dependencies
 * protobuf 3.x
 * zlib
 * OpenSSL
-* googletest 1.10.x (optional, for unit tests)
 
 ## Supported Platforms
 * Linux

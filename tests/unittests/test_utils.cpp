@@ -1,8 +1,10 @@
 #include <string>
 
-#include <gtest/gtest.h>
+#include "ladtest/ladtest.h"
 
 #include <utils.h>
+
+using namespace ladder;
 
 TEST(TestUtils, test_ReadFileAsString) {
   std::string str =
