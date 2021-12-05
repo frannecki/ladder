@@ -1,12 +1,6 @@
 #include <iostream>
 #include <chrono>
 
-#ifdef _MSC_VER
-#define _CRTDBG_MAP_ALLOC
-#include <crtdbg.h>
-#include <stdlib.h>
-#endif
-
 #include "ladtest.h"
 
 namespace ladder {
@@ -194,11 +188,10 @@ void TestInfo::Run() {
 
 } // namespace ladder
 
+#ifndef _MSC_VER
 int main(int argc, char** argv) {
   int ret = RUN_ALL_TESTS();
   ::ladder::UnitTest::release();
-#if defined(_MSC_VER) && defined(_DEBUG)
-  _CrtDumpMemoryLeaks();
-#endif
   return ret;
 }
+#endif

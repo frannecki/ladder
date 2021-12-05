@@ -7,6 +7,18 @@
 #include <string>
 #include <vector>
 
+#ifdef _MSC_VER
+#ifdef _CONSOLE
+#define LADDER_API
+#elif defined(_WINDLL)
+#define LADDER_API __declspec(dllexport)
+#else
+#define LADDER_API __declspec(dllimport)
+#endif
+#else
+#define LADDER_API
+#endif
+
 #define TEST(test_suite_name, test_name)                    \
   LADTEST_TEST_(test_suite_name, test_name, ::ladder::Test, \
                 ::ladder::GetTypeId<::ladder::Test>())
@@ -152,7 +164,7 @@ using SetUpOrTestDownTestSuiteFp = void (*)();
 
 struct TestInfo;
 class TestSuite;
-class UnitTest {
+class LADDER_API UnitTest {
  public:
   UnitTest(const UnitTest&) = delete;
   UnitTest& operator=(const UnitTest&) = delete;

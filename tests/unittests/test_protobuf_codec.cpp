@@ -11,17 +11,17 @@
 #include "proto/tests.pb.h"
 #endif
 
-using namespace ladder;
-
 #ifdef _MSC_VER
 
 class Connection;
-using ConnectionPtr = std::shared_ptr<Connection>;
+using ConnectionPtr = std::shared_ptr<ladder::Connection>;
 
 class DerivedProtobufCodec : public ladder::ProtobufCodec {
     void Send(const ConnectionPtr& conn, google::protobuf::Message* message) {}
 };
 #endif
+
+using namespace ladder;
 
 class ProtobufCodecTest : public Test {
  protected:

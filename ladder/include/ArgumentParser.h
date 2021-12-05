@@ -5,9 +5,11 @@
 #include <set>
 #include <string>
 
+#include <port.h>
+
 namespace ladder {
 
-class IArgumentParser {
+class LADDER_API IArgumentParser {
  public:
   virtual ~IArgumentParser();
   bool Init(int argc, char** argv);

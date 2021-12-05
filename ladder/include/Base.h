@@ -5,15 +5,7 @@
 #include <memory>
 #include <string>
 
-#ifdef _MSC_VER
-#ifdef _WINDLL
-#define LADDER_API __declspec(dllexport)
-#else
-#define LADDER_API __declspec(dllimport)
-#endif
-#else
-#define LADDER_API
-#endif
+#include <port.h>
 
 namespace ladder {
 

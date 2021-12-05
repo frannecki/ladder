@@ -33,6 +33,7 @@
     <ClInclude Include="..\..\ladder\include\GZip.h" />
     <ClInclude Include="..\..\ladder\include\Logging.h" />
     <ClInclude Include="..\..\ladder\include\MemoryPool.h" />
+    <ClInclude Include="..\..\ladder\include\port.h" />
     <ClInclude Include="..\..\ladder\include\Socket.h" />
     <ClInclude Include="..\..\ladder\include\TcpServer.h" />
     <ClInclude Include="..\..\ladder\include\ThreadPool.h" />

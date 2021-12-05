@@ -61,15 +61,12 @@ TEST(TestArgParser, test_no_such_option) {
 
 #ifdef _MSC_VER
 int main(int argc, char** argv) {
-#ifdef _MSC_VER
-    WSADATA wsa_data;
-    int ret = 0;
-    if ((ret = WSAStartup(MAKEWORD(2, 2), &wsa_data)) != 0) {
-        perror("WSAStartup failed");
-        return -1;
-    }
-#endif
-  testing::InitGoogleTest(&argc, argv);
+  WSADATA wsa_data;
+  int ret = 0;
+  if ((ret = WSAStartup(MAKEWORD(2, 2), &wsa_data)) != 0) {
+      perror("WSAStartup failed");
+      return -1;
+  }
   return RUN_ALL_TESTS();
 }
 #endif

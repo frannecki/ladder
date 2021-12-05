@@ -72,6 +72,9 @@
     <ClInclude Include="..\..\ladder\include\codec\ProtobufCodec.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\ladder\include\port.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\ladder\src\Acceptor.cpp">

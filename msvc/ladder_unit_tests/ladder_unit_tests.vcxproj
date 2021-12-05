@@ -19,40 +19,25 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\ladder\include\Acceptor.h" />
-    <ClInclude Include="..\..\ladder\include\Aliases.h" />
-    <ClInclude Include="..\..\ladder\include\ArgumentParser.h" />
-    <ClInclude Include="..\..\ladder\include\Buffer.h" />
-    <ClInclude Include="..\..\ladder\include\Channel.h" />
-    <ClInclude Include="..\..\ladder\include\Connection.h" />
-    <ClInclude Include="..\..\ladder\include\EventLoop.h" />
-    <ClInclude Include="..\..\ladder\include\EventLoopThreadPool.h" />
-    <ClInclude Include="..\..\ladder\include\EventPoller.h" />
-    <ClInclude Include="..\..\ladder\include\Logger.h" />
-    <ClInclude Include="..\..\ladder\include\ProtobufCodec.h" />
-    <ClInclude Include="..\..\ladder\include\Socket.h" />
-    <ClInclude Include="..\..\ladder\include\TcpServer.h" />
-    <ClInclude Include="..\..\ladder\include\ThreadPool.h" />
-    <ClInclude Include="..\..\ladder\include\utils.h" />
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="..\..\ladder\src\ArgumentParser.cpp" />
     <ClCompile Include="..\..\ladder\src\Base.cpp" />
     <ClCompile Include="..\..\ladder\src\Buffer.cpp" />
     <ClCompile Include="..\..\ladder\src\Channel.cpp" />
     <ClCompile Include="..\..\ladder\src\codec\Codec.cpp" />
     <ClCompile Include="..\..\ladder\src\codec\ProtobufCodec.cpp" />
-    <ClCompile Include="..\..\ladder\src\Connection.cpp" />
-    <ClCompile Include="..\..\ladder\src\EventLoop.cpp" />
-    <ClCompile Include="..\..\ladder\src\EventPoller.cpp" />
-    <ClCompile Include="..\..\ladder\src\FileBuffer.cpp" />
+    <ClCompile Include="..\..\ladder\src\GZip.cpp" />
+    <ClCompile Include="..\..\ladder\src\Logging.cpp" />
     <ClCompile Include="..\..\ladder\src\MemoryPool.cpp" />
     <ClCompile Include="..\..\ladder\src\Socket.cpp" />
     <ClCompile Include="..\..\ladder\src\utils.cpp" />
+    <ClCompile Include="..\..\tests\unittests\ladtest\ladtest.cpp" />
     <ClCompile Include="..\..\tests\unittests\test_argument_parser.cpp" />
     <ClCompile Include="..\..\tests\unittests\test_buffer.cpp" />
+    <ClCompile Include="..\..\tests\unittests\test_gzip.cpp" />
+    <ClCompile Include="..\..\tests\unittests\test_memory_pool.cpp" />
     <ClCompile Include="..\..\tests\unittests\test_protobuf_codec.cpp" />
     <ClCompile Include="..\..\tests\unittests\test_socket_addr.cpp" />
+    <ClCompile Include="..\..\tests\unittests\test_utils.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -115,7 +100,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>..\..\tests;..\..\ladder\include;..\..\ladder\src;$(IncludePath)</IncludePath>
-    <LibraryPath>$(VcpkgRoot)debug\lib\manual-link;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(VcpkgRoot)debug\lib\manual-link;..\x64\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -159,7 +144,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>gtest_maind.lib;gmock_maind.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

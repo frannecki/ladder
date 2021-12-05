@@ -4,6 +4,10 @@
 
 #include "ladtest/ladtest.h"
 
+#ifdef _MSC_VER
+#pragma comment(lib, "ws2_32.lib")
+#endif
+
 using namespace ladder;
 
 class SocketAddrTest : public Test {
