@@ -298,8 +298,11 @@ void HttpCodec::OnClientMessage(const ConnectionPtr& conn, Buffer* buffer) {
     conn->Send(std::move(headers));
   }
 
+  if (request->context()->version_ == "HTTP/1.0") conn->ShutDownWrite();
+
   delete request;
   delete response;
+
 }
 
 }  // namespace http

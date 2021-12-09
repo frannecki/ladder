@@ -21,6 +21,7 @@ HttpServer::~HttpServer() { delete codec_; }
 
 void HttpServer::OnMessage(struct HttpContext* ctx1, struct HttpContext* ctx2) {
   ctx2->clear();
+  ctx2->version_ = ctx1->version_;
   auto iter =
       callbacks_.find(static_cast<enum kHttpRequestMethod>(ctx1->method_));
   if (iter == callbacks_.end()) {
