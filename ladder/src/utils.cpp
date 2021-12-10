@@ -33,7 +33,7 @@ std::vector<int> FindSubstr(const std::string& str, const std::string& pat) {
   int len2 = pat.size();
   std::vector<int> positions;
 
-  MemoryWrapper<int> wrapper(1 + len2);
+  MemoryWrapper<int> wrapper(static_cast<size_t>(1 + len2));
   int* next = wrapper.get();
 
   int t = next[0] = -1, i = 0, j;

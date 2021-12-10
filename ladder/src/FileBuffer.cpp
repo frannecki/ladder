@@ -49,7 +49,6 @@ int FileBuffer::WriteBufferToFd(int fd) {
     if (fd_ == 0) {
       buffer_->Write(pending_files_.front().header_);
       std::string& filename = pending_files_.front().filename_;
-#ifdef __unix__
       if (!filename.empty()) {
         fd_ = open(pending_files_.front().filename_.c_str(), O_RDONLY);
         if (fd_ == -1) fd_ = 0;
@@ -63,20 +62,6 @@ int FileBuffer::WriteBufferToFd(int fd) {
       } else {
         pending_files_.pop();
       }
-#elif defined(_MSC_VER)
-      if (!filename.empty()) {
-        fd_ = CreateFile((LPCWSTR)pending_files_.front().filename_.c_str(),
-                         GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-        if (fd_ == INVALID_HANDLE_VALUE) fd_ = 0;
-      }
-      if (fd_ != 0) {
-        DWORD sz = ::GetFileSize(fd_, nullptr);
-        bytes_pending_ = static_cast<int>(sz);
-        bytes_sent_ = 0;
-      } else {
-        pending_files_.pop();
-      }
-#endif
     }
 
     ret = buffer_->WriteBufferToFd(fd);
@@ -103,11 +88,7 @@ int FileBuffer::WriteBufferToFd(int fd) {
         bytes_sent_ += ret;
         bytes_pending_ -= ret;
         if (bytes_pending_ == 0) {
-#ifdef __unix__
           ::close(fd_);
-#elif defined(_MSC_VER)
-          CloseHandle(fd_);
-#endif
           fd_ = 0;
           pending_files_.pop();
         }
