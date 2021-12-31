@@ -26,6 +26,7 @@
     <ClInclude Include="..\..\ladder\include\Channel.h" />
     <ClInclude Include="..\..\ladder\include\codec\Codec.h" />
     <ClInclude Include="..\..\ladder\include\codec\ProtobufCodec.h" />
+    <ClInclude Include="..\..\ladder\include\compat.h" />
     <ClInclude Include="..\..\ladder\include\Connection.h" />
     <ClInclude Include="..\..\ladder\include\EventLoop.h" />
     <ClInclude Include="..\..\ladder\include\EventLoopThreadPool.h" />
@@ -33,7 +34,6 @@
     <ClInclude Include="..\..\ladder\include\GZip.h" />
     <ClInclude Include="..\..\ladder\include\Logging.h" />
     <ClInclude Include="..\..\ladder\include\MemoryPool.h" />
-    <ClInclude Include="..\..\ladder\include\port.h" />
     <ClInclude Include="..\..\ladder\include\Socket.h" />
     <ClInclude Include="..\..\ladder\include\TcpServer.h" />
     <ClInclude Include="..\..\ladder\include\ThreadPool.h" />

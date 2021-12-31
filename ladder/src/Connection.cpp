@@ -237,6 +237,7 @@ void Connection::PostWrite() {
       case WSAECONNRESET:
       case WSAECONNABORTED:
       case WSAESHUTDOWN:
+      case WSAEINVAL:
         shut_down_ = true;
         break;
       default:

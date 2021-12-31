@@ -4,8 +4,8 @@
 
 #include <compat.h>
 #ifdef LADDER_OS_WINDOWS
-#include <mswsock.h>
 #include <winsock2.h>
+#include <mswsock.h>
 #endif
 
 #include <Acceptor.h>
