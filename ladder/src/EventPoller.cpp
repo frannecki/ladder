@@ -89,12 +89,6 @@ void EventPoller::RemoveChannel(int fd) {
   }
 }
 
-void EventPoller::Wakeup() { pipe_->Wakeup(); }
-
-void EventPoller::set_wakeup_callback(const std::function<void()>& callback) {
-  pipe_->set_wakeup_callback(callback);
-}
-
 //// For FreeBSD
 #elif defined(LADDER_OS_FREEBSD)
 static thread_local struct kevent poll_evts[kPollLimit];
@@ -218,6 +212,13 @@ std::unordered_map<uint32_t, short> EventPoller::stat_2_flt_ = {
 #endif
 
 EventPoller::~EventPoller() {}
+
+void EventPoller::Wakeup() { pipe_->Wakeup(); }
+
+void EventPoller::set_wakeup_callback(const std::function<void()>& callback) {
+  pipe_->set_wakeup_callback(callback);
+}
+
 
 #ifdef LADDER_OS_UNIX
 Pipe::Pipe() {

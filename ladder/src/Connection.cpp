@@ -246,7 +246,7 @@ void Connection::PostWrite() {
 }
 #else
 void Connection::Init() {
-#ifdef LADDER_OS_UNIX
+#ifdef LADDER_OS_LINUX
   channel_->SetEpollEdgeTriggered();
 #endif
   channel_->UpdateToLoop();
