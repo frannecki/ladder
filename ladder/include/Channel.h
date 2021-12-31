@@ -2,9 +2,12 @@
 #define LADDER_CHANNEL_H
 
 #include <stdint.h>
-#ifdef __linux__
+
+#include <compat.h>
+
+#ifdef LADDER_OS_LINUX
 #include <sys/epoll.h>
-#elif defined(__FreeBSD__)
+#elif defined(LADDER_OS_FREEBSD)
 #include <sys/event.h>
 #endif
 
@@ -18,7 +21,7 @@ namespace ladder {
 class EventLoop;
 
 using EventLoopPtr = std::shared_ptr<EventLoop>;
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
 using EventCallback = std::function<void(int)>;
 #else
 using EventCallback = std::function<void()>;
@@ -26,10 +29,16 @@ using EventCallback = std::function<void()>;
 
 class LADDER_API Channel {
  public:
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
   Channel(int fd);
+  void HandleEvents(int evts, int io_size);
 #else
   Channel(EventLoopPtr loop, int fd);
+  void HandleEvents();
+  void set_revents(uint32_t events);
+  uint32_t events() const;
+  EventLoopPtr loop() const;
+  void RemoveFromLoop();
 #endif
   ~Channel();
   int fd() const;
@@ -38,28 +47,18 @@ class LADDER_API Channel {
   void set_write_callback(const EventCallback& callback);
   void set_close_callback(const std::function<void()>& callback);
   void set_error_callback(const std::function<void()>& callback);
-#ifdef _MSC_VER
-  void HandleEvents(int evts, int io_size);
-#else
-  void HandleEvents();
-  void set_revents(uint32_t events);
-  uint32_t events() const;
-#endif
-#ifdef __linux__
+
+#ifdef LADDER_OS_LINUX
   void UpdateToLoop(int op = EPOLL_CTL_ADD);
   void SetEpollEdgeTriggered(bool edge_triggered = true);
-#elif defined(__FreeBSD__)
+#elif defined(LADDER_OS_FREEBSD)
   void UpdateToLoop(int op = EV_ADD | EV_ENABLE);  // | EV_CLEAR);
 #endif
   void ShutDownWrite();
   void ShutDownRead();
-#ifndef _MSC_VER
-  EventLoopPtr loop() const;
-  void RemoveFromLoop();
-#endif
 
  private:
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
   EventCallback read_callback_;
   EventCallback write_callback_;
   std::function<void()> close_callback_;

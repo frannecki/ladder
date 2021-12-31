@@ -57,7 +57,6 @@ class LADDER_API ProtobufCodec : public Codec {
 
   static uint32_t kMinMessageLength;
 
- // private:
   std::map<const google::protobuf::Descriptor*, CallbackPtr> callbacks_;
   std::function<void(const ConnectionPtr&, google::protobuf::Message*)>
       default_callback_;

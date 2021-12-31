@@ -5,7 +5,7 @@
 #include <memory>
 #include <string>
 
-#include <port.h>
+#include <compat.h>
 
 namespace ladder {
 
@@ -35,7 +35,7 @@ class LADDER_API IBuffer {
   virtual ~IBuffer();
   virtual void Write(const std::string& buf) = 0;
   virtual void Write(const char* src, size_t len) = 0;
-#ifndef _MSC_VER
+#ifndef LADDER_OS_WINDOWS
   virtual int WriteBufferToFd(int fd) = 0;
 #endif
   virtual uint32_t Peek(char* dst, size_t len) = 0;

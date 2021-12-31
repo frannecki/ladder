@@ -1,9 +1,10 @@
-#ifdef __unix__
+#include <compat.h>
+#ifdef LADDER_OS_UNIX
 #include <unistd.h>
 #endif
-#ifdef __linux__
+#ifdef LADDER_OS_LINUX
 #include <sys/timerfd.h>
-#elif defined(__FreeBSD__)
+#elif defined(LADDER_OS_FREEBSD)
 #include <sys/event.h>
 #include <sys/time.h>
 #endif
@@ -18,59 +19,28 @@
 
 namespace ladder {
 
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
 static VOID CALLBACK TimerRoutine(PVOID lpParam, BOOLEAN TimerOrWaitFired) {
   (*(TimerEventCallback*)lpParam)();
 }
 #endif
 
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
 Timer::Timer()
     : timer_(NULL),
       timer_queue_(CreateTimerQueue()),
-#else
-Timer::Timer(const EventLoopPtr& loop)
-    : loop_(loop),
-#endif
       interval_(0) {
-#ifdef _MSC_VER
   if (!timer_queue_) {
     EXIT("CreateTimerQueue error: %d", GetLastError());
   }
-#elif defined(__linux__)
-  timer_fd_ = ::timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
-  if (timer_fd_ < 0) {
-    EXIT("[Timer] timerfd_create");
-  }
-  timer_channel_ = std::make_shared<Channel>(loop, timer_fd_);
-  timer_channel_->UpdateToLoop();
-  timer_channel_->set_read_callback(std::bind(&Timer::OnTimer, this));
-#elif defined(__FreeBSD__)
-  timer_fd_ = 1;
-  timer_channel_ = std::make_shared<Channel>(loop, timer_fd_);
-  timer_channel_->set_read_callback(std::bind(&Timer::OnTimer, this));
-#endif
 }
 
 Timer::~Timer() {
-#ifdef _MSC_VER
   CloseHandle(timer_);
   CloseHandle(timer_queue_);
-#elif defined(__linux__)
-  socket::close(timer_fd_);
-#elif defined(__FreeBSD__)
-  struct kevent evt;
-  EV_SET(&evt, timer_fd_, EVFILT_TIMER, EV_DELETE, 0, 0, NULL);
-  loop_->UpdateEvent(&evt);
-#endif
-}
-
-void Timer::set_timer_event_callback(const TimerEventCallback& callback) {
-  callback_ = callback;
 }
 
 void Timer::set_interval(uint64_t interval, bool periodic) {
-#ifdef _MSC_VER
   uint64_t milliseconds = interval / 1000;
   if (!timer_) {
     if (!CreateTimerQueueTimer(&timer_, timer_queue_,
@@ -84,7 +54,40 @@ void Timer::set_interval(uint64_t interval, bool periodic) {
       EXIT("ChangeTimerQueueTimer error: %d", GetLastError());
     }
   }
-#elif defined(__linux__)
+}
+
+#else
+
+Timer::Timer(const EventLoopPtr& loop)
+    : loop_(loop),
+      interval_(0) {
+#ifdef LADDER_OS_LINUX
+  timer_fd_ = ::timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
+  if (timer_fd_ < 0) {
+    EXIT("[Timer] timerfd_create");
+  }
+  timer_channel_ = std::make_shared<Channel>(loop, timer_fd_);
+  timer_channel_->UpdateToLoop();
+  timer_channel_->set_read_callback(std::bind(&Timer::OnTimer, this));
+#elif defined(LADDER_OS_FREEBSD)
+  timer_fd_ = 1;
+  timer_channel_ = std::make_shared<Channel>(loop, timer_fd_);
+  timer_channel_->set_read_callback(std::bind(&Timer::OnTimer, this));
+#endif
+}
+
+Timer::~Timer() {
+#ifdef LADDER_OS_LINUX
+  socket::close(timer_fd_);
+#elif defined(LADDER_OS_FREEBSD)
+  struct kevent evt;
+  EV_SET(&evt, timer_fd_, EVFILT_TIMER, EV_DELETE, 0, 0, NULL);
+  loop_->UpdateEvent(&evt);
+#endif
+}
+
+void Timer::set_interval(uint64_t interval, bool periodic) {
+#ifdef LADDER_OS_LINUX
   struct itimerspec value;
   bzero(&value, sizeof(value));
   uint64_t microseconds = interval_ = interval;
@@ -99,7 +102,7 @@ void Timer::set_interval(uint64_t interval, bool periodic) {
   if (::timerfd_settime(timer_fd_, 0, &value, NULL) < 0) {
     EXIT("[Timer] timerfd_settime");
   }
-#elif defined(__FreeBSD__)
+#elif defined(LADDER_OS_FREEBSD)
   struct kevent evt;
   u_short flags = EV_ADD | EV_ENABLE;
   // NOTE: for freebsd there cannot be multiple timers
@@ -110,10 +113,16 @@ void Timer::set_interval(uint64_t interval, bool periodic) {
 #endif
 }
 
+#endif
+
+void Timer::set_timer_event_callback(const TimerEventCallback& callback) {
+  callback_ = callback;
+}
+
 uint64_t Timer::GetInterval() const { return interval_; }
 
 void Timer::OnTimer() {
-#ifdef __linux__
+#ifdef LADDER_OS_LINUX
   uint64_t exp;
   if (socket::read(timer_fd_, &exp, sizeof(exp)) < 0) {
     EXIT("[Timer] read");

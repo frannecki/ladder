@@ -26,7 +26,7 @@ class FileBuffer : public IBuffer {
   void AddFile(std::string&& header, const std::string& filename);
   void Write(const std::string& content) override;
   void Write(const char* src, size_t len) override;
-#ifndef _MSC_VER
+#ifndef LADDER_OS_WINDOWS
   int WriteBufferToFd(int fd) override;
 #endif
   uint32_t Peek(char* dst, size_t len) override;
@@ -38,9 +38,9 @@ class FileBuffer : public IBuffer {
   Buffer* buffer_;
   int bytes_sent_;
   int bytes_pending_;
-#ifdef __unix__
+#ifdef LADDER_OS_UNIX
   int fd_;
-#elif defined(_MSC_VER)
+#elif defined(LADDER_OS_WINDOWS)
   void* fd_;
 #endif
 };

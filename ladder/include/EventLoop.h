@@ -6,7 +6,9 @@
 #include <mutex>
 #include <vector>
 
-#ifdef _MSC_VER
+#include <compat.h>
+
+#ifdef LADDER_OS_WINDOWS
 #include <winsock2.h>
 #else
 #include <EventPoller.h>
@@ -21,7 +23,7 @@ using EventPollerPtr = std::unique_ptr<EventPoller>;
 
 class LADDER_API EventLoop {
  public:
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
   EventLoop(HANDLE iocp_port = nullptr);
   void UpdateIocpPort(const Channel* channel);
 #else
@@ -32,16 +34,16 @@ class LADDER_API EventLoop {
   void StartLoop();
   void StopLoop();
   void QueueInLoop(std::function<void()>&& task);
-#ifdef __unix__
+#ifdef LADDER_OS_UNIX
   void set_wakeup_callback(const std::function<void()>& callback);
 #endif
   // TODO: wake up poller for urgent tasks
-#ifdef __FreeBSD__
+#ifdef LADDER_OS_FREEBSD
   int UpdateEvent(const struct kevent* evt);
 #endif
 
  private:
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
   HANDLE iocp_port_;
 #else
   EventPollerPtr poller_;

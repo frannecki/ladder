@@ -1,5 +1,5 @@
-#ifndef LADDER_PORT_H
-#define LADDER_PORT_H
+#ifndef LADDER_COMPAT_H
+#define LADDER_COMPAT_H
 
 #ifdef _MSC_VER
 #ifdef _CONSOLE
@@ -16,13 +16,13 @@
 #endif
 
 #ifdef _MSC_VER
-#define OS_WINDOWS
+#define LADDER_OS_WINDOWS
 #elif defined(__unix__)
-#define OS_UNIX
+#define LADDER_OS_UNIX
 #ifdef __linux__
-#define OS_LINUX
+#define LADDER_OS_LINUX
 #elif defined(__FreeBSD__)
-#define OS_FREEBSD
+#define LADDER_OS_FREEBSD
 #endif
 #endif
 

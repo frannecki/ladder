@@ -9,7 +9,8 @@
 #include <openssl/err.h>
 #include <openssl/ssl.h>
 
-#ifdef _MSC_VER
+#include <compat.h>
+#ifdef LADDER_OS_WINDOWS
 #include <winsock2.h>
 #endif
 
@@ -40,7 +41,7 @@ SSL_CTX* CreateSslContext(bool server = true);
 void ConfigureSslContext(SSL_CTX* ctx, const char* cert_path,
                          const char* key_path);
 
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
 const int kMaxIocpRecvSize = 1024;
 
 class Channel;

@@ -18,7 +18,7 @@ const uint16_t kMinRetryInitialTimeout = 5;
 
 class Connector {
  public:
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
   Connector(const ChannelPtr&, int max_retry, const SocketAddr& addr,
             const SocketAddr& local_addr,
             uint16_t retry_initial_timeout = kMinRetryInitialTimeout * 2);
@@ -41,15 +41,13 @@ class Connector {
   int retry_;
   int max_retry_;
   uint16_t retry_timeout_;
-#ifdef _MSC_VER
-  SocketIocpStatus* status_;
-#endif
   TimerPtr timer_;
   ConnectionCallback connection_callback_;
   ConnectionFailureCallback connection_failure_callback_;
   bool ipv6_;
   SocketAddr addr_;
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
+  SocketIocpStatus* status_;
   SocketAddr local_addr_;
 #endif
 };

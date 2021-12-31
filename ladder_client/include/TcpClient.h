@@ -26,19 +26,17 @@ class LADDER_API TcpClient {
             int max_retry = 10);
   ~TcpClient();
 
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
   void Connect(const SocketAddr& local_addr);
 #else
   void Connect();
+  EventLoopPtr loop() const;
 #endif
   void Disconnect();
 
   void set_read_callback(const ReadEvtCallback& callback);
   void set_write_callback(const WriteEvtCallback& callback);
   void set_connection_callback(const ConnectionEvtCallback& callback);
-#ifndef _MSC_VER
-  EventLoopPtr loop() const;
-#endif
 
  private:
   void OnConnectionCallback(SocketAddr&&);

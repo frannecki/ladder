@@ -5,11 +5,13 @@
 #include <EventLoopThreadPool.h>
 #include <ThreadPool.h>
 
+#include <compat.h>
+
 namespace ladder {
 
 static const size_t kMinEventLoopThreadNum = 4;
 
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
 EventLoopThreadPool::EventLoopThreadPool(HANDLE iocp_port, size_t capacity)
 #else
 EventLoopThreadPool::EventLoopThreadPool(size_t capacity)
@@ -18,7 +20,7 @@ EventLoopThreadPool::EventLoopThreadPool(size_t capacity)
       pool_(new ThreadPool((std::max)(capacity, kMinEventLoopThreadNum))),
       cur_idx_(0) {
   for (size_t i = 0; i < capacity_; ++i) {
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
     loops_.emplace_back(std::make_shared<EventLoop>(iocp_port));
 #else
     loops_.emplace_back(std::make_shared<EventLoop>());

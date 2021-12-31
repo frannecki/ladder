@@ -1,7 +1,8 @@
-#ifdef __unix__
+#include <compat.h>
+#ifdef LADDER_OS_UNIX
 #include <unistd.h>
 #endif
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
 #include <winsock2.h>
 #endif
 
@@ -87,7 +88,7 @@ void Buffer::WriteUInt32(uint32_t number) {
   Write(buf_str, sizeof(number));
 }
 
-#ifndef _MSC_VER
+#ifndef LADDER_OS_WINDOWS
 int Buffer::ReadBufferFromFd(int fd) {
   int ret = 0;
   char buf[kReadBufferSize];

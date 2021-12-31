@@ -3,17 +3,26 @@
 #include <Socket.h>
 #include <utils.h>
 
+#include <compat.h>
+
 namespace ladder {
 
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
 EventLoop::EventLoop(HANDLE iocp_port)
     : iocp_port_(iocp_port), running_(false) {}
 
 void EventLoop::UpdateIocpPort(const Channel* channel) {
   iocp_port_ = ladder::UpdateIocpPort(iocp_port_, channel);
 }
+
 #else
 EventLoop::EventLoop() : poller_(new EventPoller), running_(false) {}
+
+void EventLoop::UpdateChannel(Channel* channel, int op) {
+  poller_->UpdateChannel(channel, op);
+}
+
+void EventLoop::RemoveChannel(int fd) { poller_->RemoveChannel(fd); }
 #endif
 
 void EventLoop::StartLoop() {
@@ -22,13 +31,13 @@ void EventLoop::StartLoop() {
     if (running_) return;
     running_ = true;
   }
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
   DWORD io_size = 0;
   Channel* channel = nullptr;
   SocketIocpStatus* status = nullptr;
 #endif
   while (running_) {
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
     if (!iocp_port_) continue;
     bool ret =
         GetQueuedCompletionStatus(iocp_port_, &io_size, (PULONG_PTR)&channel,
@@ -67,25 +76,17 @@ void EventLoop::StopLoop() {
   running_ = false;
 }
 
-#ifndef _MSC_VER
-void EventLoop::UpdateChannel(Channel* channel, int op) {
-  poller_->UpdateChannel(channel, op);
-}
-
-void EventLoop::RemoveChannel(int fd) { poller_->RemoveChannel(fd); }
-#endif
-
 void EventLoop::QueueInLoop(std::function<void()>&& task) {
   pending_tasks_.emplace_back(task);
 }
 
-#ifdef __unix__
+#ifdef LADDER_OS_UNIX
 void EventLoop::set_wakeup_callback(const std::function<void()>& callback) {
   poller_->set_wakeup_callback(callback);
 }
 #endif
 
-#ifdef __FreeBSD__
+#ifdef LADDER_OS_FREEBSD
 int EventLoop::UpdateEvent(const struct kevent* evt) {
   return poller_->UpdateEvent(evt);
 }

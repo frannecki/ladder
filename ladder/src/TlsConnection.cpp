@@ -25,7 +25,7 @@ Ssl::~Ssl() {
   rbio_ = wbio_ = nullptr;
 }
 
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
 TlsConnection::TlsConnection(int fd, SSL_CTX* ssl_ctx, bool server)
     : Connection(fd, false),
 #else
@@ -36,33 +36,36 @@ TlsConnection::TlsConnection(const EventLoopPtr& loop, int fd, SSL_CTX* ssl_ctx,
       ssl_engine_(new Ssl(ssl_ctx, server)),
       accepted_(false),
       is_server_(server),
-      pre_write_buffer_(new Buffer) {}
+      pre_write_buffer_(new Buffer) {
+}
 
 TlsConnection::~TlsConnection() {
   if (pre_write_buffer_) delete pre_write_buffer_;
   if (ssl_engine_) delete ssl_engine_;
 }
 
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
 void TlsConnection::Init(HANDLE iocp_port, char* buffer, int io_size) {
   Connection::Init(iocp_port, NULL, 0);
   ReadFromBuffer(buffer, io_size);
+  if (!is_server_) {
+    // ssl clients need to send client hello on connection
+    WriteBuffer(0);
+  }
+}
 #else
 void TlsConnection::Init() {
   Connection::Init();
-#endif
   if (!is_server_) {
-    // ssl clients need to send client hello on connection
-#ifdef _MSC_VER
-    WriteBuffer(0);
-#else
-#ifdef __linux__
+  // ssl clients need to send client hello on connection
+#ifdef LADDER_OS_LINUX
     channel_->SetEpollEdgeTriggered(false);
-#endif
+#else
     channel_->EnableWrite();
 #endif
   }
 }
+#endif
 
 void TlsConnection::Send(const std::string& buf) {
   if (shut_down_) return;
@@ -79,19 +82,19 @@ void TlsConnection::Send(const std::string& buf) {
     if (n > 0) {
       n_written += n;
       this->Encrypt();
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
       PostWrite();
 #endif
     } else {
       break;
     }
   }
-#ifndef _MSC_VER
+#ifndef LADDER_OS_WINDOWS
   EnableWrite(Connection::WriteBuffer());
 #endif
 }
 
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
 int TlsConnection::ReadBuffer(int io_size) {
   if (ReadFromBuffer(read_wsa_buf_->buf, read_wsa_buf_->len = io_size) < 0) {
     return -2;
@@ -174,8 +177,7 @@ int TlsConnection::ReadFromBuffer(const char* src, int len) {
 
     if (!SSL_is_init_finished(ssl_engine_->ssl_)) {
       int n_accepted = SSL_do_handshake(ssl_engine_->ssl_);
-      if (n_accepted > 0)
-        OnSslHandshakeFinished();
+      if (n_accepted > 0) OnSslHandshakeFinished();
 
       if (HandleSslError(n_accepted) < 0) {
         return -1;
@@ -203,7 +205,7 @@ int TlsConnection::HandleSslError(int n) {
     case SSL_ERROR_WANT_WRITE:
     case SSL_ERROR_WANT_READ:
       this->Encrypt();
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
       PostWrite();
 #else
       EnableWrite(Connection::WriteBuffer());

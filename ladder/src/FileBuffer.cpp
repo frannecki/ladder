@@ -1,5 +1,7 @@
 #include <fcntl.h>
-#ifdef __unix__
+
+#include <compat.h>
+#ifdef LADDER_OS_UNIX
 #include <unistd.h>
 #endif
 
@@ -17,9 +19,9 @@ FileBuffer::~FileBuffer() {
   if (buffer_) delete buffer_;
   buffer_ = nullptr;
   if (fd_ != 0) {
-#ifdef __unix__
+#ifdef LADDER_OS_UNIX
     ::close(fd_);
-#elif defined(_MSC_VER)
+#elif defined(LADDER_OS_WINDOWS)
     CloseHandle(fd_);
 #endif
   }
@@ -38,7 +40,7 @@ void FileBuffer::Write(const char* src, size_t len) {
   AddFile(std::string(src, len), "");
 }
 
-#ifndef _MSC_VER
+#ifndef LADDER_OS_WINDOWS
 int FileBuffer::WriteBufferToFd(int fd) {
   int ret = buffer_->WriteBufferToFd(fd);
   if (ret < 0) {
@@ -49,6 +51,7 @@ int FileBuffer::WriteBufferToFd(int fd) {
     if (fd_ == 0) {
       buffer_->Write(pending_files_.front().header_);
       std::string& filename = pending_files_.front().filename_;
+#ifdef LADDER_OS_UNIX
       if (!filename.empty()) {
         fd_ = open(pending_files_.front().filename_.c_str(), O_RDONLY);
         if (fd_ == -1) fd_ = 0;
@@ -62,6 +65,20 @@ int FileBuffer::WriteBufferToFd(int fd) {
       } else {
         pending_files_.pop();
       }
+#elif defined(LADDER_OS_WINDOWS)
+      if (!filename.empty()) {
+        fd_ = CreateFile((LPCWSTR)pending_files_.front().filename_.c_str(),
+                         GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+        if (fd_ == INVALID_HANDLE_VALUE) fd_ = 0;
+      }
+      if (fd_ != 0) {
+        DWORD sz = ::GetFileSize(fd_, nullptr);
+        bytes_pending_ = static_cast<int>(sz);
+        bytes_sent_ = 0;
+      } else {
+        pending_files_.pop();
+      }
+#endif
     }
 
     ret = buffer_->WriteBufferToFd(fd);
@@ -88,7 +105,11 @@ int FileBuffer::WriteBufferToFd(int fd) {
         bytes_sent_ += ret;
         bytes_pending_ -= ret;
         if (bytes_pending_ == 0) {
+#ifdef LADDER_OS_UNIX
           ::close(fd_);
+#elif defined(LADDER_OS_WINDOWS)
+          CloseHandle(fd_);
+#endif
           fd_ = 0;
           pending_files_.pop();
         }

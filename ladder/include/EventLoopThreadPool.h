@@ -5,6 +5,8 @@
 #include <mutex>
 #include <vector>
 
+#include <compat.h>
+
 namespace ladder {
 
 class ThreadPool;
@@ -13,7 +15,7 @@ using EventLoopPtr = std::shared_ptr<EventLoop>;
 
 class LADDER_API EventLoopThreadPool {
  public:
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
   EventLoopThreadPool(HANDLE iocp_port, size_t capacity);
 #else
   EventLoopThreadPool(size_t capacity);

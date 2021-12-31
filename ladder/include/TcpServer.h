@@ -27,7 +27,7 @@ class LADDER_API TcpServer {
   void set_read_callback(const ReadEvtCallback& callback);
   void set_write_callback(const WriteEvtCallback& callback);
   void set_connection_callback(const ConnectionEvtCallback& callback);
-#ifndef _MSC_VER
+#ifndef LADDER_OS_WINDOWS
   EventLoopPtr loop() const;
 #endif
   EventLoopThreadPoolPtr loop_threads() const;
@@ -49,7 +49,7 @@ class LADDER_API TcpServer {
   WriteEvtCallback write_callback_;
   ConnectionEvtCallback connection_callback_;
 
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
   void OnNewConnection(int fd, const SocketAddr&, char* buffer, int io_size);
   HANDLE iocp_port_;
 #else

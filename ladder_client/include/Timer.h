@@ -16,7 +16,7 @@ using EventLoopPtr = std::shared_ptr<EventLoop>;
 
 class Timer {
  public:
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
   Timer();
 #else
   Timer(const EventLoopPtr& loop);
@@ -29,7 +29,7 @@ class Timer {
 
  private:
   ChannelPtr timer_channel_;
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
   HANDLE timer_;
   HANDLE timer_queue_;
 #else

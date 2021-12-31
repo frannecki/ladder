@@ -7,43 +7,49 @@
 
 namespace ladder {
 
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
 static thread_local LPFN_CONNECTEX fn_connectex = nullptr;
 
 Connector::Connector(const ChannelPtr& channel, int max_retry,
                      const SocketAddr& addr,
                      const SocketAddr& local_addr,
                      uint16_t retry_initial_timeout)
-#else
-Connector::Connector(const ChannelPtr& channel, int max_retry,
-                     const SocketAddr& addr, uint16_t retry_initial_timeout)
-#endif
     : channel_(channel),
       retry_(0),
       max_retry_(max_retry),
       retry_timeout_((std::max)(retry_initial_timeout, kMinRetryInitialTimeout)),
-#ifdef _MSC_VER
       status_(new SocketIocpStatus(kPollOut)),
       timer_(new Timer),
       local_addr_(local_addr),
-#else
-      timer_(new Timer(channel->loop())),
-#endif
       ipv6_(addr.ipv6()),
       addr_(addr) {
-#ifdef _MSC_VER
   if (addr.ipv6() != local_addr.ipv6()) {
     EXIT("Remote address and local address are not in the same communication domain!");
   }
-#endif
   timer_->set_timer_event_callback(std::bind(&Connector::Start, this));
 }
 
 Connector::~Connector() { 
-#ifdef _MSC_VER
   delete status_;
-#endif
 }
+
+#else
+
+Connector::Connector(const ChannelPtr& channel, int max_retry,
+                     const SocketAddr& addr, uint16_t retry_initial_timeout)
+    : channel_(channel),
+      retry_(0),
+      max_retry_(max_retry),
+      retry_timeout_((std::max)(retry_initial_timeout, kMinRetryInitialTimeout)),
+      timer_(new Timer(channel->loop())),
+      ipv6_(addr.ipv6()),
+      addr_(addr) {
+  timer_->set_timer_event_callback(std::bind(&Connector::Start, this));
+}
+
+Connector::~Connector() {}
+
+#endif
 
 void Connector::set_connection_callback(const ConnectionCallback& callback) {
   connection_callback_ = callback;
@@ -61,7 +67,7 @@ void Connector::Start() {
   channel_->set_read_callback(nullptr);
   channel_->EnableWrite(true);
   const sockaddr_t* sa = addr_.addr();
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
   const sockaddr_t* sa_local = local_addr_.addr();
   if (!fn_connectex) {
     DWORD bytes = 0;
@@ -122,7 +128,7 @@ void Connector::HandleConnect() {
     Retry();
     return;
   }
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
   int ret = setsockopt(channel_->fd(), SOL_SOCKET,
                        SO_UPDATE_CONNECT_CONTEXT, NULL, 0);
   if (ret == SOCKET_ERROR) {

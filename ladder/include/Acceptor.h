@@ -11,7 +11,7 @@ namespace ladder {
 
 class Channel;
 class SocketAddr;
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
 using NewConnectionCallback = std::function<void(int, const SocketAddr&, char*, int)>;
 #else
 using NewConnectionCallback = std::function<void(int, SocketAddr&&)>;
@@ -27,7 +27,7 @@ class Acceptor {
   void set_new_connection_callback(const NewConnectionCallback& callback);
 
  private:
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
   void HandleAcceptCallback(int io_size = 0);
   char* accept_buffer_;
   int cur_accept_fd_;

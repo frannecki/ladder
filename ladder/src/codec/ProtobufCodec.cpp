@@ -1,6 +1,7 @@
-#ifdef __unix__
+#include <compat.h>
+#ifdef LADDER_OS_UNIX
 #include <arpa/inet.h>
-#elif defined(_MSC_VER)
+#elif defined(LADDER_OS_WINDOWS)
 #include <winsock2.h>
 #endif
 #include <zlib.h>

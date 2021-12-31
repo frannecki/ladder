@@ -8,7 +8,8 @@
 #include <TlsConnection.h>
 #include <utils.h>
 
-#ifdef _MSC_VER
+#include <compat.h>
+#ifdef LADDER_OS_WINDOWS
 #pragma comment(lib, "ws2_32.lib")
 #include <EventLoop.h>
 #endif
@@ -34,7 +35,7 @@ TcpClient::~TcpClient() {
   }
 }
 
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
 void TcpClient::Connect(const SocketAddr& local_addr) {
 #else
 void TcpClient::Connect() {
@@ -48,24 +49,24 @@ void TcpClient::Connect() {
     status_ = TcpConnectionStatus::kConnecting;
   }
   int fd = socket::socket(true, target_addr_.ipv6());
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
   if (!ssl_ctx_)
     conn_.reset(new Connection(fd));
   else
     conn_.reset(new TlsConnection(fd, ssl_ctx_, false));
+  conn_->set_read_callback(read_callback_);
+  conn_->set_close_callback(
+      std::bind(&TcpClient::OnCloseConnectionCallback, this, fd));
+  connector_.reset(new Connector(conn_->channel(), max_retry_, target_addr_,
+                                 local_addr, retry_initial_timeout_));
 #else
   if (!ssl_ctx_)
     conn_.reset(new Connection(loop_, fd));
   else
     conn_.reset(new TlsConnection(loop_, fd, ssl_ctx_, false));
-#endif
   conn_->set_read_callback(read_callback_);
   conn_->set_close_callback(
       std::bind(&TcpClient::OnCloseConnectionCallback, this, fd));
-#ifdef _MSC_VER
-  connector_.reset(new Connector(conn_->channel(), max_retry_, target_addr_,
-                                 local_addr, retry_initial_timeout_));
-#else
   connector_.reset(new Connector(conn_->channel(), max_retry_, target_addr_,
                                  retry_initial_timeout_));
 #endif
@@ -74,7 +75,7 @@ void TcpClient::Connect() {
   connector_->set_connection_failure_callback(
       std::bind(&TcpClient::OnConnectionFailureCallback, this));
   LOGF_INFO("Trying to establish connection to target. fd = %d", fd);
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
   loop_->UpdateIocpPort(conn_->channel().get());
 #else
   conn_->Init();
@@ -126,7 +127,7 @@ void TcpClient::OnConnectionCallback(SocketAddr&& addr) {
             target_addr_.ip().c_str(), target_addr_.port(), addr.ip().c_str(),
             addr.port(), conn_->channel()->fd());
 
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
   conn_->Init(NULL, NULL, 0);
 #else
   conn_->SetChannelCallbacks();
@@ -141,7 +142,7 @@ void TcpClient::OnCloseConnectionCallback(int fd) {
   LOG_DEBUG("Socket closed: " + std::to_string(fd));
 }
 
-#ifndef _MSC_VER
+#ifndef LADDER_OS_WINDOWS
 EventLoopPtr TcpClient::loop() const { return loop_; }
 #endif
 

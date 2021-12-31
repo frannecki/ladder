@@ -1,4 +1,5 @@
-#ifdef __unix__
+#include <compat.h>
+#ifdef LADDER_OS_UNIX
 #include <signal.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -17,14 +18,14 @@
 #include <TlsConnection.h>
 #include <utils.h>
 
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
 #pragma comment(lib, "ws2_32.lib")
 #endif
 
 using namespace std::placeholders;
 
 namespace ladder {
-#ifdef __unix__
+#ifdef LADDER_OS_UNIX
 void signal_handler(int signum) {
   if (signum == SIGPIPE) {
     LOG_FATAL("SIGPIPE ignored");
@@ -41,13 +42,13 @@ TcpServer::TcpServer(const SocketAddr& addr, bool send_file,
     : addr_(addr),
       send_file_(send_file),
       loop_thread_num_(loop_thread_num),
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
       iocp_port_(NULL),
 #else
       working_thread_num_(working_thread_num),
 #endif
       ssl_ctx_(nullptr) {
-#ifdef __unix__
+#ifdef LADDER_OS_UNIX
   signal(SIGPIPE, signal_handler);
 #endif
   if (cert_path != nullptr && key_path != nullptr) {
@@ -59,7 +60,7 @@ TcpServer::TcpServer(const SocketAddr& addr, bool send_file,
 
 TcpServer::~TcpServer() {
   if (channel_) socket::close(channel_->fd());
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
   if (iocp_port_) CloseHandle(iocp_port_);
 #else
   channel_->RemoveFromLoop();
@@ -74,18 +75,11 @@ void TcpServer::Start() {
   int fd = socket::socket(true, addr_.ipv6());
   addr_.Bind(fd);
   socket::listen(fd);
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
   channel_.reset(new Channel(fd));
   iocp_port_ = UpdateIocpPort(NULL, channel_.get());
   loop_ = std::make_shared<EventLoop>(iocp_port_);
-#else
-  working_threads_ = std::make_shared<ThreadPool>(working_thread_num_);
-  loop_ = std::make_shared<EventLoop>();
-  channel_.reset(new Channel(loop_, fd));
-  channel_->UpdateToLoop();
-#endif
   acceptor_.reset(new Acceptor(channel_, addr_.ipv6()));
-#ifdef _MSC_VER
   acceptor_->set_new_connection_callback(
       std::bind(&TcpServer::OnNewConnection,
                 this,
@@ -96,6 +90,11 @@ void TcpServer::Start() {
   loop_threads_.reset(new EventLoopThreadPool(iocp_port_, loop_thread_num_));
   acceptor_->Init();
 #else
+  working_threads_ = std::make_shared<ThreadPool>(working_thread_num_);
+  loop_ = std::make_shared<EventLoop>();
+  channel_.reset(new Channel(loop_, fd));
+  channel_->UpdateToLoop();
+  acceptor_.reset(new Acceptor(channel_, addr_.ipv6()));
   acceptor_->set_new_connection_callback(
       std::bind(&TcpServer::OnNewConnectionCallback, this,
                 std::placeholders::_1, std::placeholders::_2));
@@ -117,7 +116,7 @@ void TcpServer::set_connection_callback(const ConnectionEvtCallback& callback) {
   connection_callback_ = callback;
 }
 
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
 void TcpServer::OnNewConnection(int fd, const SocketAddr& addr, char* buffer, int io_size) {
   ConnectionPtr connection;
   if (ssl_ctx_)
@@ -142,7 +141,7 @@ void TcpServer::OnNewConnection(int fd, const SocketAddr& addr) {
   connection->set_write_callback(write_callback_);
   connection->set_close_callback(
       std::bind(&TcpServer::OnCloseConnectionCallback, this, fd));
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
   connection->Init(iocp_port_, buffer, io_size);
 #else
   connection->Init();
@@ -171,7 +170,7 @@ void TcpServer::OnCloseConnectionCallback(int fd) {
   }
 }
 
-#ifndef _MSC_VER
+#ifndef LADDER_OS_WINDOWS
 EventLoopPtr TcpServer::loop() const { return loop_; }
 #endif
 

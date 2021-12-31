@@ -1,10 +1,11 @@
-#ifdef __unix__
+#include <compat.h>
+#ifdef LADDER_OS_UNIX
 #include <unistd.h>
 #endif
-#ifdef __linux__
+#ifdef LADDER_OS_LINUX
 #include <sys/sendfile.h>
 #endif
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
 #pragma comment(lib, "mswsock.lib")
 #endif
 #include <string.h>
@@ -73,12 +74,18 @@ const sockaddr_t* SocketAddr::addr() const { return &sa_; }
 namespace socket {
 
 int socket(bool tcp, bool ipv6) {
-#ifdef __unix__
+#ifdef LADDER_OS_UNIX
   int fd = ::socket(ipv6 ? AF_INET6 : AF_INET,
                     (tcp ? SOCK_STREAM : SOCK_DGRAM) | SOCK_NONBLOCK, 0);
   if (fd < 0) {
+        EXIT("socket");
+  }
+  int enable = kEnableOption;
+  if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable)) < 0) {
+    EXIT("setsockopt");
+  }
 #endif
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
     int fd = WSASocket(ipv6 ? AF_INET6 : AF_INET,
                        tcp ? SOCK_STREAM : SOCK_DGRAM,
                        IPPROTO_IP,
@@ -86,15 +93,9 @@ int socket(bool tcp, bool ipv6) {
                        0,
                        WSA_FLAG_OVERLAPPED);
   if (fd == INVALID_SOCKET) {
-#endif
     EXIT("socket");
   }
   int enable = kEnableOption;
-#ifdef __unix__
-  if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable)) < 0) {
-    EXIT("setsockopt");
-  }
-#elif defined _MSC_VER
   int zero = 0;
   if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (char*)&enable, sizeof(enable)) ==
       SOCKET_ERROR) {
@@ -105,10 +106,10 @@ int socket(bool tcp, bool ipv6) {
   }
 #endif
   return fd;
-  }
+}
 
 int listen(int fd) {
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
   int ret = ::listen(fd, SOMAXCONN);
   if (ret < 0) {
     EXIT("listen error: %d", WSAGetLastError());
@@ -122,7 +123,7 @@ int listen(int fd) {
   return ret;
 }
 
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
 int accept(int fd, char* buffer, LPFN_ACCEPTEX fn_acceptex,
            SocketIocpStatus* status, bool ipv6) {
   int ret;
@@ -159,6 +160,33 @@ int connect(int fd, const sockaddr_t* addr, socklen_t addr_len,
   }
   return ret;
 }
+
+int write(int fd, LPWSABUF buf, SocketIocpStatus* status) {
+  status->Reset();
+  status->UpdateRefCount(true);
+  DWORD bytes_sent = 0;
+  int ret = WSASend(fd, buf, 1, &bytes_sent, 0, (LPWSAOVERLAPPED)status, NULL);
+  return ret;
+}
+
+int read(int fd, LPWSABUF buf, SocketIocpStatus* status) {
+  status->Reset();
+  status->UpdateRefCount(true);
+  DWORD bytes_recved = 0;
+  DWORD flags = 0;
+  buf->len = kMaxIocpRecvSize;
+
+  int ret =
+      WSARecv(fd, buf, 1, &bytes_recved, &flags, (LPWSAOVERLAPPED)status, NULL);
+
+  return ret;
+}
+
+int sendfile(int out_fd, HANDLE in_fd, off_t* offset, size_t count) {
+  // TODO: asynchronous send with iocp
+  // bool success = TransmitFile(out_fd, in_fd, 0, 0, 0, NULL, 0);
+  return -1;
+}
 #else
 int accept(int fd, sockaddr_t* addr, socklen_t* addr_len) {
   int accepted = ::accept4(fd, (struct sockaddr*)addr, addr_len, SOCK_NONBLOCK);
@@ -172,65 +200,35 @@ int connect(int fd, const sockaddr_t* addr, socklen_t addr_len) {
   int ret = ::connect(fd, (const struct sockaddr*)addr, addr_len);
   return ret;
 }
-#endif
 
-#ifdef _MSC_VER
-int write(int fd, LPWSABUF buf, SocketIocpStatus* status) {
-  status->Reset();
-  status->UpdateRefCount(true);
-  DWORD bytes_sent = 0;
-  int ret = WSASend(fd, buf, 1, &bytes_sent, 0, (LPWSAOVERLAPPED)status, NULL);
-  return ret;
-}
-#else
 int write(int fd, const void* buf, size_t len) {
   return ::write(fd, buf, len);
 }
-#endif
 
-#ifdef _MSC_VER
-int read(int fd, LPWSABUF buf, SocketIocpStatus* status) {
-  status->Reset();
-  status->UpdateRefCount(true);
-  DWORD bytes_recved = 0;
-  DWORD flags = 0;
-  buf->len = kMaxIocpRecvSize;
-
-  int ret =
-      WSARecv(fd, buf, 1, &bytes_recved, &flags, (LPWSAOVERLAPPED)status, NULL);
-
-  return ret;
-}
-#else
 int read(int fd, void* buf, size_t len) {
   return ::read(fd, buf, len);
 }
-#endif
 
-#ifdef __unix__
+#ifdef LADDER_OS_UNIX
 int sendfile(int out_fd, int in_fd, off_t* offset, size_t count) {
-#ifdef __linux__
+#ifdef LADDER_OS_LINUX
   int ret = ::sendfile(out_fd, in_fd, offset, count);
-#elif defined(__FreeBSD__)
+#elif defined(LADDER_OS_FREEBSD)
   off_t bytes_sent;
   int success = ::sendfile(in_fd, out_fd, *offset, count, NULL, &bytes_sent, 0);
   int ret = (success == 0) ? static_cast<int>(bytes_sent) : 0;
 #endif
   return ret;
 }
-#elif defined(_MSC_VER)
-int sendfile(int out_fd, HANDLE in_fd, off_t* offset, size_t count) {
-  // TODO: asynchronous send with iocp
-  // bool success = TransmitFile(out_fd, in_fd, 0, 0, 0, NULL, 0);
-  return -1;
-}
+#endif
+
 #endif
 
 int shutdown_write(int fd) {
-#ifdef __unix__
+#ifdef LADDER_OS_UNIX
   int ret = ::shutdown(fd, SHUT_WR);
 #endif
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
   int ret = ::shutdown(fd, SD_SEND);
 #endif
   if (ret < 0) {
@@ -246,10 +244,10 @@ int shutdown_write(int fd) {
 }
 
 int shutdown_read(int fd) {
-#ifdef __unix__
+#ifdef LADDER_OS_UNIX
   int ret = ::shutdown(fd, SHUT_RD);
 #endif
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
   int ret = ::shutdown(fd, SD_RECEIVE);
 #endif
   
@@ -260,11 +258,11 @@ int shutdown_read(int fd) {
 }
 
 int close(int fd) {
-#ifdef __unix__
+#ifdef LADDER_OS_UNIX
   int ret = ::close(fd);
   if (ret < 0) {
 #endif
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
   int ret = ::closesocket(fd);
   if (ret == SOCKET_ERROR) {
 #endif
@@ -276,7 +274,7 @@ int close(int fd) {
 int getsockname(int fd, sockaddr_t* addr, socklen_t* addr_len) {
   int ret = ::getsockname(fd, (struct sockaddr*)addr, addr_len);
   if (ret < 0) {
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
     EXIT("getsockname error: %d", WSAGetLastError());
 #else
     EXIT("getsockname");
@@ -288,7 +286,7 @@ int getsockname(int fd, sockaddr_t* addr, socklen_t* addr_len) {
 int getpeername(int fd, sockaddr_t* addr, socklen_t* addr_len) {
   int ret = ::getpeername(fd, (struct sockaddr*)addr, addr_len);
   if (ret < 0) {
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
     EXIT("getpeername error: %d", WSAGetLastError());
 #else
     EXIT("getpeername");

@@ -1,9 +1,11 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
-#ifdef __unix__
+
+#include <compat.h>
+#ifdef LADDER_OS_UNIX
 #include <unistd.h>
-#elif defined(_MSC_VER)
+#elif defined(LADDER_OS_WINDOWS)
 #include <Channel.h>
 #endif
 #include <MemoryPool.h>
@@ -20,7 +22,7 @@ void exit_fatal(const char* fmt, ...) {
   char msg[kMaxMessageLength];
   vsnprintf(msg, sizeof(msg), fmt, args);
   va_end(args);
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
   fprintf(stderr, "%s %d\n", msg, GetLastError());
 #else
   perror(msg);
@@ -63,17 +65,6 @@ std::vector<int> FindSubstr(const std::string& str, const std::string& pat) {
   next = nullptr;
 
   return positions;
-}
-
-bool CheckIfFileExists(const std::string& path) {
-#ifdef __unix__
-  return access(path.c_str(), F_OK | R_OK) == 0;
-#elif defined(_MSC_VER)
-  if (INVALID_FILE_ATTRIBUTES == GetFileAttributes((LPCWSTR)(path.c_str())) && GetLastError() == ERROR_FILE_NOT_FOUND) {
-    return false;
-  }
-  return true;
-#endif
 }
 
 int GetFileSize(const std::string& path) {
@@ -149,7 +140,7 @@ void ConfigureSslContext(SSL_CTX* ctx, const char* cert_path,
   SSL_CTX_set_options(ctx, SSL_OP_ALL | SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3);
 }
 
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
 HANDLE UpdateIocpPort(HANDLE port, const Channel* channel) {
   HANDLE updated_port = CreateIoCompletionPort((HANDLE)(channel->fd()), port,
                                                (DWORD_PTR)channel, 0);
@@ -157,6 +148,20 @@ HANDLE UpdateIocpPort(HANDLE port, const Channel* channel) {
     EXIT("CreateIoCompletionPort");
   }
   return updated_port;
+}
+
+bool CheckIfFileExists(const std::string& path) {
+  if (INVALID_FILE_ATTRIBUTES == GetFileAttributes((LPCWSTR)(path.c_str())) &&
+      GetLastError() == ERROR_FILE_NOT_FOUND) {
+    return false;
+  }
+  return true;
+}
+
+#else
+
+bool CheckIfFileExists(const std::string& path) {
+  return access(path.c_str(), F_OK | R_OK) == 0;
 }
 #endif
 

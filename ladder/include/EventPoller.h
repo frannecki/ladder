@@ -1,11 +1,12 @@
 #ifndef LADDER_EVENT_POLLER_H
 #define LADDER_EVENT_POLLER_H
 
-#ifndef _MSC_VER
+#include <compat.h>
+#ifndef LADDER_OS_WINDOWS
 
-#ifdef __linux__
+#ifdef LADDER_OS_LINUX
 #include <sys/epoll.h>
-#elif defined(__FreeBSD__)
+#elif defined(LADDER_OS_FREEBSD)
 #include <sys/event.h>
 #include <unordered_map>
 #endif
@@ -20,7 +21,6 @@ namespace ladder {
 
 class Channel;
 
-#ifdef __unix__
 class Pipe {
  public:
   Pipe();
@@ -37,7 +37,6 @@ class Pipe {
   std::function<void()> wakeup_callback_;
 };
 using PipePtr = std::unique_ptr<Pipe>;
-#endif
 
 class EventPoller {
  public:
@@ -45,11 +44,11 @@ class EventPoller {
   ~EventPoller();
   void Poll(std::vector<Channel*>& active_channels);
   void UpdateChannel(Channel* channel, int op);
-#ifdef __FreeBSD__
+#ifdef LADDER_OS_FREEBSD
   int UpdateEvent(const struct kevent* evt);
 #endif
   void RemoveChannel(int fd);
-#ifdef __unix__
+#ifdef LADDER_OS_UNIX
   void Wakeup();
   void set_wakeup_callback(const std::function<void()>& callback);
 #endif
@@ -57,10 +56,10 @@ class EventPoller {
  private:
   int poll_fd_;
   int cur_poll_size_;
-#ifdef __unix__
+#ifdef LADDER_OS_UNIX
   PipePtr pipe_;
 #endif
-#ifdef __FreeBSD__
+#ifdef LADDER_OS_FREEBSD
   static std::unordered_map<short, uint32_t> flt_2_stat_;  // filter to status
   static std::unordered_map<uint32_t, short> stat_2_flt_;  // status to filter
 #endif

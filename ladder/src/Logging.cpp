@@ -1,5 +1,7 @@
 #include <time.h>
-#ifdef __unix__
+
+#include <compat.h>
+#ifdef LADDER_OS_UNIX
 #include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
@@ -20,14 +22,14 @@ namespace ladder {
 
 std::string GetCurrentDateTime() {
   char buf[40], minor_buf[10];
-#ifdef __unix__
+#ifdef LADDER_OS_UNIX
   struct timeval tv;
   gettimeofday(&tv, NULL);
   struct tm  *current = localtime(&(tv.tv_sec));
   strftime(buf, sizeof(buf), "%Y-%m-%d %X.", current);
   snprintf(minor_buf, sizeof(minor_buf), "%06ld", tv.tv_usec);
 #endif
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
   auto current = std::chrono::system_clock::now();
   auto cur_ms = std::chrono::duration_cast<std::chrono::microseconds>(
       current.time_since_epoch()) % 1000000;
@@ -57,7 +59,7 @@ Logger::Logger(const char* filename, int level)
     : running_(true), level_(level) {
   if (strlen(filename) == 0) {
     char log_path[20] = {0};
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
     snprintf(log_path, sizeof(log_path), "ladder.%d.log", _getpid());
 #else
     snprintf(log_path, sizeof(log_path), "ladder.%d.log", getpid());

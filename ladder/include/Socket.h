@@ -2,15 +2,18 @@
 #define LADDER_SOCKET_H
 
 #include <stdint.h>
-#ifdef __unix__
+
+#include <compat.h>
+
+#ifdef LADDER_OS_UNIX
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
-#ifdef __linux__
+#ifdef LADDER_OS_LINUX
 #include <sys/epoll.h>
 #endif
 #endif
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
 #include <winsock2.h>
 #include <ws2ipdef.h>
 #include <ws2tcpip.h>
@@ -29,7 +32,7 @@
 namespace ladder {
 
 enum kPollEvent : uint32_t {
-#ifdef __linux__
+#ifdef LADDER_OS_LINUX
   kPollIn = EPOLLIN,
   kPollOut = EPOLLOUT,
   kPollPri = EPOLLPRI,
@@ -44,7 +47,7 @@ enum kPollEvent : uint32_t {
 #endif
 };
 
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
 struct SocketIocpStatus {
   WSAOVERLAPPED overlapped_;
   int status_;
@@ -91,30 +94,25 @@ namespace socket {
 
 int socket(bool tcp = true, bool ipv6 = true);
 int listen(int fd);
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
 int accept(int fd, char* buffer, LPFN_ACCEPTEX fn_acceptex,
            SocketIocpStatus* status, bool ipv6 = false);
 int connect(int fd, const sockaddr_t* addr, socklen_t addr_len,
             const sockaddr_t* local_addr, LPFN_CONNECTEX fn_connectex,
             SocketIocpStatus* status, bool ipv6);
+int write(int fd, LPWSABUF buf, SocketIocpStatus* status);
+int read(int fd, LPWSABUF buf, SocketIocpStatus* status);
+int sendfile(int out_fd, HANDLE in_fd, off_t* offset, size_t count);
 #else
 int accept(int fd, sockaddr_t* addr, socklen_t* addr_len);
 int connect(int fd, const sockaddr_t* addr, socklen_t addr_len);
-#endif
-
-#ifdef _MSC_VER
-int write(int fd, LPWSABUF buf, SocketIocpStatus* status);
-int read(int fd, LPWSABUF buf, SocketIocpStatus* status);
-#else
 int write(int fd, const void* buf, size_t len);
 int read(int fd, void* buf, size_t len);
+#ifdef LADDER_OS_UNIX
+int sendfile(int out_fd, int in_fd, off_t* offset, size_t count);
+#endif
 #endif
 
-#ifdef __unix__
-int sendfile(int out_fd, int in_fd, off_t* offset, size_t count);
-#elif defined(_MSC_VER)
-int sendfile(int out_fd, HANDLE in_fd, off_t* offset, size_t count);
-#endif
 int shutdown_write(int fd);
 int shutdown_read(int fd);
 int close(int fd);

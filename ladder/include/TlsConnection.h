@@ -23,7 +23,7 @@ struct Ssl {
 
 class TlsConnection : public Connection {
  public:
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
   TlsConnection(int fd, SSL_CTX* ssl_cxt, bool server = true);
   void Init(HANDLE iocp_port, char* buffer, int io_size) override;
 #else
@@ -35,7 +35,7 @@ class TlsConnection : public Connection {
   void Send(const std::string& buf) override;
 
  private:
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
   int ReadBuffer(int io_size) override;
   int WriteBuffer(int io_size) override;
 #else
