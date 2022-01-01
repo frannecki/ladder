@@ -19,7 +19,7 @@ void PrintTick1(int *tick) {
 }
 
 int main(int argc, char **argv) {
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
   ladder::Timer *timer = new ladder::Timer;
   ladder::Timer *timer1 = new ladder::Timer;
 #else
@@ -29,11 +29,11 @@ int main(int argc, char **argv) {
 #endif
   timer->set_timer_event_callback(std::bind(PrintTick, &tick_));
   timer1->set_timer_event_callback(std::bind(PrintTick1, &tick1_));
-#ifndef __FreeBSD__
+#ifndef LADDER_OS_FREEBSD
   timer->set_interval(1000000);  // triggered once
 #endif
   timer1->set_interval(1000000, true);  // triggered periodically
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
   while (1)
     ;
 #else

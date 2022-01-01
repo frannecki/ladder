@@ -7,7 +7,7 @@
 #include <TcpServer.h>
 #include <codec/ProtobufCodec.h>
 
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
 #pragma comment(lib, "ws2_32.lib")
 #endif
 
@@ -20,7 +20,7 @@ static int count = 0;
 
 using TestMessage1Ptr = std::shared_ptr<TestMessage1>;
 
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
 static ProtobufCodec* p_codec = nullptr;
 
 void OnRawMessage(const ConnectionPtr& conn, Buffer* buffer) {
@@ -69,7 +69,7 @@ void OnDefaultMessage(const ConnectionPtr& conn,
 }
 
 int main(int argc, char** argv) {
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
   WSADATA wsa_data;
   if (WSAStartup(MAKEWORD(2, 2), &wsa_data) != NO_ERROR) {
     return -1;
@@ -82,7 +82,7 @@ int main(int argc, char** argv) {
   codec.RegisterMessageCallback<ladder::TestMessage1>(
       std::bind(OnMessage, _1, _2, codec));
   codec.RegisterDefaultMessageCallback(std::bind(OnDefaultMessage, _1, _2));
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
   // iocp server cannot send data on connection
   p_codec = &codec;
   server.set_read_callback(std::bind(OnRawMessage, _1, _2));

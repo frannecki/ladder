@@ -1,15 +1,15 @@
 #include <functional>
 #include <string>
 
-#ifdef _MSC_VER
-#pragma comment(lib, "ws2_32.lib")
-#endif
-
 #include <Buffer.h>
 #include <Connection.h>
 #include <Logging.h>
 #include <TcpServer.h>
 #include <utils.h>
+
+#ifdef LADDER_OS_WINDOWS
+#pragma comment(lib, "ws2_32.lib")
+#endif
 
 using namespace ladder;
 using namespace std::placeholders;
@@ -25,7 +25,7 @@ void OnMessage(const ConnectionPtr& conn, Buffer* buffer) {
 }
 
 int main(int argc, char** argv) {
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
   WSADATA wsa_data;
   if (WSAStartup(MAKEWORD(2, 2), &wsa_data) != NO_ERROR) {
     return -1;

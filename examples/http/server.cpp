@@ -9,13 +9,6 @@
 #include "HttpCodec.h"
 #include "HttpServer.h"
 
-#ifdef _MSC_VER
-#pragma comment(lib, "ws2_32.lib")
-#define _CRTDBG_MAP_ALLOC
-#include <stdlib.h>
-#include <crtdbg.h>
-#endif
-
 using namespace ladder;
 using namespace ladder::http;
 
@@ -145,7 +138,7 @@ void HandleHttpGet(struct HttpContext* ctx1, struct HttpContext* ctx2) {
 }
 
 int main(int argc, char** argv) {
-#ifdef _MSC_VER
+#ifdef LADDER_OS_WINDOWS
   WSADATA wsa_data;
   if (WSAStartup(MAKEWORD(2, 2), &wsa_data) != NO_ERROR) {
     return -1;
@@ -170,8 +163,5 @@ int main(int argc, char** argv) {
   server.Start();
   Logger::release();
   EVP_cleanup();
-#if defined(_MSC_VER) && defined(_DEBUG)
-  _CrtDumpMemoryLeaks();
-#endif
   return EXIT_SUCCESS;
 }

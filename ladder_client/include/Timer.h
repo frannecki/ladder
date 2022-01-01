@@ -4,6 +4,8 @@
 #include <functional>
 #include <memory>
 
+#include <compat.h>
+
 namespace ladder {
 
 class Buffer;

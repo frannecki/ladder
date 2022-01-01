@@ -24,7 +24,7 @@ class LADDER_API Buffer : public IBuffer {
   uint32_t PeekUInt32();
   void WriteUInt32(uint32_t number);
   uint32_t ReadableBytes() const;
-#ifndef _MSC_VER
+#ifndef LADDER_OS_WINDOWS
   int ReadBufferFromFd(int fd);
   int WriteBufferToFd(int fd) override;
 #endif
