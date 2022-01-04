@@ -37,6 +37,11 @@ TcpClient::~TcpClient() {
 
 #ifdef LADDER_OS_WINDOWS
 void TcpClient::Connect(const SocketAddr& local_addr) {
+  if (target_addr_.ipv6() != local_addr.ipv6()) {
+    EXIT(
+        "Remote address and local address are not in the same communication "
+        "domain!");
+  }
 #else
 void TcpClient::Connect() {
 #endif
@@ -57,8 +62,10 @@ void TcpClient::Connect() {
   conn_->set_read_callback(read_callback_);
   conn_->set_close_callback(
       std::bind(&TcpClient::OnCloseConnectionCallback, this, fd));
+  /* ConnectEx requires the socket to be initially bound. */
+  local_addr.Bind(conn_->channel()->fd());
   connector_.reset(new Connector(conn_->channel(), max_retry_, target_addr_,
-                                 local_addr, retry_initial_timeout_));
+                                 retry_initial_timeout_));
 #else
   if (!ssl_ctx_)
     conn_.reset(new Connection(loop_, fd));

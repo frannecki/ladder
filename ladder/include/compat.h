@@ -2,9 +2,7 @@
 #define LADDER_COMPAT_H
 
 #ifdef _MSC_VER
-#ifdef _CONSOLE
-#define LADDER_API
-#elif defined(_WINDLL)
+#if defined(_WINDLL)
 #define LADDER_API __declspec(dllexport)
 #else
 #define LADDER_API __declspec(dllimport)

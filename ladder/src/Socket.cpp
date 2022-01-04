@@ -17,7 +17,7 @@
 
 namespace ladder {
 
-SocketAddr::SocketAddr(bool ipv6) : ipv6_(ipv6) { ; }
+SocketAddr::SocketAddr(bool ipv6) : ipv6_(ipv6) {}
 
 SocketAddr::SocketAddr(const sockaddr_t* addr, bool ipv6) : ipv6_(ipv6) {
   char buf[50];
@@ -55,7 +55,7 @@ SocketAddr::SocketAddr(const std::string& ip, uint16_t port, bool ipv6)
   }
 }
 
-void SocketAddr::Bind(int fd) {
+void SocketAddr::Bind(int fd) const {
   socklen_t sa_len = ipv6_ ? sizeof(sa_.addr6_) : sizeof(sa_.addr_);
   int ret = ::bind(fd, (struct sockaddr*)&sa_, sa_len);
   if (ret < 0) {
@@ -147,11 +147,8 @@ int accept(int fd, char* buffer, LPFN_ACCEPTEX fn_acceptex,
 }
 
 int connect(int fd, const sockaddr_t* addr, socklen_t addr_len,
-            const sockaddr_t* local_addr, LPFN_CONNECTEX fn_connectex,
+            LPFN_CONNECTEX fn_connectex,
             SocketIocpStatus* status, bool ipv6) {
-  /* ConnectEx requires the socket to be initially bound. */
-  SocketAddr(local_addr, ipv6).Bind(fd);
-
   DWORD bytes_sent = 0;
   int ret = fn_connectex(fd, (const struct sockaddr*)addr, addr_len,
                          NULL, 0, &bytes_sent, (LPOVERLAPPED)status);

@@ -77,7 +77,7 @@ class LADDER_API SocketAddr {
   SocketAddr(bool ipv6 = true);
   SocketAddr(const sockaddr_t* addr, bool ipv6 = true);
   SocketAddr(const std::string& ip, uint16_t port, bool ipv6 = true);
-  void Bind(int fd);
+  void Bind(int fd) const;
   std::string ip() const;
   uint16_t port() const;
   bool ipv6() const;
@@ -98,7 +98,7 @@ int listen(int fd);
 int accept(int fd, char* buffer, LPFN_ACCEPTEX fn_acceptex,
            SocketIocpStatus* status, bool ipv6 = false);
 int connect(int fd, const sockaddr_t* addr, socklen_t addr_len,
-            const sockaddr_t* local_addr, LPFN_CONNECTEX fn_connectex,
+            LPFN_CONNECTEX fn_connectex,
             SocketIocpStatus* status, bool ipv6);
 int write(int fd, LPWSABUF buf, SocketIocpStatus* status);
 int read(int fd, LPWSABUF buf, SocketIocpStatus* status);

@@ -18,14 +18,8 @@ const uint16_t kMinRetryInitialTimeout = 5;
 
 class Connector {
  public:
-#ifdef LADDER_OS_WINDOWS
-  Connector(const ChannelPtr&, int max_retry, const SocketAddr& addr,
-            const SocketAddr& local_addr,
-            uint16_t retry_initial_timeout = kMinRetryInitialTimeout * 2);
-#else
   Connector(const ChannelPtr&, int max_retry, const SocketAddr& addr,
             uint16_t retry_initial_timeout = kMinRetryInitialTimeout * 2);
-#endif
   Connector(const Connector&) = delete;
   Connector& operator=(const Connector&) = delete;
   ~Connector();
@@ -48,7 +42,6 @@ class Connector {
   SocketAddr addr_;
 #ifdef LADDER_OS_WINDOWS
   SocketIocpStatus* status_;
-  SocketAddr local_addr_;
 #endif
 };
 

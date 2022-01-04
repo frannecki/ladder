@@ -9,6 +9,10 @@
 #include "HttpCodec.h"
 #include "HttpServer.h"
 
+#ifdef LADDER_OS_WINDOWS
+#pragma comment(lib, "ws2_32.lib")
+#endif
+
 using namespace ladder;
 using namespace ladder::http;
 

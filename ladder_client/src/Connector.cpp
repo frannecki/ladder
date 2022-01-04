@@ -7,45 +7,32 @@
 
 namespace ladder {
 
-#ifdef LADDER_OS_WINDOWS
-static thread_local LPFN_CONNECTEX fn_connectex = nullptr;
-
 Connector::Connector(const ChannelPtr& channel, int max_retry,
-                     const SocketAddr& addr,
-                     const SocketAddr& local_addr,
-                     uint16_t retry_initial_timeout)
+                     const SocketAddr& addr, uint16_t retry_initial_timeout)
     : channel_(channel),
       retry_(0),
       max_retry_(max_retry),
-      retry_timeout_((std::max)(retry_initial_timeout, kMinRetryInitialTimeout)),
+      retry_timeout_(
+          (std::max)(retry_initial_timeout, kMinRetryInitialTimeout)),
+#ifdef LADDER_OS_WINDOWS
       status_(new SocketIocpStatus(kPollOut)),
       timer_(new Timer),
-      local_addr_(local_addr),
+#else
+      timer_(new Timer(channel->loop())),
+#endif
       ipv6_(addr.ipv6()),
       addr_(addr) {
-  if (addr.ipv6() != local_addr.ipv6()) {
-    EXIT("Remote address and local address are not in the same communication domain!");
-  }
   timer_->set_timer_event_callback(std::bind(&Connector::Start, this));
 }
+
+#ifdef LADDER_OS_WINDOWS
+static thread_local LPFN_CONNECTEX fn_connectex = nullptr;
 
 Connector::~Connector() { 
   delete status_;
 }
 
 #else
-
-Connector::Connector(const ChannelPtr& channel, int max_retry,
-                     const SocketAddr& addr, uint16_t retry_initial_timeout)
-    : channel_(channel),
-      retry_(0),
-      max_retry_(max_retry),
-      retry_timeout_((std::max)(retry_initial_timeout, kMinRetryInitialTimeout)),
-      timer_(new Timer(channel->loop())),
-      ipv6_(addr.ipv6()),
-      addr_(addr) {
-  timer_->set_timer_event_callback(std::bind(&Connector::Start, this));
-}
 
 Connector::~Connector() {}
 
@@ -68,7 +55,6 @@ void Connector::Start() {
   channel_->EnableWrite(true);
   const sockaddr_t* sa = addr_.addr();
 #ifdef LADDER_OS_WINDOWS
-  const sockaddr_t* sa_local = local_addr_.addr();
   if (!fn_connectex) {
     DWORD bytes = 0;
     GUID guid = WSAID_CONNECTEX;
@@ -81,7 +67,7 @@ void Connector::Start() {
   }
   socket::connect(channel_->fd(), sa,
                   ipv6_ ? sizeof(sa->addr6_) : sizeof(sa->addr_),
-                  sa_local, fn_connectex, status_, ipv6_);
+                  fn_connectex, status_, ipv6_);
 #else
   int ret = socket::connect(channel_->fd(), sa,
                             ipv6_ ? sizeof(sa->addr6_) : sizeof(sa->addr_));
