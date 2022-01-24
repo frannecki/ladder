@@ -59,7 +59,7 @@ void TcpClient::Connect() {
     conn_.reset(new Connection(fd));
   else
     conn_.reset(new TlsConnection(fd, ssl_ctx_, false));
-  conn_->set_read_callback(read_callback_);
+  conn_->SetReadCallback(read_callback_);
   conn_->set_close_callback(
       std::bind(&TcpClient::OnCloseConnectionCallback, this, fd));
   /* ConnectEx requires the socket to be initially bound. */
@@ -71,13 +71,13 @@ void TcpClient::Connect() {
     conn_.reset(new Connection(loop_, fd));
   else
     conn_.reset(new TlsConnection(loop_, fd, ssl_ctx_, false));
-  conn_->set_read_callback(read_callback_);
+  conn_->SetReadCallback(read_callback_);
   conn_->set_close_callback(
       std::bind(&TcpClient::OnCloseConnectionCallback, this, fd));
   connector_.reset(new Connector(conn_->channel(), max_retry_, target_addr_,
                                  retry_initial_timeout_));
 #endif
-  connector_->set_connection_callback(
+  connector_->SetConnectionCallback(
       std::bind(&TcpClient::OnConnectionCallback, this, std::placeholders::_1));
   connector_->set_connection_failure_callback(
       std::bind(&TcpClient::OnConnectionFailureCallback, this));
@@ -103,7 +103,7 @@ void TcpClient::Disconnect() {
   conn_->channel()->ShutDownWrite();
 }
 
-void TcpClient::set_read_callback(const ReadEvtCallback& callback) {
+void TcpClient::SetReadCallback(const ReadEvtCallback& callback) {
   read_callback_ = callback;
 }
 
@@ -111,7 +111,7 @@ void TcpClient::set_write_callback(const WriteEvtCallback& callback) {
   write_callback_ = callback;
 }
 
-void TcpClient::set_connection_callback(const ConnectionEvtCallback& callback) {
+void TcpClient::SetConnectionCallback(const ConnectionEvtCallback& callback) {
   connection_callback_ = callback;
 }
 

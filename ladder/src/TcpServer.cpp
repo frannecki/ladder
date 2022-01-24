@@ -104,7 +104,7 @@ void TcpServer::Start() {
   loop_->StartLoop();
 }
 
-void TcpServer::set_read_callback(const ReadEvtCallback& callback) {
+void TcpServer::SetReadCallback(const ReadEvtCallback& callback) {
   read_callback_ = callback;
 }
 
@@ -112,7 +112,7 @@ void TcpServer::set_write_callback(const WriteEvtCallback& callback) {
   write_callback_ = callback;
 }
 
-void TcpServer::set_connection_callback(const ConnectionEvtCallback& callback) {
+void TcpServer::SetConnectionCallback(const ConnectionEvtCallback& callback) {
   connection_callback_ = callback;
 }
 
@@ -137,7 +137,7 @@ void TcpServer::OnNewConnection(int fd, const SocketAddr& addr) {
   else
     connection = std::make_shared<Connection>(loop, fd, send_file_);
 #endif
-  connection->set_read_callback(read_callback_);
+  connection->SetReadCallback(read_callback_);
   connection->set_write_callback(write_callback_);
   connection->set_close_callback(
       std::bind(&TcpServer::OnCloseConnectionCallback, this, fd));

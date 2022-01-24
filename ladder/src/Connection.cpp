@@ -65,12 +65,12 @@ Connection::~Connection() {
 
 void Connection::SetChannelCallbacks() {
 #ifdef LADDER_OS_WINDOWS
-  channel_->set_read_callback(
+  channel_->SetReadCallback(
       std::bind(&Connection::OnReadCallback, this, std::placeholders::_1));
   channel_->set_write_callback(
       std::bind(&Connection::OnWriteCallback, this, std::placeholders::_1));
 #else
-  channel_->set_read_callback(std::bind(&Connection::OnReadCallback, this));
+  channel_->SetReadCallback(std::bind(&Connection::OnReadCallback, this));
   channel_->set_write_callback(std::bind(&Connection::OnWriteCallback, this));
 #endif
   channel_->set_close_callback(std::bind(&Connection::OnCloseCallback, this));
@@ -106,7 +106,7 @@ void Connection::OnCloseCallback() {
   }
 }
 
-void Connection::set_read_callback(const ReadEvtCallback& callback) {
+void Connection::SetReadCallback(const ReadEvtCallback& callback) {
   read_callback_ = callback;
 }
 

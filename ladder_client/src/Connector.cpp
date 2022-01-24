@@ -38,7 +38,7 @@ Connector::~Connector() {}
 
 #endif
 
-void Connector::set_connection_callback(const ConnectionCallback& callback) {
+void Connector::SetConnectionCallback(const ConnectionCallback& callback) {
   connection_callback_ = callback;
 }
 
@@ -51,7 +51,7 @@ void Connector::Start() {
   channel_->set_write_callback(std::bind(&Connector::HandleConnect, this));
   channel_->set_error_callback(std::bind(&Connector::Retry, this));
   channel_->set_close_callback(std::bind(&Connector::Retry, this));
-  channel_->set_read_callback(nullptr);
+  channel_->SetReadCallback(nullptr);
   channel_->EnableWrite(true);
   const sockaddr_t* sa = addr_.addr();
 #ifdef LADDER_OS_WINDOWS

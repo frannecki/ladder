@@ -33,7 +33,7 @@ Channel::Channel(EventLoopPtr loop, int fd)
 
 Channel::~Channel() { LOGF_DEBUG("Destroying channel fd = %d", fd_); }
 
-void Channel::set_read_callback(const EventCallback& callback) {
+void Channel::SetReadCallback(const EventCallback& callback) {
   read_callback_ = callback;
 }
 

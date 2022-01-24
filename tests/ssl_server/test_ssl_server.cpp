@@ -39,7 +39,7 @@ int main(int argc, char** argv) {
   SocketAddr addr("0.0.0.0", 8070, false);
   SslInit();
   TcpServer server(addr, false, argv[1], argv[2]);
-  server.set_read_callback(std::bind(OnMessage, _1, _2));
+  server.SetReadCallback(std::bind(OnMessage, _1, _2));
   server.Start();
   return EXIT_SUCCESS;
 }

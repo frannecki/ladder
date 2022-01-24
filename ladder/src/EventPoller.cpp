@@ -226,7 +226,7 @@ Pipe::Pipe() {
     EXIT("pipe2");
   }
   channel_ = new Channel(nullptr, fd_[0]);
-  channel_->set_read_callback(std::bind(&Pipe::ReadCallback, this));
+  channel_->SetReadCallback(std::bind(&Pipe::ReadCallback, this));
 }
 
 Pipe::~Pipe() {

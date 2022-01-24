@@ -68,11 +68,11 @@ Timer::Timer(const EventLoopPtr& loop)
   }
   timer_channel_ = std::make_shared<Channel>(loop, timer_fd_);
   timer_channel_->UpdateToLoop();
-  timer_channel_->set_read_callback(std::bind(&Timer::OnTimer, this));
+  timer_channel_->SetReadCallback(std::bind(&Timer::OnTimer, this));
 #elif defined(LADDER_OS_FREEBSD)
   timer_fd_ = 1;
   timer_channel_ = std::make_shared<Channel>(loop, timer_fd_);
-  timer_channel_->set_read_callback(std::bind(&Timer::OnTimer, this));
+  timer_channel_->SetReadCallback(std::bind(&Timer::OnTimer, this));
 #endif
 }
 

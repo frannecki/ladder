@@ -27,8 +27,8 @@ int main(int argc, char** argv) {
   Logger::create("./test_file_server.log");
   SocketAddr addr("0.0.0.0", 8070, false);
   TcpServer server(addr, true);
-  server.set_connection_callback(std::bind(OnConnection, _1));
-  server.set_read_callback(std::bind(OnMessage, _1, _2));
+  server.SetConnectionCallback(std::bind(OnConnection, _1));
+  server.SetReadCallback(std::bind(OnMessage, _1, _2));
   server.Start();
   return 0;
 }

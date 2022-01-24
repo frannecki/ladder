@@ -43,7 +43,7 @@ class LADDER_API Channel {
   ~Channel();
   int fd() const;
   void EnableWrite(bool enable = true);
-  void set_read_callback(const EventCallback& callback);
+  void SetReadCallback(const EventCallback& callback);
   void set_write_callback(const EventCallback& callback);
   void set_close_callback(const std::function<void()>& callback);
   void set_error_callback(const std::function<void()>& callback);

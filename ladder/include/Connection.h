@@ -38,7 +38,7 @@ class LADDER_API Connection : public std::enable_shared_from_this<Connection> {
   void Close();
   void SendFile(std::string&& header, const std::string& filename = "");
   void OnCloseCallback();
-  void set_read_callback(const ReadEvtCallback& callback);
+  void SetReadCallback(const ReadEvtCallback& callback);
   void set_write_callback(const WriteEvtCallback& callback);
   void set_close_callback(const ConnectCloseCallback& callback);
   ChannelPtr channel() const;
