@@ -35,7 +35,7 @@ class LADDER_API EventLoop {
   void StopLoop();
   void QueueInLoop(std::function<void()>&& task);
 #ifdef LADDER_OS_UNIX
-  void set_wakeup_callback(const std::function<void()>& callback);
+  void SetWakeupCallback(const std::function<void()>& callback);
 #endif
   // TODO: wake up poller for urgent tasks
 #ifdef LADDER_OS_FREEBSD

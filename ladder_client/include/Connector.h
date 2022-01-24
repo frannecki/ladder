@@ -24,7 +24,7 @@ class Connector {
   Connector& operator=(const Connector&) = delete;
   ~Connector();
   void SetConnectionCallback(const ConnectionCallback& callback);
-  void set_connection_failure_callback(const ConnectionFailureCallback& callback);
+  void SetConnectionFailureCallback(const ConnectionFailureCallback& callback);
   void Start();
 
  private:

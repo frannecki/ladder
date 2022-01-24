@@ -24,7 +24,7 @@ class Acceptor {
   Acceptor& operator=(const Acceptor&) = delete;
   ~Acceptor();
   void Init();
-  void set_new_connection_callback(const NewConnectionCallback& callback);
+  void SetNewConnectionCallback(const NewConnectionCallback& callback);
 
  private:
 #ifdef LADDER_OS_WINDOWS

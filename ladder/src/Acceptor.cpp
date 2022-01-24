@@ -88,7 +88,7 @@ void Acceptor::HandleAcceptCallback() {
 
 #endif
 
-void Acceptor::set_new_connection_callback(const NewConnectionCallback& callback) {
+void Acceptor::SetNewConnectionCallback(const NewConnectionCallback& callback) {
   new_connection_callback_ = callback;
 }
 

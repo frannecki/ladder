@@ -35,7 +35,7 @@ class LADDER_API Channel {
 #else
   Channel(EventLoopPtr loop, int fd);
   void HandleEvents();
-  void set_revents(uint32_t events);
+  void SetRevents(uint32_t events);
   uint32_t events() const;
   EventLoopPtr loop() const;
   void RemoveFromLoop();
@@ -44,9 +44,9 @@ class LADDER_API Channel {
   int fd() const;
   void EnableWrite(bool enable = true);
   void SetReadCallback(const EventCallback& callback);
-  void set_write_callback(const EventCallback& callback);
-  void set_close_callback(const std::function<void()>& callback);
-  void set_error_callback(const std::function<void()>& callback);
+  void SetWriteCallback(const EventCallback& callback);
+  void SetCloseCallback(const std::function<void()>& callback);
+  void SetErrorCallback(const std::function<void()>& callback);
 
 #ifdef LADDER_OS_LINUX
   void UpdateToLoop(int op = EPOLL_CTL_ADD);

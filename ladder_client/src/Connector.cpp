@@ -22,7 +22,7 @@ Connector::Connector(const ChannelPtr& channel, int max_retry,
 #endif
       ipv6_(addr.ipv6()),
       addr_(addr) {
-  timer_->set_timer_event_callback(std::bind(&Connector::Start, this));
+  timer_->SetTimmerEventCallback(std::bind(&Connector::Start, this));
 }
 
 #ifdef LADDER_OS_WINDOWS
@@ -42,15 +42,15 @@ void Connector::SetConnectionCallback(const ConnectionCallback& callback) {
   connection_callback_ = callback;
 }
 
-void Connector::set_connection_failure_callback(
+void Connector::SetConnectionFailureCallback(
     const ConnectionFailureCallback& callback) {
   connection_failure_callback_ = callback;
 }
 
 void Connector::Start() {
-  channel_->set_write_callback(std::bind(&Connector::HandleConnect, this));
-  channel_->set_error_callback(std::bind(&Connector::Retry, this));
-  channel_->set_close_callback(std::bind(&Connector::Retry, this));
+  channel_->SetWriteCallback(std::bind(&Connector::HandleConnect, this));
+  channel_->SetErrorCallback(std::bind(&Connector::Retry, this));
+  channel_->SetCloseCallback(std::bind(&Connector::Retry, this));
   channel_->SetReadCallback(nullptr);
   channel_->EnableWrite(true);
   const sockaddr_t* sa = addr_.addr();
@@ -135,7 +135,7 @@ void Connector::Retry() {
     LOG_DEBUG("Connect failed. Trying again after " +
               std::to_string(retry_timeout_) + " ms.");
     // TODO: retry connect
-    timer_->set_interval(retry_timeout_ * 1000, false);
+    timer_->SetInterval(retry_timeout_ * 1000, false);
     retry_timeout_ <<= 1;
   } else {
     if (connection_failure_callback_) {

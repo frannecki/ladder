@@ -67,14 +67,14 @@ void Connection::SetChannelCallbacks() {
 #ifdef LADDER_OS_WINDOWS
   channel_->SetReadCallback(
       std::bind(&Connection::OnReadCallback, this, std::placeholders::_1));
-  channel_->set_write_callback(
+  channel_->SetWriteCallback(
       std::bind(&Connection::OnWriteCallback, this, std::placeholders::_1));
 #else
   channel_->SetReadCallback(std::bind(&Connection::OnReadCallback, this));
-  channel_->set_write_callback(std::bind(&Connection::OnWriteCallback, this));
+  channel_->SetWriteCallback(std::bind(&Connection::OnWriteCallback, this));
 #endif
-  channel_->set_close_callback(std::bind(&Connection::OnCloseCallback, this));
-  channel_->set_error_callback(std::bind(&Connection::OnCloseCallback, this));
+  channel_->SetCloseCallback(std::bind(&Connection::OnCloseCallback, this));
+  channel_->SetErrorCallback(std::bind(&Connection::OnCloseCallback, this));
 }
 
 void Connection::Send(const std::string& buf) {
@@ -110,11 +110,11 @@ void Connection::SetReadCallback(const ReadEvtCallback& callback) {
   read_callback_ = callback;
 }
 
-void Connection::set_write_callback(const WriteEvtCallback& callback) {
+void Connection::SetWriteCallback(const WriteEvtCallback& callback) {
   write_callback_ = callback;
 }
 
-void Connection::set_close_callback(const ConnectCloseCallback& callback) {
+void Connection::SetCloseCallback(const ConnectCloseCallback& callback) {
   close_callback_ = callback;
 }
 

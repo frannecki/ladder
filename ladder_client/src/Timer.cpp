@@ -40,7 +40,7 @@ Timer::~Timer() {
   CloseHandle(timer_queue_);
 }
 
-void Timer::set_interval(uint64_t interval, bool periodic) {
+void Timer::SetInterval(uint64_t interval, bool periodic) {
   uint64_t milliseconds = interval / 1000;
   if (!timer_) {
     if (!CreateTimerQueueTimer(&timer_, timer_queue_,
@@ -86,7 +86,7 @@ Timer::~Timer() {
 #endif
 }
 
-void Timer::set_interval(uint64_t interval, bool periodic) {
+void Timer::SetInterval(uint64_t interval, bool periodic) {
 #ifdef LADDER_OS_LINUX
   struct itimerspec value;
   bzero(&value, sizeof(value));
@@ -115,7 +115,7 @@ void Timer::set_interval(uint64_t interval, bool periodic) {
 
 #endif
 
-void Timer::set_timer_event_callback(const TimerEventCallback& callback) {
+void Timer::SetTimmerEventCallback(const TimerEventCallback& callback) {
   callback_ = callback;
 }
 

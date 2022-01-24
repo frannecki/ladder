@@ -27,12 +27,12 @@ int main(int argc, char **argv) {
   ladder::Timer *timer = new ladder::Timer(ladder::EventLoopPtr(&loop));
   ladder::Timer *timer1 = new ladder::Timer(ladder::EventLoopPtr(&loop));
 #endif
-  timer->set_timer_event_callback(std::bind(PrintTick, &tick_));
-  timer1->set_timer_event_callback(std::bind(PrintTick1, &tick1_));
+  timer->SetTimmerEventCallback(std::bind(PrintTick, &tick_));
+  timer1->SetTimmerEventCallback(std::bind(PrintTick1, &tick1_));
 #ifndef LADDER_OS_FREEBSD
-  timer->set_interval(1000000);  // triggered once
+  timer->SetInterval(1000000);  // triggered once
 #endif
-  timer1->set_interval(1000000, true);  // triggered periodically
+  timer1->SetInterval(1000000, true);  // triggered periodically
 #ifdef LADDER_OS_WINDOWS
   while (1)
     ;

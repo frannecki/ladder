@@ -62,7 +62,7 @@ class HttpCodec {
  public:
   HttpCodec(bool send_file = true);
   void OnClientMessage(const ConnectionPtr& conn, Buffer* buffer);
-  void set_client_message_callback(const HttpCodecMessageCallback& callback);
+  void SetClientMessageCallback(const HttpCodecMessageCallback& callback);
   void ParseRequest();
   void ParseResponse();
 

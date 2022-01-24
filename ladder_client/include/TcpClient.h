@@ -35,7 +35,7 @@ class LADDER_API TcpClient {
   void Disconnect();
 
   void SetReadCallback(const ReadEvtCallback& callback);
-  void set_write_callback(const WriteEvtCallback& callback);
+  void SetWriteCallback(const WriteEvtCallback& callback);
   void SetConnectionCallback(const ConnectionEvtCallback& callback);
 
  private:

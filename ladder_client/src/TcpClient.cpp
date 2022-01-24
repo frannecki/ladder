@@ -60,7 +60,7 @@ void TcpClient::Connect() {
   else
     conn_.reset(new TlsConnection(fd, ssl_ctx_, false));
   conn_->SetReadCallback(read_callback_);
-  conn_->set_close_callback(
+  conn_->SetCloseCallback(
       std::bind(&TcpClient::OnCloseConnectionCallback, this, fd));
   /* ConnectEx requires the socket to be initially bound. */
   local_addr.Bind(conn_->channel()->fd());
@@ -72,14 +72,14 @@ void TcpClient::Connect() {
   else
     conn_.reset(new TlsConnection(loop_, fd, ssl_ctx_, false));
   conn_->SetReadCallback(read_callback_);
-  conn_->set_close_callback(
+  conn_->SetCloseCallback(
       std::bind(&TcpClient::OnCloseConnectionCallback, this, fd));
   connector_.reset(new Connector(conn_->channel(), max_retry_, target_addr_,
                                  retry_initial_timeout_));
 #endif
   connector_->SetConnectionCallback(
       std::bind(&TcpClient::OnConnectionCallback, this, std::placeholders::_1));
-  connector_->set_connection_failure_callback(
+  connector_->SetConnectionFailureCallback(
       std::bind(&TcpClient::OnConnectionFailureCallback, this));
   LOGF_INFO("Trying to establish connection to target. fd = %d", fd);
 #ifdef LADDER_OS_WINDOWS
@@ -107,7 +107,7 @@ void TcpClient::SetReadCallback(const ReadEvtCallback& callback) {
   read_callback_ = callback;
 }
 
-void TcpClient::set_write_callback(const WriteEvtCallback& callback) {
+void TcpClient::SetWriteCallback(const WriteEvtCallback& callback) {
   write_callback_ = callback;
 }
 
