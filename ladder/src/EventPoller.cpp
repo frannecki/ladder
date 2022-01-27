@@ -51,7 +51,7 @@ void EventPoller::Poll(std::vector<Channel*>& active_channels) {
     uint32_t evt = 0;
     evt = poll_evts[i].events;
     Channel* channel = reinterpret_cast<Channel*>(poll_evts[i].data.ptr);
-    channel->set_revents(evt);
+    channel->SetRevents(evt);
     active_channels.emplace_back(channel);
   }
 }
@@ -143,7 +143,7 @@ void EventPoller::Poll(std::vector<Channel*>& active_channels) {
     short flt = poll_evts[i].filter;
     Channel* channel = reinterpret_cast<Channel*>(poll_evts[i].udata);
     if (poll_evts[i].flags & EV_ERROR) {
-      channel->set_revents(kPollEvent::kPollErr);
+      channel->SetRevents(kPollEvent::kPollErr);
       continue;
     }
 
@@ -151,7 +151,7 @@ void EventPoller::Poll(std::vector<Channel*>& active_channels) {
     if (iter != flt_2_stat_.end()) {
       evt = iter->second;
     }
-    channel->set_revents(evt);
+    channel->SetRevents(evt);
     active_channels.emplace_back(channel);
   }
 }
@@ -215,8 +215,8 @@ EventPoller::~EventPoller() {}
 
 void EventPoller::Wakeup() { pipe_->Wakeup(); }
 
-void EventPoller::set_wakeup_callback(const std::function<void()>& callback) {
-  pipe_->set_wakeup_callback(callback);
+void EventPoller::SetWakeupCallback(const std::function<void()>& callback) {
+  pipe_->SetWakeupCallback(callback);
 }
 
 
@@ -226,7 +226,7 @@ Pipe::Pipe() {
     EXIT("pipe2");
   }
   channel_ = new Channel(nullptr, fd_[0]);
-  channel_->set_read_callback(std::bind(&Pipe::ReadCallback, this));
+  channel_->SetReadCallback(std::bind(&Pipe::ReadCallback, this));
 }
 
 Pipe::~Pipe() {
@@ -242,7 +242,7 @@ void Pipe::Wakeup() {
 
 Channel* Pipe::channel() const { return channel_; }
 
-void Pipe::set_wakeup_callback(const std::function<void()>& callback) {
+void Pipe::SetWakeupCallback(const std::function<void()>& callback) {
   wakeup_callback_ = callback;
 }
 

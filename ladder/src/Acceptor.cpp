@@ -19,7 +19,7 @@ static thread_local LPFN_ACCEPTEX fn_acceptex = nullptr;
 
 Acceptor::Acceptor(const ChannelPtr& channel, bool ipv6)
     : channel_(channel), ipv6_(ipv6) {
-  channel->set_read_callback(
+  channel->SetReadCallback(
       std::bind(&Acceptor::HandleAcceptCallback, this, std::placeholders::_1));
   accept_buffer_ = new char[kMaxIocpRecvSize];
   cur_accept_fd_ = 0;
@@ -68,7 +68,7 @@ void Acceptor::HandleAcceptCallback(int io_size) {
 #else
 Acceptor::Acceptor(const ChannelPtr& channel, bool ipv6)
     : channel_(channel), ipv6_(ipv6) {
-  channel->set_read_callback(std::bind(&Acceptor::HandleAcceptCallback, this));
+  channel->SetReadCallback(std::bind(&Acceptor::HandleAcceptCallback, this));
 }
 
 Acceptor::~Acceptor() {}
@@ -88,7 +88,7 @@ void Acceptor::HandleAcceptCallback() {
 
 #endif
 
-void Acceptor::set_new_connection_callback(const NewConnectionCallback& callback) {
+void Acceptor::SetNewConnectionCallback(const NewConnectionCallback& callback) {
   new_connection_callback_ = callback;
 }
 

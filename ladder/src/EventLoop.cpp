@@ -81,8 +81,8 @@ void EventLoop::QueueInLoop(std::function<void()>&& task) {
 }
 
 #ifdef LADDER_OS_UNIX
-void EventLoop::set_wakeup_callback(const std::function<void()>& callback) {
-  poller_->set_wakeup_callback(callback);
+void EventLoop::SetWakeupCallback(const std::function<void()>& callback) {
+  poller_->SetWakeupCallback(callback);
 }
 #endif
 

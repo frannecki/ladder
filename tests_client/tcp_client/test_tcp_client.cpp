@@ -40,9 +40,9 @@ int main(int argc, char** argv) {
   SocketAddr addr("127.0.0.1", 8070, false);
   EventLoopThread loop_thread;
   TcpClient client(addr, loop_thread.loop(), 10);
-  client.set_read_callback(std::bind(OnMessage, _1, _2));
+  client.SetReadCallback(std::bind(OnMessage, _1, _2));
+  client.SetConnectionCallback(std::bind(OnConnection, _1));
 #ifdef _MSC_VER
-  client.set_connection_callback(std::bind(OnConnection, _1));
   SocketAddr local_addr("127.0.0.1", 31311, false);
   client.Connect(local_addr);
 #else

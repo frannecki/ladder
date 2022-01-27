@@ -16,7 +16,7 @@ void WakeupCallback() { LOG_INFO("wakeup callback"); }
 int main(int argc, char** argv) {
   Logger::create();
   EventLoop loop;
-  loop.set_wakeup_callback(WakeupCallback);
+  loop.SetWakeupCallback(WakeupCallback);
   std::thread th(&EventLoop::StartLoop, &loop);
 
   LOG_WARNING("First wakeup");

@@ -26,7 +26,7 @@ static ProtobufCodec* p_codec = nullptr;
 void OnRawMessage(const ConnectionPtr& conn, Buffer* buffer) {
   std::string msg = buffer->ReadAll();
   LOG_INFO("Recv: " + msg);
-  conn->set_read_callback(
+  conn->SetReadCallback(
       std::bind(&ProtobufCodec::OnMessage, p_codec, _1, _2));
 
   ladder::TestMessage1 message;
@@ -85,10 +85,10 @@ int main(int argc, char** argv) {
 #ifdef LADDER_OS_WINDOWS
   // iocp server cannot send data on connection
   p_codec = &codec;
-  server.set_read_callback(std::bind(OnRawMessage, _1, _2));
+  server.SetReadCallback(std::bind(OnRawMessage, _1, _2));
 #else
-  server.set_connection_callback(std::bind(OnConnection, _1, codec));
-  server.set_read_callback(
+  server.SetConnectionCallback(std::bind(OnConnection, _1, codec));
+  server.SetReadCallback(
       std::bind(&ProtobufCodec::OnMessage, &codec, _1, _2));
 #endif
   server.Start();

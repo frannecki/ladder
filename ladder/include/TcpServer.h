@@ -24,9 +24,9 @@ class LADDER_API TcpServer {
   TcpServer& operator=(const TcpServer&) = delete;
   ~TcpServer();
   void Start();
-  void set_read_callback(const ReadEvtCallback& callback);
-  void set_write_callback(const WriteEvtCallback& callback);
-  void set_connection_callback(const ConnectionEvtCallback& callback);
+  void SetReadCallback(const ReadEvtCallback& callback);
+  void SetWriteCallback(const WriteEvtCallback& callback);
+  void SetConnectionCallback(const ConnectionEvtCallback& callback);
 #ifndef LADDER_OS_WINDOWS
   EventLoopPtr loop() const;
 #endif

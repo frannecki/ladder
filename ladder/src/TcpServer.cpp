@@ -80,7 +80,7 @@ void TcpServer::Start() {
   iocp_port_ = UpdateIocpPort(NULL, channel_.get());
   loop_ = std::make_shared<EventLoop>(iocp_port_);
   acceptor_.reset(new Acceptor(channel_, addr_.ipv6()));
-  acceptor_->set_new_connection_callback(
+  acceptor_->SetNewConnectionCallback(
       std::bind(&TcpServer::OnNewConnection,
                 this,
                 std::placeholders::_1,
@@ -95,7 +95,7 @@ void TcpServer::Start() {
   channel_.reset(new Channel(loop_, fd));
   channel_->UpdateToLoop();
   acceptor_.reset(new Acceptor(channel_, addr_.ipv6()));
-  acceptor_->set_new_connection_callback(
+  acceptor_->SetNewConnectionCallback(
       std::bind(&TcpServer::OnNewConnectionCallback, this,
                 std::placeholders::_1, std::placeholders::_2));
   loop_threads_.reset(new EventLoopThreadPool(loop_thread_num_));
@@ -104,15 +104,15 @@ void TcpServer::Start() {
   loop_->StartLoop();
 }
 
-void TcpServer::set_read_callback(const ReadEvtCallback& callback) {
+void TcpServer::SetReadCallback(const ReadEvtCallback& callback) {
   read_callback_ = callback;
 }
 
-void TcpServer::set_write_callback(const WriteEvtCallback& callback) {
+void TcpServer::SetWriteCallback(const WriteEvtCallback& callback) {
   write_callback_ = callback;
 }
 
-void TcpServer::set_connection_callback(const ConnectionEvtCallback& callback) {
+void TcpServer::SetConnectionCallback(const ConnectionEvtCallback& callback) {
   connection_callback_ = callback;
 }
 
@@ -137,9 +137,9 @@ void TcpServer::OnNewConnection(int fd, const SocketAddr& addr) {
   else
     connection = std::make_shared<Connection>(loop, fd, send_file_);
 #endif
-  connection->set_read_callback(read_callback_);
-  connection->set_write_callback(write_callback_);
-  connection->set_close_callback(
+  connection->SetReadCallback(read_callback_);
+  connection->SetWriteCallback(write_callback_);
+  connection->SetCloseCallback(
       std::bind(&TcpServer::OnCloseConnectionCallback, this, fd));
 #ifdef LADDER_OS_WINDOWS
   connection->Init(iocp_port_, buffer, io_size);

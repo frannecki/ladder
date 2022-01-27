@@ -24,8 +24,8 @@ class Timer {
   Timer(const EventLoopPtr& loop);
 #endif
   ~Timer();
-  void set_interval(uint64_t microseconds, bool periodic = false);
-  void set_timer_event_callback(const TimerEventCallback& callback);
+  void SetInterval(uint64_t microseconds, bool periodic = false);
+  void SetTimmerEventCallback(const TimerEventCallback& callback);
   uint64_t GetInterval() const;
   void OnTimer();
 

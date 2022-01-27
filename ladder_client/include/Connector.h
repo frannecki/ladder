@@ -23,8 +23,8 @@ class Connector {
   Connector(const Connector&) = delete;
   Connector& operator=(const Connector&) = delete;
   ~Connector();
-  void set_connection_callback(const ConnectionCallback& callback);
-  void set_connection_failure_callback(const ConnectionFailureCallback& callback);
+  void SetConnectionCallback(const ConnectionCallback& callback);
+  void SetConnectionFailureCallback(const ConnectionFailureCallback& callback);
   void Start();
 
  private:

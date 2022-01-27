@@ -244,7 +244,7 @@ bool HttpResponse::PrepareMessage() {
 HttpCodec::HttpCodec(bool send_file)
     : send_file_(send_file) {}
 
-void HttpCodec::set_client_message_callback(
+void HttpCodec::SetClientMessageCallback(
     const HttpCodecMessageCallback& callback) {
   server_callback_ = callback;
 }

@@ -33,19 +33,19 @@ Channel::Channel(EventLoopPtr loop, int fd)
 
 Channel::~Channel() { LOGF_DEBUG("Destroying channel fd = %d", fd_); }
 
-void Channel::set_read_callback(const EventCallback& callback) {
+void Channel::SetReadCallback(const EventCallback& callback) {
   read_callback_ = callback;
 }
 
-void Channel::set_write_callback(const EventCallback& callback) {
+void Channel::SetWriteCallback(const EventCallback& callback) {
   write_callback_ = callback;
 }
 
-void Channel::set_close_callback(const std::function<void()>& callback) {
+void Channel::SetCloseCallback(const std::function<void()>& callback) {
   close_callback_ = callback;
 }
 
-void Channel::set_error_callback(const std::function<void()>& callback) {
+void Channel::SetErrorCallback(const std::function<void()>& callback) {
   error_callback_ = callback;
 }
 
@@ -66,7 +66,7 @@ void Channel::HandleEvents(int evts, int io_size) {
 
 #else
 
-void Channel::set_revents(uint32_t events) { revents_ |= events; }
+void Channel::SetRevents(uint32_t events) { revents_ |= events; }
 
 uint32_t Channel::events() const { return events_; }
 

@@ -40,8 +40,8 @@ int main(int argc, char** argv) {
   EventLoopThread loop_thread;
   SslInit();
   TcpClient client(addr, loop_thread.loop(), 10, true);
-  client.set_connection_callback(std::bind(OnConnection, _1));
-  client.set_read_callback(std::bind(OnMessage, _1, _2));
+  client.SetConnectionCallback(std::bind(OnConnection, _1));
+  client.SetReadCallback(std::bind(OnMessage, _1, _2));
 #ifdef _MSC_VER
   SocketAddr local_addr("127.0.0.1", 31312, false);
   client.Connect(local_addr);

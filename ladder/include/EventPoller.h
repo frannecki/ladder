@@ -27,7 +27,7 @@ class Pipe {
   ~Pipe();
   void Wakeup();
   Channel* channel() const;
-  void set_wakeup_callback(const std::function<void()>& callback);
+  void SetWakeupCallback(const std::function<void()>& callback);
 
  private:
   void ReadCallback();
@@ -50,7 +50,7 @@ class EventPoller {
   void RemoveChannel(int fd);
 #ifdef LADDER_OS_UNIX
   void Wakeup();
-  void set_wakeup_callback(const std::function<void()>& callback);
+  void SetWakeupCallback(const std::function<void()>& callback);
 #endif
 
  private:
