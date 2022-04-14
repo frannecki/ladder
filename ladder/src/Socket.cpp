@@ -1,6 +1,10 @@
 #include <compat.h>
 #ifdef LADDER_OS_UNIX
 #include <unistd.h>
+#ifndef SOCK_NONBLOCK
+#include <fcntl.h>
+# define SOCK_NONBLOCK O_NONBLOCK
+#endif
 #endif
 #ifdef LADDER_OS_LINUX
 #include <sys/sendfile.h>
@@ -185,8 +189,75 @@ int sendfile(int out_fd, HANDLE in_fd, off_t* offset, size_t count) {
   return -1;
 }
 #else
+
+
+bool fcntl_set_option(int sock, int nonblock, int cloexec) {
+    int opts, ret;
+
+    if (nonblock >= 0) {
+        do {
+            opts = fcntl(sock, F_GETFL);
+        } while (opts < 0 && errno == EINTR);
+
+        if (opts < 0) {
+          EXIT("fcntl(n, GETFL) failed");
+        }
+
+        if (nonblock) {
+            opts = opts | O_NONBLOCK;
+        } else {
+            opts = opts & ~O_NONBLOCK;
+        }
+
+        do {
+            ret = fcntl(sock, F_SETFL, opts);
+        } while (ret < 0 && errno == EINTR);
+
+        if (ret < 0) {
+            EXIT("fcntl(n, SETFL, opts) failed");
+            return false;
+        }
+    }
+
+#ifdef FD_CLOEXEC
+    if (cloexec >= 0) {
+        do {
+            opts = fcntl(sock, F_GETFD);
+        } while (opts < 0 && errno == EINTR);
+
+        if (opts < 0) {
+            EXIT("fcntl(n, GETFL) failed");
+        }
+
+        if (cloexec) {
+            opts = opts | FD_CLOEXEC;
+        } else {
+            opts = opts & ~FD_CLOEXEC;
+        }
+
+        do {
+            ret = fcntl(sock, F_SETFD, opts);
+        } while (ret < 0 && errno == EINTR);
+
+        if (ret < 0) {
+            EXIT("fcntl(n, SETFD, opts) failed");
+            return false;
+        }
+    }
+#endif
+
+    return true;
+}
+
 int accept(int fd, sockaddr_t* addr, socklen_t* addr_len) {
+#ifndef LADDER_OS_MAC
   int accepted = ::accept4(fd, (struct sockaddr*)addr, addr_len, SOCK_NONBLOCK);
+#else
+  int accepted = ::accept(fd, (struct sockaddr*)addr, addr_len);
+  if (accepted >= 0) {
+      fcntl_set_option(fd, 1, 1);
+  }
+#endif
   if (accepted < 0) {
     EXIT("accept");
   }
@@ -210,9 +281,13 @@ int read(int fd, void* buf, size_t len) {
 int sendfile(int out_fd, int in_fd, off_t* offset, size_t count) {
 #ifdef LADDER_OS_LINUX
   int ret = ::sendfile(out_fd, in_fd, offset, count);
-#elif defined(LADDER_OS_FREEBSD)
+#elif defined(LADDER_HAVE_KQUEUE)
   off_t bytes_sent;
+#ifdef LADDER_OS_MAC
+  int success = ::sendfile(in_fd, out_fd, *offset, (off_t*)count, NULL, 0);
+#elif LADDER_OS_FREEBSD
   int success = ::sendfile(in_fd, out_fd, *offset, count, NULL, &bytes_sent, 0);
+#endif
   int ret = (success == 0) ? static_cast<int>(bytes_sent) : 0;
 #endif
   return ret;
