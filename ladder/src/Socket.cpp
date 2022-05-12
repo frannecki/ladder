@@ -1,10 +1,10 @@
 #include <compat.h>
 #ifdef LADDER_OS_UNIX
 #include <unistd.h>
-#ifndef SOCK_NONBLOCK
+#endif
+#ifdef LADDER_OS_MAC
 #include <fcntl.h>
 # define SOCK_NONBLOCK O_NONBLOCK
-#endif
 #endif
 #ifdef LADDER_OS_LINUX
 #include <sys/sendfile.h>
