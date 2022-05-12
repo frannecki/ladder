@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#include <compat.h>
+#include "compat.h"
 
 #ifdef LADDER_OS_LINUX
 #include <sys/epoll.h>
@@ -14,7 +14,7 @@
 #include <functional>
 #include <memory>
 
-#include <Base.h>
+#include "Base.h"
 
 namespace ladder {
 

@@ -5,7 +5,7 @@
 #include <memory>
 #include <string>
 
-#include <compat.h>
+#include "compat.h"
 
 namespace ladder {
 

@@ -5,7 +5,7 @@
 #include <mutex>
 #include <vector>
 
-#include <compat.h>
+#include "compat.h"
 
 namespace ladder {
 

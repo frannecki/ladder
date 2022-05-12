@@ -3,14 +3,14 @@
 
 #include <string>
 
-#include <compat.h>
+#include "compat.h"
 
 #ifdef LADDER_OS_WINDOWS
 #include <winSock2.h>
 #endif
 
-#include <Base.h>
-#include <Socket.h>
+#include "Base.h"
+#include "Socket.h"
 
 namespace ladder {
 

@@ -1,7 +1,7 @@
 #ifndef LADDER_EVENT_POLLER_H
 #define LADDER_EVENT_POLLER_H
 
-#include <compat.h>
+#include "compat.h"
 #ifndef LADDER_OS_WINDOWS
 
 #ifdef LADDER_OS_LINUX

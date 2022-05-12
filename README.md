@@ -59,6 +59,16 @@ Buiding scripts with cmake and bazel are provided for Linux/FreeBSD. You can ref
   ./build_cmake.sh
   ```
 
+  or alternatively
+
+  ```sh
+  mkdir build-cmake
+  protoc -I=tests/proto --cpp_out=tests/proto tests/proto/*.proto || exit 1
+  mkdir -p build-cmake && cd build-cmake
+  cmake .. && make
+  make install # Optional. Installation path defaults to `/usr/local/include` and `/usr/local/lib`
+  ```
+
 ### Usage
 #### Start a ladder server
 ```cpp
@@ -69,9 +79,10 @@ Buiding scripts with cmake and bazel are provided for Linux/FreeBSD. You can ref
 #pragma comment(lib, "ws2_32.lib")
 #endif
 
-#include <Buffer.h>
-#include <Connection.h>
-#include <TcpServer.h>
+#include <ladder/Buffer.h>
+#include <ladder/Connection.h>
+#include <ladder/TcpServer.h>
+#include <ladder/Logging.h>
 
 using namespace ladder;
 using namespace std::placeholders;

@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#include <compat.h>
+#include "compat.h"
 
 #ifdef LADDER_OS_UNIX
 #include <arpa/inet.h>
@@ -27,7 +27,7 @@
 
 #include <openssl/ssl.h>
 
-#include <Base.h>
+#include "Base.h"
 
 namespace ladder {
 

@@ -9,12 +9,12 @@
 #include <openssl/err.h>
 #include <openssl/ssl.h>
 
-#include <compat.h>
+#include "compat.h"
 #ifdef LADDER_OS_WINDOWS
 #include <winsock2.h>
 #endif
 
-#include <Base.h>
+#include "Base.h"
 
 namespace ladder {
 
