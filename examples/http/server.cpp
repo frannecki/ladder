@@ -158,7 +158,7 @@ int main(int argc, char** argv) {
     ssl_cert_dir = std::string(argv[2]);
   }
   Logger::create("./test_http_server.log");
-  SocketAddr addr("0.0.0.0", 8070, false);
+  SocketAddr addr("0.0.0.0", 8080, false);
 
   SslInit();
   HttpServer server(addr, (argc > 2) ? argv[2] : nullptr,

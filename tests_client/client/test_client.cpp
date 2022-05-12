@@ -4,7 +4,7 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #pragma comment(lib, "ws2_32.lib")
-#elif defined(__unix__)
+#elif defined(__unix__) ||  defined(__APPLE__)
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
@@ -72,7 +72,7 @@ int main(int argc, char** argv) {
   }
 #ifdef _MSC_VER
   if (shutdown(sockfd, SD_SEND) < 0) {
-#elif defined(__unix__)
+#elif defined(__unix__) || defined(__APPLE__)
   if (shutdown(sockfd, SHUT_WR) < 0) {
 #endif
     perror("shutdown write");

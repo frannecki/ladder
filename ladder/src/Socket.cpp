@@ -77,10 +77,76 @@ const sockaddr_t* SocketAddr::addr() const { return &sa_; }
 
 namespace socket {
 
+#ifdef LADDER_OS_MAC
+bool fcntl_set_option(int sock, int nonblock, int cloexec) {
+    int opts, ret;
+
+    if (nonblock >= 0) {
+        do {
+            opts = fcntl(sock, F_GETFL);
+        } while (opts < 0 && errno == EINTR);
+
+        if (opts < 0) {
+          EXIT("fcntl(n, GETFL) failed");
+        }
+
+        if (nonblock) {
+            opts = opts | O_NONBLOCK;
+        } else {
+            opts = opts & ~O_NONBLOCK;
+        }
+
+        do {
+            ret = fcntl(sock, F_SETFL, opts);
+        } while (ret < 0 && errno == EINTR);
+
+        if (ret < 0) {
+            EXIT("fcntl(n, SETFL, opts) failed");
+            return false;
+        }
+    }
+
+#ifdef FD_CLOEXEC
+    if (cloexec >= 0) {
+        do {
+            opts = fcntl(sock, F_GETFD);
+        } while (opts < 0 && errno == EINTR);
+
+        if (opts < 0) {
+            EXIT("fcntl(n, GETFL) failed");
+        }
+
+        if (cloexec) {
+            opts = opts | FD_CLOEXEC;
+        } else {
+            opts = opts & ~FD_CLOEXEC;
+        }
+
+        do {
+            ret = fcntl(sock, F_SETFD, opts);
+        } while (ret < 0 && errno == EINTR);
+
+        if (ret < 0) {
+            EXIT("fcntl(n, SETFD, opts) failed");
+            return false;
+        }
+    }
+#endif
+
+    return true;
+}
+#endif
+
 int socket(bool tcp, bool ipv6) {
 #ifdef LADDER_OS_UNIX
+#ifdef LADDER_OS_MAC
+  int fd = ::socket(ipv6 ? AF_INET6 : AF_INET,
+                    tcp ? SOCK_STREAM : SOCK_DGRAM, 0);
+  fcntl_set_option(fd, 1, 1);
+#else
   int fd = ::socket(ipv6 ? AF_INET6 : AF_INET,
                     (tcp ? SOCK_STREAM : SOCK_DGRAM) | SOCK_NONBLOCK, 0);
+#endif
   if (fd < 0) {
         EXIT("socket");
   }
@@ -189,65 +255,6 @@ int sendfile(int out_fd, HANDLE in_fd, off_t* offset, size_t count) {
   return -1;
 }
 #else
-
-
-bool fcntl_set_option(int sock, int nonblock, int cloexec) {
-    int opts, ret;
-
-    if (nonblock >= 0) {
-        do {
-            opts = fcntl(sock, F_GETFL);
-        } while (opts < 0 && errno == EINTR);
-
-        if (opts < 0) {
-          EXIT("fcntl(n, GETFL) failed");
-        }
-
-        if (nonblock) {
-            opts = opts | O_NONBLOCK;
-        } else {
-            opts = opts & ~O_NONBLOCK;
-        }
-
-        do {
-            ret = fcntl(sock, F_SETFL, opts);
-        } while (ret < 0 && errno == EINTR);
-
-        if (ret < 0) {
-            EXIT("fcntl(n, SETFL, opts) failed");
-            return false;
-        }
-    }
-
-#ifdef FD_CLOEXEC
-    if (cloexec >= 0) {
-        do {
-            opts = fcntl(sock, F_GETFD);
-        } while (opts < 0 && errno == EINTR);
-
-        if (opts < 0) {
-            EXIT("fcntl(n, GETFL) failed");
-        }
-
-        if (cloexec) {
-            opts = opts | FD_CLOEXEC;
-        } else {
-            opts = opts & ~FD_CLOEXEC;
-        }
-
-        do {
-            ret = fcntl(sock, F_SETFD, opts);
-        } while (ret < 0 && errno == EINTR);
-
-        if (ret < 0) {
-            EXIT("fcntl(n, SETFD, opts) failed");
-            return false;
-        }
-    }
-#endif
-
-    return true;
-}
 
 int accept(int fd, sockaddr_t* addr, socklen_t* addr_len) {
 #ifndef LADDER_OS_MAC
