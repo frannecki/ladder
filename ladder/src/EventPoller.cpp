@@ -226,20 +226,14 @@ Pipe::Pipe() {
   if (::pipe2(fd_, O_NONBLOCK) < 0) {
     EXIT("pipe2");
   }
-        const auto r = ::pipe2(&pipe_[0], O_CLOEXEC);
-        if (-1 == r)
-            throw exception("pipe2 failed: " +
-                std::system_category().message(errno));
 #else
-  static std::mutex mutex;
-  std::lock_guard<std::mutex> lock{mutex};
   ::pipe(&fd_[0]);
 
-        auto flags = ::fcntl(fd_[0], F_GETFD, 0);
-        ::fcntl(fd_[0], F_SETFD, flags | O_NONBLOCK);
+    auto flags = ::fcntl(fd_[0], F_GETFD, 0);
+    ::fcntl(fd_[0], F_SETFD, flags | O_NONBLOCK);
 
-        flags = ::fcntl(fd_[1], F_GETFD, 0);
-        ::fcntl(fd_[1], F_SETFD, flags | O_NONBLOCK);
+    flags = ::fcntl(fd_[1], F_GETFD, 0);
+    ::fcntl(fd_[1], F_SETFD, flags | O_NONBLOCK);
 #endif
 
   channel_ = new Channel(nullptr, fd_[0]);
