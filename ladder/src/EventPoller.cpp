@@ -236,7 +236,7 @@ Pipe::~Pipe() {
 }
 
 void Pipe::Wakeup() {
-  char ch;
+  char ch = 0;
   socket::write(fd_[1], &ch, sizeof(ch));
 }
 

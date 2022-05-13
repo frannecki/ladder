@@ -9,14 +9,14 @@
 
 #ifdef _MSC_VER
 #ifdef _CONSOLE
-#define LADDER_API
+#define LADTEST_API
 #elif defined(_WINDLL)
-#define LADDER_API __declspec(dllexport)
+#define LADTEST_API __declspec(dllexport)
 #else
-#define LADDER_API __declspec(dllimport)
+#define LADTEST_API __declspec(dllimport)
 #endif
 #else
-#define LADDER_API
+#define LADTEST_API
 #endif
 
 #define TEST(test_suite_name, test_name)                    \
@@ -164,7 +164,7 @@ using SetUpOrTestDownTestSuiteFp = void (*)();
 
 struct TestInfo;
 class TestSuite;
-class LADDER_API UnitTest {
+class LADTEST_API UnitTest {
  public:
   UnitTest(const UnitTest&) = delete;
   UnitTest& operator=(const UnitTest&) = delete;

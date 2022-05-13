@@ -7,8 +7,8 @@
 #else
 #define LADDER_API __declspec(dllimport)
 #endif
-//#elif defined(__GNUC__)
-//#define LADDER_API__attribute__((visibility("default")))
+#elif defined(__GNUC__)
+#define LADDER_API __attribute__((visibility("default")))
 #else
 #define LADDER_API
 #endif

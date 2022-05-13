@@ -94,7 +94,7 @@ std::string ReadFileAsString(const std::string& path) {
   }
   fclose(fp);
 
-  return std::move(result);
+  return result;
 }
 
 void SslInit() {
