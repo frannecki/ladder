@@ -42,8 +42,8 @@ TEST_F(SocketAddrTest, test_ipv4) {
   EXPECT_EQ(addr->port(), 8086);
   const ladder::sockaddr_t* sa = addr->addr();
   EXPECT_EQ(sa->addr_.sin_family, AF_INET);
-  EXPECT_EQ(sa->addr_.sin_port, ::htons(8086));
-  EXPECT_EQ(sa->addr_.sin_addr.s_addr, ::htonl(0x7f000001));
+  EXPECT_EQ(sa->addr_.sin_port, htons(8086));
+  EXPECT_EQ(sa->addr_.sin_addr.s_addr, htonl(0x7f000001));
 }
 
 TEST_F(SocketAddrTest, test_ipv6) {
@@ -51,5 +51,5 @@ TEST_F(SocketAddrTest, test_ipv6) {
   EXPECT_EQ(addr6->port(), 8087);
   const ladder::sockaddr_t* sa = addr6->addr();
   EXPECT_EQ(sa->addr6_.sin6_family, AF_INET6);
-  EXPECT_EQ(sa->addr6_.sin6_port, ::htons(8087));
+  EXPECT_EQ(sa->addr6_.sin6_port, htons(8087));
 }

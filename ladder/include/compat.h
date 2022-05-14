@@ -15,12 +15,17 @@
 
 #ifdef _MSC_VER
 #define LADDER_OS_WINDOWS
-#elif defined(__unix__)
+#elif defined(__unix__) || defined(__APPLE__)
 #define LADDER_OS_UNIX
 #ifdef __linux__
 #define LADDER_OS_LINUX
+#define LADDER_HAVE_EPOLL
 #elif defined(__FreeBSD__)
 #define LADDER_OS_FREEBSD
+#define LADDER_HAVE_KQUEUE
+#elif defined(__APPLE__)
+#define LADDER_OS_MAC
+#define LADDER_HAVE_KQUEUE
 #endif
 #endif
 

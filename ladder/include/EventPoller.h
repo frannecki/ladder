@@ -6,7 +6,7 @@
 
 #ifdef LADDER_OS_LINUX
 #include <sys/epoll.h>
-#elif defined(LADDER_OS_FREEBSD)
+#elif defined(LADDER_HAVE_KQUEUE)
 #include <sys/event.h>
 #include <unordered_map>
 #endif
@@ -44,7 +44,7 @@ class EventPoller {
   ~EventPoller();
   void Poll(std::vector<Channel*>& active_channels);
   void UpdateChannel(Channel* channel, int op);
-#ifdef LADDER_OS_FREEBSD
+#ifdef LADDER_HAVE_KQUEUE
   int UpdateEvent(const struct kevent* evt);
 #endif
   void RemoveChannel(int fd);
@@ -59,7 +59,7 @@ class EventPoller {
 #ifdef LADDER_OS_UNIX
   PipePtr pipe_;
 #endif
-#ifdef LADDER_OS_FREEBSD
+#ifdef LADDER_HAVE_KQUEUE
   static std::unordered_map<short, uint32_t> flt_2_stat_;  // filter to status
   static std::unordered_map<uint32_t, short> stat_2_flt_;  // status to filter
 #endif

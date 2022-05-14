@@ -5,9 +5,9 @@
 
 #include "compat.h"
 
-#ifdef LADDER_OS_LINUX
+#ifdef LADDER_HAVE_EPOLL
 #include <sys/epoll.h>
-#elif defined(LADDER_OS_FREEBSD)
+#elif defined(LADDER_HAVE_KQUEUE)
 #include <sys/event.h>
 #endif
 
@@ -48,10 +48,10 @@ class LADDER_API Channel {
   void SetCloseCallback(const std::function<void()>& callback);
   void SetErrorCallback(const std::function<void()>& callback);
 
-#ifdef LADDER_OS_LINUX
+#ifdef LADDER_HAVE_EPOLL
   void UpdateToLoop(int op = EPOLL_CTL_ADD);
   void SetEpollEdgeTriggered(bool edge_triggered = true);
-#elif defined(LADDER_OS_FREEBSD)
+#elif defined(LADDER_HAVE_KQUEUE)
   void UpdateToLoop(int op = EV_ADD | EV_ENABLE);  // | EV_CLEAR);
 #endif
   void ShutDownWrite();

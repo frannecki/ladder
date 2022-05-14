@@ -89,8 +89,8 @@ void EventPoller::RemoveChannel(int fd) {
   }
 }
 
-//// For FreeBSD
-#elif defined(LADDER_OS_FREEBSD)
+//// For FreeBSD or macOS
+#elif defined(LADDER_HAVE_KQUEUE)
 static thread_local struct kevent poll_evts[kPollLimit];
 
 const int kNumValidFilters = 3;
@@ -222,9 +222,20 @@ void EventPoller::SetWakeupCallback(const std::function<void()>& callback) {
 
 #ifdef LADDER_OS_UNIX
 Pipe::Pipe() {
+#ifndef LADDER_OS_MAC
   if (::pipe2(fd_, O_NONBLOCK) < 0) {
     EXIT("pipe2");
   }
+#else
+  ::pipe(&fd_[0]);
+
+    auto flags = ::fcntl(fd_[0], F_GETFD, 0);
+    ::fcntl(fd_[0], F_SETFD, flags | O_NONBLOCK);
+
+    flags = ::fcntl(fd_[1], F_GETFD, 0);
+    ::fcntl(fd_[1], F_SETFD, flags | O_NONBLOCK);
+#endif
+
   channel_ = new Channel(nullptr, fd_[0]);
   channel_->SetReadCallback(std::bind(&Pipe::ReadCallback, this));
 }
