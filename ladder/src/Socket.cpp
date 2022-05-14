@@ -315,7 +315,6 @@ int shutdown_write(int fd) {
       case ENOTCONN:
         break;
       default:
-        // EXIT("shutdown SHUT_WR");
         break;
     }
   }
@@ -329,10 +328,6 @@ int shutdown_read(int fd) {
 #ifdef LADDER_OS_WINDOWS
   int ret = ::shutdown(fd, SD_RECEIVE);
 #endif
-  
-  if (ret < 0) {
-    EXIT("shutdown SHUT_RD");
-  }
   return ret;
 }
 

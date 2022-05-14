@@ -90,8 +90,13 @@ void Connection::Send(const std::string& buf) {
 void Connection::ShutDownWrite() { channel_->ShutDownWrite(); }
 
 void Connection::Close() {
+  // Close both read and write wait for EPOLLHUP or EPOLLERR to be triggered
   channel_->ShutDownRead();
   channel_->ShutDownWrite();
+#ifdef LADDER_HAVE_KQUEUE
+  // For kqueue only EVFILT_READ may be triggered
+  OnCloseCallback();
+#endif
 }
 
 void Connection::OnCloseCallback() {
@@ -265,6 +270,7 @@ void Connection::OnReadCallback() {
   int ret = ReadBuffer();
   if (ret == 0) {
     // FIN received
+    // LOGF_INFO("read shut down, fd = %d", channel_->fd());
     shut_down_ = true;
 
     // IMPORTANT: OnCloseCallback can only be called once

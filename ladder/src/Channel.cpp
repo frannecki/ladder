@@ -149,7 +149,7 @@ void Channel::EnableWrite(bool enable) {
   }
   UpdateToLoop(EPOLL_CTL_MOD);
 }
-#elif defined(LADDER_OS_FREEBSD)
+#elif defined(LADDER_HAVE_KQUEUE)
 void Channel::EnableWrite(bool enable) {
   events_ = kPollEvent::kPollOut;
   UpdateToLoop(enable ? (EV_ADD | EV_ENABLE) : EV_DISABLE);
@@ -162,16 +162,16 @@ int Channel::fd() const { return fd_; }
 
 void Channel::ShutDownWrite() {
 #ifndef LADDER_OS_WINDOWS
-  if (!IsWriting())
+  // if (!IsWriting()) ?
 #endif
-    socket::shutdown_write(fd_);
+  socket::shutdown_write(fd_);
 }
 
 void Channel::ShutDownRead() {
 #ifndef LADDER_OS_WINDOWS
-  if (!IsReading())
+  // if (!IsReading()) ?
 #endif
-    socket::shutdown_read(fd_);
+  socket::shutdown_read(fd_);
 }
 
 }  // namespace ladder
