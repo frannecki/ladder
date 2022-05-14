@@ -4,7 +4,6 @@
 #endif
 #ifdef LADDER_OS_MAC
 #include <fcntl.h>
-# define SOCK_NONBLOCK O_NONBLOCK
 #endif
 #ifdef LADDER_OS_LINUX
 #include <sys/sendfile.h>
@@ -291,8 +290,9 @@ int sendfile(int out_fd, int in_fd, off_t* offset, size_t count) {
 #elif defined(LADDER_HAVE_KQUEUE)
   off_t bytes_sent;
 #ifdef LADDER_OS_MAC
-  int success = ::sendfile(in_fd, out_fd, *offset, (off_t*)count, NULL, 0);
-#elif LADDER_OS_FREEBSD
+  bytes_sent = static_cast<off_t>(count);
+  int success = ::sendfile(in_fd, out_fd, *offset, &bytes_sent, NULL, 0);
+#elif defined(LADDER_OS_FREEBSD)
   int success = ::sendfile(in_fd, out_fd, *offset, count, NULL, &bytes_sent, 0);
 #endif
   int ret = (success == 0) ? static_cast<int>(bytes_sent) : 0;

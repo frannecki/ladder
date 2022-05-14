@@ -11,6 +11,7 @@ Ladder is a light-weight web server framework developed for studying purposes. I
 * Linux
 * FreeBSD
 * Windows
+* macOS
 
 ## Usage
 ### Building
