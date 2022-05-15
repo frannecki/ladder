@@ -42,6 +42,7 @@ TcpServer::TcpServer(const SocketAddr& addr, bool send_file,
     : addr_(addr),
       send_file_(send_file),
       loop_thread_num_(loop_thread_num),
+      running_(true),
 #ifdef LADDER_OS_WINDOWS
       iocp_port_(NULL),
 #else
@@ -59,12 +60,11 @@ TcpServer::TcpServer(const SocketAddr& addr, bool send_file,
 }
 
 TcpServer::~TcpServer() {
-  if (channel_) socket::close(channel_->fd());
-#ifdef LADDER_OS_WINDOWS
-  if (iocp_port_) CloseHandle(iocp_port_);
-#else
-  channel_->RemoveFromLoop();
-#endif
+  Stop();
+  // This cannot be put in Stop() in case for a stop in connection callback,
+  // which causes the thread pool to be destructed (where the same thread would be joined),
+  // causing a deadlock.
+  working_threads_.reset();
   if (ssl_ctx_) {
     SSL_CTX_free(ssl_ctx_);
     ssl_ctx_ = nullptr;
@@ -116,8 +116,36 @@ void TcpServer::SetConnectionCallback(const ConnectionEvtCallback& callback) {
   connection_callback_ = callback;
 }
 
+void TcpServer::Stop() {
+  {
+    std::lock_guard<std::mutex> lock(mutex_running_);
+    running_ = false;
+  }
+  acceptor_.reset();
+  if (channel_) socket::close(channel_->fd());
+  if (loop_) loop_->StopLoop();
+#ifdef LADDER_OS_WINDOWS
+  if (iocp_port_) CloseHandle(iocp_port_);
+#else
+  if (loop_) loop_->Wakeup(); // wakeup from blocking poll
+#endif
+  loop_.reset();
+  channel_.reset();
+  {
+    std::lock_guard<std::mutex> lock(mutex_connections_);
+    for (auto iter = connections_.begin(); iter != connections_.end();) {
+      iter->second->Close();
+      iter = connections_.erase(iter);
+    }
+  }
+}
+
 #ifdef LADDER_OS_WINDOWS
 void TcpServer::OnNewConnection(int fd, const SocketAddr& addr, char* buffer, int io_size) {
+  {
+    std::lock_guard<std::mutex> lock(mutex_running_);
+    if (!running_) return;
+  }
   ConnectionPtr connection;
   if (ssl_ctx_)
     connection = std::make_shared<TlsConnection>(fd, ssl_ctx_, true);
@@ -130,6 +158,10 @@ void TcpServer::OnNewConnectionCallback(int fd, SocketAddr&& addr) {
 }
 
 void TcpServer::OnNewConnection(int fd, const SocketAddr& addr) {
+  {
+    std::lock_guard<std::mutex> lock(mutex_running_);
+    if (!running_) return;
+  }
   EventLoopPtr loop = loop_threads_->GetNextLoop();
   ConnectionPtr connection;
   if (ssl_ctx_)

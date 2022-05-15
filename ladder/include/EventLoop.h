@@ -30,6 +30,7 @@ class LADDER_API EventLoop {
   EventLoop();
   void UpdateChannel(Channel* channel, int op);
   void RemoveChannel(int fd);
+  void Wakeup();
 #endif
   void StartLoop();
   void StopLoop();
@@ -38,7 +39,7 @@ class LADDER_API EventLoop {
   void SetWakeupCallback(const std::function<void()>& callback);
 #endif
   // TODO: wake up poller for urgent tasks
-#ifdef LADDER_OS_FREEBSD
+#ifdef LADDER_HAVE_KQUEUE
   int UpdateEvent(const struct kevent* evt);
 #endif
 

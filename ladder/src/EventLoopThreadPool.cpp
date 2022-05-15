@@ -29,7 +29,15 @@ EventLoopThreadPool::EventLoopThreadPool(size_t capacity)
   Init();
 }
 
-EventLoopThreadPool::~EventLoopThreadPool() { delete pool_; }
+EventLoopThreadPool::~EventLoopThreadPool() {
+  for (auto& loop : loops_) {
+    loop->StopLoop();
+#ifndef LADDER_OS_WINDOWS
+    loop->Wakeup();
+#endif
+  }
+  delete pool_;
+}
 
 void EventLoopThreadPool::Init() {
   for (size_t i = 0; i < capacity_; ++i) {

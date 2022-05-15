@@ -2,6 +2,7 @@
 #include <EventLoop.h>
 #include <Socket.h>
 #include <utils.h>
+#include <Logging.h>
 
 #include <compat.h>
 
@@ -23,6 +24,8 @@ void EventLoop::UpdateChannel(Channel* channel, int op) {
 }
 
 void EventLoop::RemoveChannel(int fd) { poller_->RemoveChannel(fd); }
+
+void EventLoop::Wakeup() { poller_->Wakeup(); }
 #endif
 
 void EventLoop::StartLoop() {

@@ -33,7 +33,7 @@ add_executable(ladder_unit_tests ${LADDER_UNIT_TESTS_SOURCES})
 target_include_directories(ladder_unit_tests PUBLIC ladder/include tests)
 target_link_libraries(ladder_unit_tests ladder)
 
-list(APPEND TESTS_EXECUTABLES "logger" "server" "proto_server" "file_server" "ssl_server" "event_poller")
+list(APPEND TESTS_EXECUTABLES "logger" "server" "stop_server" "proto_server" "file_server" "ssl_server" "event_poller")
 foreach(child ${TESTS_EXECUTABLES})
     file(GLOB CUR_SOURCES tests/${child}/*.cpp tests/proto/*.pb.cc)
     add_executable(test_${child} ${CUR_SOURCES})

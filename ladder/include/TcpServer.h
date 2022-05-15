@@ -24,6 +24,7 @@ class LADDER_API TcpServer {
   TcpServer& operator=(const TcpServer&) = delete;
   ~TcpServer();
   void Start();
+  void Stop();
   void SetReadCallback(const ReadEvtCallback& callback);
   void SetWriteCallback(const WriteEvtCallback& callback);
   void SetConnectionCallback(const ConnectionEvtCallback& callback);
@@ -44,6 +45,8 @@ class LADDER_API TcpServer {
   bool send_file_;
   size_t loop_thread_num_;
   std::mutex mutex_connections_;
+  std::mutex mutex_running_;
+  bool running_;
 
   ReadEvtCallback read_callback_;
   WriteEvtCallback write_callback_;
