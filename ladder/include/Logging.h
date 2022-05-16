@@ -60,6 +60,15 @@ LADDER_API std::string GetCurrentDateTime();
 class LADDER_API Logger {
  public:
   static Logger* instance();
+
+  /* Log levels:
+   * 0 - Trace
+   * 1 - Debug
+   * 2 - Info
+   * 3 - Warning
+   * 4 - Error
+   * 5 - Fatal
+   */
   static Logger* create(std::string log_path = "",
                         int level = static_cast<int>(LogLevel::kLogDebug));
   static void release();

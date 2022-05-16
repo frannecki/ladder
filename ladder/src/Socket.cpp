@@ -340,7 +340,7 @@ int close(int fd) {
   int ret = ::closesocket(fd);
   if (ret == SOCKET_ERROR) {
 #endif
-    EXIT("close");
+    EXIT("close fd = %d", fd);
   }
   return ret;
 }

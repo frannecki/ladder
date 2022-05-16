@@ -47,6 +47,7 @@ class LADDER_API TcpServer {
   std::mutex mutex_connections_;
   std::mutex mutex_running_;
   bool running_;
+  std::mutex mutex_serving_;
 
   ReadEvtCallback read_callback_;
   WriteEvtCallback write_callback_;

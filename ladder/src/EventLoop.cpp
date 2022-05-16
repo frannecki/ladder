@@ -28,6 +28,10 @@ void EventLoop::RemoveChannel(int fd) { poller_->RemoveChannel(fd); }
 void EventLoop::Wakeup() { poller_->Wakeup(); }
 #endif
 
+EventLoop::~EventLoop() {
+  LOGF_DEBUG("EventLoop destructed: %p.", this);
+}
+
 void EventLoop::StartLoop() {
   {
     std::lock_guard<std::mutex> lock(mutex_running_);
@@ -89,7 +93,7 @@ void EventLoop::SetWakeupCallback(const std::function<void()>& callback) {
 }
 #endif
 
-#ifdef LADDER_OS_FREEBSD
+#ifdef LADDER_HAVE_KQUEUE
 int EventLoop::UpdateEvent(const struct kevent* evt) {
   return poller_->UpdateEvent(evt);
 }

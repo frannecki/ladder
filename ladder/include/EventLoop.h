@@ -32,6 +32,7 @@ class LADDER_API EventLoop {
   void RemoveChannel(int fd);
   void Wakeup();
 #endif
+  ~EventLoop();
   void StartLoop();
   void StopLoop();
   void QueueInLoop(std::function<void()>&& task);

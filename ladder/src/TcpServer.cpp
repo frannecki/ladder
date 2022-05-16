@@ -61,7 +61,7 @@ TcpServer::TcpServer(const SocketAddr& addr, bool send_file,
 
 TcpServer::~TcpServer() {
   Stop();
-  // This cannot be put in Stop() in case for a stop in connection callback,
+  // This cannot be put in Stop() in case of a call to Stop() in connection callback,
   // which causes the thread pool to be destructed (where the same thread would be joined),
   // causing a deadlock.
   working_threads_.reset();
@@ -101,6 +101,7 @@ void TcpServer::Start() {
   loop_threads_.reset(new EventLoopThreadPool(loop_thread_num_));
 #endif
   LOGF_INFO("Listening on fd = %d %s:%u", fd, addr_.ip().c_str(), addr_.port());
+  std::lock_guard<std::mutex> lock(mutex_serving_);
   loop_->StartLoop();
 }
 
@@ -122,22 +123,30 @@ void TcpServer::Stop() {
     running_ = false;
   }
   acceptor_.reset();
-  if (channel_) socket::close(channel_->fd());
+  if (channel_) {
+    int fd = channel_->fd();
+    channel_.reset();
+    socket::close(fd);
+  }
   if (loop_) loop_->StopLoop();
 #ifdef LADDER_OS_WINDOWS
   if (iocp_port_) CloseHandle(iocp_port_);
 #else
   if (loop_) loop_->Wakeup(); // wakeup from blocking poll
 #endif
-  loop_.reset();
-  channel_.reset();
+  {
+    std::lock_guard<std::mutex> lock(mutex_serving_);
+    loop_.reset();
+  }
   {
     std::lock_guard<std::mutex> lock(mutex_connections_);
-    for (auto iter = connections_.begin(); iter != connections_.end();) {
+    for (auto iter = connections_.begin(); iter != connections_.end(); ++iter) {
+      iter->second->SetCloseCallback(nullptr);
       iter->second->Close();
-      iter = connections_.erase(iter);
     }
+    connections_.clear();
   }
+  LOGF_DEBUG("Server stopped: %p.", this);
 }
 
 #ifdef LADDER_OS_WINDOWS
