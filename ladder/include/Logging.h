@@ -26,11 +26,7 @@ enum LADDER_API LogLevel : int {
 #define LOG_ERROR(message) LOG_SEVERITY(message, LogLevel::kLogError)
 #define LOG_WARNING(message) LOG_SEVERITY(message, LogLevel::kLogWarning)
 #define LOG_INFO(message) LOG_SEVERITY(message, LogLevel::kLogInfo)
-#ifdef DEBUG
 #define LOG_DEBUG(message) LOG_SEVERITY(message, LogLevel::kLogDebug)
-#else
-#define LOG_DEBUG(message)
-#endif
 #define LOG_TRACE(message) LOG_SEVERITY(message, LogLevel::kLogTrace)
 #define LOG_SEVERITY(message, severity) \
   if (Logger::instance()) Logger::instance()->WriteLog(message, severity)
@@ -43,12 +39,8 @@ enum LADDER_API LogLevel : int {
 #define LOGF_WARNING(fmt, ...) \
   LOGF_SEVERITY(fmt, LogLevel::kLogWarning, __VA_ARGS__)
 #define LOGF_INFO(fmt, ...) LOGF_SEVERITY(fmt, LogLevel::kLogInfo, __VA_ARGS__)
-#ifdef DEBUG
 #define LOGF_DEBUG(fmt, ...) \
   LOGF_SEVERITY(fmt, LogLevel::kLogDebug, __VA_ARGS__)
-#else
-#define LOGF_DEBUG(fmt, ...)
-#endif
 #define LOGF_TRACE(fmt, ...) \
   LOGF_SEVERITY(fmt, LogLevel::kLogTrace, __VA_ARGS__)
 #define LOGF_SEVERITY(fmt, severity, ...) \
@@ -61,7 +53,8 @@ class LADDER_API Logger {
  public:
   static Logger* instance();
 
-  /* Log levels:
+  /*
+   * Log levels:
    * 0 - Trace
    * 1 - Debug
    * 2 - Info
