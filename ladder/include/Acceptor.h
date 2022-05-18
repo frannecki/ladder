@@ -12,7 +12,7 @@ namespace ladder {
 class Channel;
 class SocketAddr;
 #ifdef LADDER_OS_WINDOWS
-using NewConnectionCallback = std::function<void(int, const SocketAddr&, char*, int)>;
+using NewConnectionCallback = std::function<void(int, SocketAddr&&, char*, int)>;
 #else
 using NewConnectionCallback = std::function<void(int, SocketAddr&&)>;
 #endif

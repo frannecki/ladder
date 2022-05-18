@@ -24,8 +24,9 @@ using EventPollerPtr = std::unique_ptr<EventPoller>;
 class LADDER_API EventLoop {
  public:
 #ifdef LADDER_OS_WINDOWS
-  EventLoop(HANDLE iocp_port = nullptr);
+  EventLoop(HANDLE iocp_port = 0);
   void UpdateIocpPort(const Channel* channel);
+  void ResetIocpPort(HANDLE iocp_port = 0);
 #else
   EventLoop();
   void UpdateChannel(Channel* channel, int op);

@@ -38,6 +38,7 @@ ThreadPool::~ThreadPool() {
 }
 
 void ThreadPool::emplace(Callback&& f) {
+  if (!f) return;
   auto task = std::make_shared<Callback>(f);
   {
     std::unique_lock<std::mutex> lock(mutex_);

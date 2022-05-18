@@ -34,7 +34,7 @@ int main(int argc, char** argv) {
   }
 #endif
   Logger::create("./test_server.log");
-  SocketAddr addr("0.0.0.0", 8070, false);
+  SocketAddr addr("0.0.0.0", 8092, false);
   TcpServer server(addr, false);
 #ifndef _MSC_VER
   server.SetConnectionCallback(std::bind(OnConnection, _1));

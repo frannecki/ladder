@@ -47,7 +47,7 @@ void Acceptor::HandleAcceptCallback(int io_size) {
     socket::getpeername(cur_accept_fd_, &addr, &addr_len);
     SocketAddr sock_addr(&addr, ipv6_);
     if (new_connection_callback_) {
-      new_connection_callback_(cur_accept_fd_, sock_addr, accept_buffer_,
+      new_connection_callback_(cur_accept_fd_, std::move(sock_addr), accept_buffer_,
                                io_size);
     }
   }

@@ -24,10 +24,10 @@ void OnMessage(const ConnectionPtr& conn, Buffer* buffer) {
 
 void OnConnection(const ConnectionPtr& conn) {
   LOGF_INFO("Current number of clients connected: %d", ++count);
+#ifndef _MSC_VER
   conn->Send("Hello -- This is a ladder server.");
-  if (count >= 5) {
-    server->Stop();
-  }
+#endif
+  if (count >= 5) server->Stop();
 }
 
 int main(int argc, char** argv) {
@@ -38,15 +38,20 @@ int main(int argc, char** argv) {
   }
 #endif
   Logger::create("./test_stop_server.log");
-  SocketAddr addr("0.0.0.0", 8070, false);
+  SocketAddr addr("0.0.0.0", 8092, false);
   server = new TcpServer(addr, false);
-#ifndef _MSC_VER
   server->SetConnectionCallback(std::bind(OnConnection, _1));
-#endif
   server->SetReadCallback(std::bind(OnMessage, _1, _2));
   server->Start();
   LOG_WARNING("Server stopped");
   delete server;
+  count = 0;
+  LOG_WARNING("Server started again");
+  server = new TcpServer(addr, false);
+  server->SetConnectionCallback(std::bind(OnConnection, _1));
+  server->SetReadCallback(std::bind(OnMessage, _1, _2));
+  server->Start();
+  LOG_WARNING("Server stopped again");
   while (1);
   return 0;
 }

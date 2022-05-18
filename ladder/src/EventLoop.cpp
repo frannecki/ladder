@@ -16,6 +16,8 @@ void EventLoop::UpdateIocpPort(const Channel* channel) {
   iocp_port_ = ladder::UpdateIocpPort(iocp_port_, channel);
 }
 
+void EventLoop::ResetIocpPort(HANDLE iocp_port) { iocp_port_ = iocp_port; }
+
 #else
 EventLoop::EventLoop() : poller_(new EventPoller), running_(false) {}
 
@@ -49,16 +51,25 @@ void EventLoop::StartLoop() {
     bool ret =
         GetQueuedCompletionStatus(iocp_port_, &io_size, (PULONG_PTR)&channel,
                                   (LPOVERLAPPED*)&status, INFINITE);
-    
-    if (status) {
-      status->UpdateRefCount(false);
-    }
-    
     if (!ret) {
+      int err = WSAGetLastError();
+      if (ERROR_ABANDONED_WAIT_0 == err || WSA_INVALID_HANDLE == err ||
+          WSA_OPERATION_ABORTED == err) {
+        // ERROR_ABANDONED_WAIT_0 -> iocp port is closed
+        // WSA_OPERATION_ABORTED -> socket being waited on is closed
+        LOGF_DEBUG(
+            "GetQueuedCompletionStatus error occurred: %p, errno code: %d",
+            this, err);
+        break;
+      }
       if (!status) {
         EXIT("GetQueuedCompletionStatus port: %x error: %d",
-             iocp_port_, WSAGetLastError());
+             iocp_port_, err);
       }
+    }
+
+    if (status) {
+      status->UpdateRefCount(false);
     }
 
     if (channel == nullptr && status == nullptr) {
@@ -66,6 +77,8 @@ void EventLoop::StartLoop() {
     }
 
     if (status) {
+      std::lock_guard<std::mutex> lock(mutex_running_);
+      if (!running_) break;
       channel->HandleEvents(status->status_, io_size);
     }
 #else
@@ -79,8 +92,16 @@ void EventLoop::StartLoop() {
 }
 
 void EventLoop::StopLoop() {
-  std::lock_guard<std::mutex> lock(mutex_running_);
-  running_ = false;
+  {
+    std::lock_guard<std::mutex> lock(mutex_running_);
+    running_ = false;
+  }
+#ifdef LADDER_OS_WINDOWS
+  if (iocp_port_) CloseHandle(iocp_port_);
+  iocp_port_ = 0;
+#else
+  Wakeup();
+#endif
 }
 
 void EventLoop::QueueInLoop(std::function<void()>&& task) {

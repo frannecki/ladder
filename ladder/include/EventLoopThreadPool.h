@@ -22,6 +22,7 @@ class LADDER_API EventLoopThreadPool {
 #endif
   ~EventLoopThreadPool();
   EventLoopPtr GetNextLoop();
+  void Stop();
 
  private:
   void Init();
