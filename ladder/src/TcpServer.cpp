@@ -42,11 +42,11 @@ TcpServer::TcpServer(const SocketAddr& addr, bool send_file,
     : addr_(addr),
       send_file_(send_file),
       loop_thread_num_(loop_thread_num),
+      running_(true),
 #ifdef LADDER_OS_WINDOWS
       iocp_port_(NULL),
-#else
-      working_thread_num_(working_thread_num),
 #endif
+      working_thread_num_(working_thread_num),
       ssl_ctx_(nullptr) {
 #ifdef LADDER_OS_UNIX
   signal(SIGPIPE, signal_handler);
@@ -59,12 +59,11 @@ TcpServer::TcpServer(const SocketAddr& addr, bool send_file,
 }
 
 TcpServer::~TcpServer() {
-  if (channel_) socket::close(channel_->fd());
-#ifdef LADDER_OS_WINDOWS
-  if (iocp_port_) CloseHandle(iocp_port_);
-#else
-  channel_->RemoveFromLoop();
-#endif
+  Stop();
+  // This cannot be put in Stop() in case of a call to Stop() in connection callback,
+  // which causes the thread pool to be destructed (where the same thread would be joined),
+  // causing a deadlock.
+  working_threads_.reset();
   if (ssl_ctx_) {
     SSL_CTX_free(ssl_ctx_);
     ssl_ctx_ = nullptr;
@@ -81,16 +80,16 @@ void TcpServer::Start() {
   loop_ = std::make_shared<EventLoop>(iocp_port_);
   acceptor_.reset(new Acceptor(channel_, addr_.ipv6()));
   acceptor_->SetNewConnectionCallback(
-      std::bind(&TcpServer::OnNewConnection,
+      std::bind(&TcpServer::OnNewConnectionCallback,
                 this,
                 std::placeholders::_1,
                 std::placeholders::_2,
                 std::placeholders::_3,
                 std::placeholders::_4));
   loop_threads_.reset(new EventLoopThreadPool(iocp_port_, loop_thread_num_));
+  working_threads_.reset(new ThreadPool(working_thread_num_));
   acceptor_->Init();
 #else
-  working_threads_ = std::make_shared<ThreadPool>(working_thread_num_);
   loop_ = std::make_shared<EventLoop>();
   channel_.reset(new Channel(loop_, fd));
   channel_->UpdateToLoop();
@@ -99,8 +98,10 @@ void TcpServer::Start() {
       std::bind(&TcpServer::OnNewConnectionCallback, this,
                 std::placeholders::_1, std::placeholders::_2));
   loop_threads_.reset(new EventLoopThreadPool(loop_thread_num_));
+  working_threads_.reset(new ThreadPool(working_thread_num_));
 #endif
   LOGF_INFO("Listening on fd = %d %s:%u", fd, addr_.ip().c_str(), addr_.port());
+  std::lock_guard<std::mutex> lock(mutex_serving_);
   loop_->StartLoop();
 }
 
@@ -116,8 +117,55 @@ void TcpServer::SetConnectionCallback(const ConnectionEvtCallback& callback) {
   connection_callback_ = callback;
 }
 
+void TcpServer::Stop() {
+  {
+    std::lock_guard<std::mutex> lock(mutex_running_);
+    running_ = false;
+  }
+  acceptor_.reset();
+  if (channel_) {
+    int fd = channel_->fd();
+    channel_.reset();
+    socket::close(fd);
+  }
+  if (loop_) loop_->StopLoop();
+  {
+    std::lock_guard<std::mutex> lock(mutex_serving_);
+    loop_.reset();
+  }
+  loop_threads_->Stop();
+  {
+    std::lock_guard<std::mutex> lock(mutex_connections_);
+    for (auto iter = connections_.begin(); iter != connections_.end(); ++iter) {
+      iter->second->SetCloseCallback(nullptr);
+      iter->second->Close();
+    }
+    connections_.clear();
+  }
+}
+
+void TcpServer::OnReadCallback(const ConnectionPtr& conn, Buffer* buffer) {
+  if (read_callback_)
+    working_threads_->emplace(
+        [this, conn, buffer]() { read_callback_(conn, buffer); });
+}
+
+void TcpServer::OnWriteCallback(IBuffer* buffer) {
+  if (write_callback_)
+    working_threads_->emplace([this, buffer]() { write_callback_(buffer); });
+}
+
 #ifdef LADDER_OS_WINDOWS
+void TcpServer::OnNewConnectionCallback(int fd, SocketAddr&& addr, char* buffer, int io_size) {
+  working_threads_->emplace(
+      std::bind(&TcpServer::OnNewConnection, this, fd, addr, buffer, io_size));
+}
+
 void TcpServer::OnNewConnection(int fd, const SocketAddr& addr, char* buffer, int io_size) {
+  {
+    std::lock_guard<std::mutex> lock(mutex_running_);
+    if (!running_) return;
+  }
   ConnectionPtr connection;
   if (ssl_ctx_)
     connection = std::make_shared<TlsConnection>(fd, ssl_ctx_, true);
@@ -130,6 +178,10 @@ void TcpServer::OnNewConnectionCallback(int fd, SocketAddr&& addr) {
 }
 
 void TcpServer::OnNewConnection(int fd, const SocketAddr& addr) {
+  {
+    std::lock_guard<std::mutex> lock(mutex_running_);
+    if (!running_) return;
+  }
   EventLoopPtr loop = loop_threads_->GetNextLoop();
   ConnectionPtr connection;
   if (ssl_ctx_)
@@ -137,8 +189,10 @@ void TcpServer::OnNewConnection(int fd, const SocketAddr& addr) {
   else
     connection = std::make_shared<Connection>(loop, fd, send_file_);
 #endif
-  connection->SetReadCallback(read_callback_);
-  connection->SetWriteCallback(write_callback_);
+  connection->SetReadCallback(std::bind(&TcpServer::OnReadCallback, this, _1, _2));
+  // connection->SetReadCallback(read_callback_);
+  connection->SetWriteCallback(std::bind(&TcpServer::OnWriteCallback, this, _1));
+  // connection->SetWriteCallback(write_callback_);
   connection->SetCloseCallback(
       std::bind(&TcpServer::OnCloseConnectionCallback, this, fd));
 #ifdef LADDER_OS_WINDOWS
@@ -169,11 +223,5 @@ void TcpServer::OnCloseConnectionCallback(int fd) {
     }
   }
 }
-
-#ifndef LADDER_OS_WINDOWS
-EventLoopPtr TcpServer::loop() const { return loop_; }
-#endif
-
-EventLoopThreadPoolPtr TcpServer::loop_threads() const { return loop_threads_; }
 
 }  // namespace ladder

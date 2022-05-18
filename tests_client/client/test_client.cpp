@@ -36,7 +36,7 @@ int main(int argc, char** argv) {
     return -1;
   }
   addr.sin_family = AF_INET;
-  addr.sin_port = ntohs(8070);
+  addr.sin_port = ntohs(8092);
   addr_len = sizeof(addr);
   if (connect(sockfd, (struct sockaddr*)&addr, addr_len) < 0) {
     perror("connect");

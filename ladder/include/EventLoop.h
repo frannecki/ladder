@@ -24,13 +24,16 @@ using EventPollerPtr = std::unique_ptr<EventPoller>;
 class LADDER_API EventLoop {
  public:
 #ifdef LADDER_OS_WINDOWS
-  EventLoop(HANDLE iocp_port = nullptr);
+  EventLoop(HANDLE iocp_port = 0);
   void UpdateIocpPort(const Channel* channel);
+  void ResetIocpPort(HANDLE iocp_port = 0);
 #else
   EventLoop();
   void UpdateChannel(Channel* channel, int op);
   void RemoveChannel(int fd);
+  void Wakeup();
 #endif
+  ~EventLoop();
   void StartLoop();
   void StopLoop();
   void QueueInLoop(std::function<void()>&& task);
@@ -38,7 +41,7 @@ class LADDER_API EventLoop {
   void SetWakeupCallback(const std::function<void()>& callback);
 #endif
   // TODO: wake up poller for urgent tasks
-#ifdef LADDER_OS_FREEBSD
+#ifdef LADDER_HAVE_KQUEUE
   int UpdateEvent(const struct kevent* evt);
 #endif
 

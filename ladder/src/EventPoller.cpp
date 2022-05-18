@@ -211,7 +211,9 @@ std::unordered_map<uint32_t, short> EventPoller::stat_2_flt_ = {
 
 #endif
 
-EventPoller::~EventPoller() {}
+EventPoller::~EventPoller() {
+  close(poll_fd_);
+}
 
 void EventPoller::Wakeup() { pipe_->Wakeup(); }
 

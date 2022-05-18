@@ -29,7 +29,19 @@ EventLoopThreadPool::EventLoopThreadPool(size_t capacity)
   Init();
 }
 
-EventLoopThreadPool::~EventLoopThreadPool() { delete pool_; }
+EventLoopThreadPool::~EventLoopThreadPool() {
+  Stop();
+  delete pool_;
+}
+
+void EventLoopThreadPool::Stop() {
+  for (auto& loop : loops_) {
+#ifdef LADDER_OS_WINDOWS
+    loop->ResetIocpPort();
+#endif
+    loop->StopLoop();
+  }
+}
 
 void EventLoopThreadPool::Init() {
   for (size_t i = 0; i < capacity_; ++i) {

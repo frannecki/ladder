@@ -29,7 +29,7 @@ int main(int argc, char **argv) {
 #endif
   timer->SetTimmerEventCallback(std::bind(PrintTick, &tick_));
   timer1->SetTimmerEventCallback(std::bind(PrintTick1, &tick1_));
-#ifndef LADDER_OS_FREEBSD
+#ifndef LADDER_HAVE_KQUEUE
   timer->SetInterval(1000000);  // triggered once
 #endif
   timer1->SetInterval(1000000, true);  // triggered periodically

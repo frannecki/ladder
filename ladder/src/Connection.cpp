@@ -270,7 +270,7 @@ void Connection::OnReadCallback() {
   int ret = ReadBuffer();
   if (ret == 0) {
     // FIN received
-    // LOGF_INFO("read shut down, fd = %d", channel_->fd());
+    LOGF_INFO("read shut down, fd = %d", channel_->fd());
     shut_down_ = true;
 
     // IMPORTANT: OnCloseCallback can only be called once

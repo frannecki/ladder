@@ -4,7 +4,7 @@
 #endif
 #ifdef LADDER_OS_LINUX
 #include <sys/timerfd.h>
-#elif defined(LADDER_OS_FREEBSD)
+#elif defined(LADDER_HAVE_KQUEUE)
 #include <sys/event.h>
 #include <sys/time.h>
 #endif
@@ -69,7 +69,7 @@ Timer::Timer(const EventLoopPtr& loop)
   timer_channel_ = std::make_shared<Channel>(loop, timer_fd_);
   timer_channel_->UpdateToLoop();
   timer_channel_->SetReadCallback(std::bind(&Timer::OnTimer, this));
-#elif defined(LADDER_OS_FREEBSD)
+#elif defined(LADDER_HAVE_KQUEUE)
   timer_fd_ = 1;
   timer_channel_ = std::make_shared<Channel>(loop, timer_fd_);
   timer_channel_->SetReadCallback(std::bind(&Timer::OnTimer, this));
@@ -79,7 +79,7 @@ Timer::Timer(const EventLoopPtr& loop)
 Timer::~Timer() {
 #ifdef LADDER_OS_LINUX
   socket::close(timer_fd_);
-#elif defined(LADDER_OS_FREEBSD)
+#elif defined(LADDER_HAVE_KQUEUE)
   struct kevent evt;
   EV_SET(&evt, timer_fd_, EVFILT_TIMER, EV_DELETE, 0, 0, NULL);
   loop_->UpdateEvent(&evt);
@@ -102,7 +102,7 @@ void Timer::SetInterval(uint64_t interval, bool periodic) {
   if (::timerfd_settime(timer_fd_, 0, &value, NULL) < 0) {
     EXIT("[Timer] timerfd_settime");
   }
-#elif defined(LADDER_OS_FREEBSD)
+#elif defined(LADDER_HAVE_KQUEUE)
   struct kevent evt;
   u_short flags = EV_ADD | EV_ENABLE;
   // NOTE: for freebsd there cannot be multiple timers

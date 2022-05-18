@@ -29,6 +29,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ladder_tests_ssl_server", "
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ladder_tests_client_ssl_client", "ladder_tests_ssl_client\ladder_tests_ssl_client.vcxproj", "{2622DD6E-C0DE-4F19-A4F5-13599F2698A1}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ladder_test_stop_server", "ladder_test_stop_server\ladder_test_stop_server.vcxproj", "{8F32D010-6E83-428C-BFC7-3C6FDA14A3A2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -141,6 +143,14 @@ Global
 		{2622DD6E-C0DE-4F19-A4F5-13599F2698A1}.Release|x64.Build.0 = Release|x64
 		{2622DD6E-C0DE-4F19-A4F5-13599F2698A1}.Release|x86.ActiveCfg = Release|Win32
 		{2622DD6E-C0DE-4F19-A4F5-13599F2698A1}.Release|x86.Build.0 = Release|Win32
+		{8F32D010-6E83-428C-BFC7-3C6FDA14A3A2}.Debug|x64.ActiveCfg = Debug|x64
+		{8F32D010-6E83-428C-BFC7-3C6FDA14A3A2}.Debug|x64.Build.0 = Debug|x64
+		{8F32D010-6E83-428C-BFC7-3C6FDA14A3A2}.Debug|x86.ActiveCfg = Debug|Win32
+		{8F32D010-6E83-428C-BFC7-3C6FDA14A3A2}.Debug|x86.Build.0 = Debug|Win32
+		{8F32D010-6E83-428C-BFC7-3C6FDA14A3A2}.Release|x64.ActiveCfg = Release|x64
+		{8F32D010-6E83-428C-BFC7-3C6FDA14A3A2}.Release|x64.Build.0 = Release|x64
+		{8F32D010-6E83-428C-BFC7-3C6FDA14A3A2}.Release|x86.ActiveCfg = Release|Win32
+		{8F32D010-6E83-428C-BFC7-3C6FDA14A3A2}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

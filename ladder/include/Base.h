@@ -20,8 +20,8 @@ class ThreadPool;
 
 using ChannelPtr = std::shared_ptr<Channel>;
 using EventLoopPtr = std::shared_ptr<EventLoop>;
-using EventLoopThreadPoolPtr = std::shared_ptr<EventLoopThreadPool>;
-using ThreadPoolPtr = std::shared_ptr<ThreadPool>;
+using EventLoopThreadPoolPtr = std::unique_ptr<EventLoopThreadPool>;
+using ThreadPoolPtr = std::unique_ptr<ThreadPool>;
 using AcceptorPtr = std::unique_ptr<Acceptor>;
 using ConnectionPtr = std::shared_ptr<Connection>;
 

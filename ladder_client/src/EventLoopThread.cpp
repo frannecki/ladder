@@ -17,7 +17,7 @@ void EventLoopThread::Stop() {
   if (thread_.joinable()) {
     thread_.join();
   }
-  LOG_DEBUG("EventLoopThread stopped");
+  LOGF_DEBUG("EventLoopThread stopped: %p", this);
 }
 
 EventLoopPtr EventLoopThread::loop() const { return loop_; }
