@@ -194,8 +194,8 @@ void TcpServer::OnNewConnection(int fd, const SocketAddr& addr) {
 #endif
   connection->SetReadCallback(std::bind(&TcpServer::OnReadCallback, this, _1, _2));
   // connection->SetReadCallback(read_callback_);
-  connection->SetWriteCallback(std::bind(&TcpServer::OnWriteCallback, this, _1));
-  // connection->SetWriteCallback(write_callback_);
+  // connection->SetWriteCallback(std::bind(&TcpServer::OnWriteCallback, this, _1));
+  connection->SetWriteCallback(write_callback_);
   connection->SetCloseCallback(
       std::bind(&TcpServer::OnCloseConnectionCallback, this, fd));
 #ifdef LADDER_OS_WINDOWS
