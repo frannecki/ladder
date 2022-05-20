@@ -41,18 +41,16 @@ MemoryPoolImpl::~MemoryPoolImpl() {
 }
 
 char* MemoryPoolImpl::allocate() {
-  {
-    std::lock_guard<std::mutex> lock(mutex_blocks_);
-    MemoryBlock* block = blocks_->next_;
-    if (block == NULL) {
-      return nullptr;
-      // TODO: expand memory pool?
-    }
-    blocks_->next_ = block->next_;
-    char* memory = block->memory_;
-    delete block;
-    return memory;
+  std::lock_guard<std::mutex> lock(mutex_blocks_);
+  MemoryBlock* block = blocks_->next_;
+  if (block == NULL) {
+    return nullptr;
+    // TODO: expand memory pool?
   }
+  blocks_->next_ = block->next_;
+  char* memory = block->memory_;
+  delete block;
+  return memory;
 }
 
 char* MemoryPoolImpl::allocate(size_t n) {
@@ -65,9 +63,9 @@ char* MemoryPoolImpl::allocate(size_t n) {
 void MemoryPoolImpl::free(void* memory) {
   MemoryBlock* block = new MemoryBlock;
   block->memory_ = reinterpret_cast<char*>(memory);
-  block->next_ = blocks_->next_;
   {
     std::lock_guard<std::mutex> lock(mutex_blocks_);
+    block->next_ = blocks_->next_;
     blocks_->next_ = block;
   }
 }

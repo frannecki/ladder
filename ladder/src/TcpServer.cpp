@@ -146,8 +146,11 @@ void TcpServer::Stop() {
 
 void TcpServer::OnReadCallback(const ConnectionPtr& conn, Buffer* buffer) {
   if (read_callback_)
-    working_threads_->emplace(
-        [this, conn, buffer]() { read_callback_(conn, buffer); });
+    working_threads_->emplace([this, conn, buffer]() {
+      conn->LockCallback();
+      read_callback_(conn, buffer);
+      conn->LockCallback(false);
+    });
 }
 
 void TcpServer::OnWriteCallback(IBuffer* buffer) {

@@ -125,6 +125,14 @@ void Connection::SetCloseCallback(const ConnectCloseCallback& callback) {
 
 ChannelPtr Connection::channel() const { return channel_; }
 
+void Connection::LockCallback(bool lock) {
+  if (lock) {
+    mutex_callback_.lock();
+  } else {
+    mutex_callback_.unlock();
+  }
+}
+
 #ifdef LADDER_OS_WINDOWS
 void Connection::Init(HANDLE iocp_port, char* buffer, int io_size) {
   SetChannelCallbacks();
@@ -173,16 +181,14 @@ void Connection::OnReadCallback(int io_size) {
   }
 
   PostRead();
-  if (shut_down_) OnCloseCallback();
+  if (shut_down_ && write_buffer_->Empty()) {
+    OnCloseCallback();
+  }
 }
 
 void Connection::OnWriteCallback(int io_size) {
-  if (shut_down_) {
-    OnCloseCallback();
-    return;
-  }
-  WriteBuffer(io_size);
   write_pending_ = false;
+  WriteBuffer(io_size);
   if (write_callback_) {
     write_callback_(write_buffer_);
   }
@@ -193,7 +199,9 @@ void Connection::OnWriteCallback(int io_size) {
   }
 
   PostWrite();
-  if (shut_down_) OnCloseCallback();
+  if (shut_down_ && write_buffer_->Empty()) {
+    OnCloseCallback();
+  }
 }
 
 int Connection::ReadBuffer(int io_size) {
