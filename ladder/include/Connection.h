@@ -42,6 +42,7 @@ class LADDER_API Connection : public std::enable_shared_from_this<Connection> {
   void SetWriteCallback(const WriteEvtCallback& callback);
   void SetCloseCallback(const ConnectCloseCallback& callback);
   ChannelPtr channel() const;
+  void LockCallback(bool lock = true);
 
  protected:
 #ifdef LADDER_OS_WINDOWS
@@ -76,6 +77,8 @@ class LADDER_API Connection : public std::enable_shared_from_this<Connection> {
   // system call
   bool shut_down_;
   bool send_file_;
+
+  std::mutex mutex_callback_;
 };
 
 }  // namespace ladder
