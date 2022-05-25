@@ -47,6 +47,8 @@ void OnConnection(const ConnectionPtr& conn, const ProtobufCodec& codec) {
   message.set_validate(true);
   message.set_id(9);
   codec.Send(conn, &message);
+
+  codec.Send(conn, &message);
 }
 #endif
 
@@ -76,7 +78,7 @@ int main(int argc, char** argv) {
   }
 #endif
   Logger::create("./test_proto_server.log");
-  SocketAddr addr("0.0.0.0", 8070, false);
+  SocketAddr addr("0.0.0.0", 8092, false);
   TcpServer server(addr, false);
   ProtobufCodec codec;
   codec.RegisterMessageCallback<ladder::TestMessage1>(

@@ -24,7 +24,7 @@ void Codec::Send(const ConnectionPtr& conn, const void* message) const {
 
 void Codec::OnMessage(const ConnectionPtr& conn, Buffer* buffer) {
   std::string packet;
-  if (Decapsulate(packet, buffer)) {
+  while (Decapsulate(packet, buffer)) {
     ParseAndHandleMessage(conn, packet);
   }
 }
